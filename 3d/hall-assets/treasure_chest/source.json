@@ -1,0 +1,54 @@
+{
+  "source": "https://polyhaven.com/a/treasure_chest",
+  "license": "CC0",
+  "author": "Rico Cilliers",
+  "files": {
+    "textures/treasure_chest_arm_1k.jpg": {
+      "size": 958484,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_arm_1k.jpg",
+      "md5": "ffb1a453af7e91fb63c1ec51da29832a"
+    },
+    "textures/treasure_chest_diff_1k.jpg": {
+      "size": 812089,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_diff_1k.jpg",
+      "md5": "59a684377b91eed5cb0cf44fad6b1089"
+    },
+    "textures/treasure_chest_nor_gl_1k.jpg": {
+      "size": 893221,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_nor_gl_1k.jpg",
+      "md5": "5ce2977f7417f17575b92873a56a3c4f"
+    },
+    "treasure_chest.bin": {
+      "size": 2811372,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/treasure_chest/treasure_chest.bin",
+      "md5": "c955b1084bb3f7c8cea414bdf1a89845"
+    },
+    "treasure_chest_1k.gltf": {
+      "include": {
+        "textures/treasure_chest_arm_1k.jpg": {
+          "size": 958484,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_arm_1k.jpg",
+          "md5": "ffb1a453af7e91fb63c1ec51da29832a"
+        },
+        "textures/treasure_chest_diff_1k.jpg": {
+          "size": 812089,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_diff_1k.jpg",
+          "md5": "59a684377b91eed5cb0cf44fad6b1089"
+        },
+        "textures/treasure_chest_nor_gl_1k.jpg": {
+          "size": 893221,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_nor_gl_1k.jpg",
+          "md5": "5ce2977f7417f17575b92873a56a3c4f"
+        },
+        "treasure_chest.bin": {
+          "size": 2811372,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/treasure_chest/treasure_chest.bin",
+          "md5": "c955b1084bb3f7c8cea414bdf1a89845"
+        }
+      },
+      "size": 8584,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/treasure_chest/treasure_chest_1k.gltf",
+      "md5": "7bfc4b335cff3e2641c8b9e55dbee0a2"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "source": "https://polyhaven.com/a/wooden_table_02",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "Serhii Khromov": "All"
+  },
+  "resolution": "2k",
+  "bytes": 1947931,
+  "files": [
+    "wooden_table_02_2k.gltf",
+    "wooden_table_02.bin",
+    "textures/wooden_table_02_nor_gl_2k.jpg",
+    "textures/wooden_table_02_diff_2k.jpg",
+    "textures/wooden_table_02_arm_2k.jpg"
+  ],
+  "md5_verified": true,
+  "adoption": "adopted",
+  "verification": "2026-09-11：原始檔 MD5、實際材質近景、首頁整合及回捲檢查通過；非低階 GPU 效能驗證。"
+}

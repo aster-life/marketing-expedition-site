@@ -1,0 +1,23 @@
+{
+  "source": "https://polyhaven.com/a/book_encyclopedia_set_01",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "John Malcolm": "All"
+  },
+  "resolution": "2k",
+  "bytes": 4682980,
+  "files": [
+    "book_encyclopedia_set_01_2k.gltf",
+    "book_encyclopedia_set_01.bin",
+    "textures/book_encyclopedia_set_01_paper_diff_2k.jpg",
+    "textures/book_encyclopedia_set_01_paper_nor_gl_2k.jpg",
+    "textures/book_encyclopedia_set_01_paper_roughness_2k.jpg",
+    "textures/book_encyclopedia_set_01_cover_arm_2k.jpg",
+    "textures/book_encyclopedia_set_01_cover_nor_gl_2k.jpg",
+    "textures/book_encyclopedia_set_01_cover_diff_2k.jpg"
+  ],
+  "md5_verified": true,
+  "adoption": "adopted",
+  "verification": "2026-09-11：原始檔 MD5、實際材質近景、首頁整合及回捲檢查通過；非低階 GPU 效能驗證。"
+}

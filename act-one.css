@@ -1,0 +1,68 @@
+.home main{padding:0}.home:not(.past-entry) .site-header{background:linear-gradient(#071018bb,transparent);border:0;backdrop-filter:none}.home:not(.past-entry) #main-nav,.home:not(.past-entry) .join-link,.home:not(.past-entry) .menu-toggle{display:none}.home .header-tools{margin-left:auto}
+.film-journey{height:100svh;position:relative;background:#07151c}.film-journey.entered{height:260svh}.film-stage{height:100svh;position:sticky;top:0;overflow:hidden;color:#f1e6d3;background:#07151c;isolation:isolate}.film-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}.film-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#050f19b3,transparent 60%),linear-gradient(0deg,#07151cd9,transparent 23%)}.film-intro{position:absolute;left:6vw;top:28%;max-width:40vw;text-shadow:0 2px 25px #0009}.film-intro h1{font-size:clamp(34px,4.4vw,72px);line-height:1.4;margin-bottom:25px}.film-intro p{color:#d0cbbf;font-size:13px}.film-bottom{position:absolute;bottom:35px;left:6vw;right:6vw;display:flex;gap:22px;align-items:center;flex-wrap:wrap}.film-bottom span{font-size:11px;letter-spacing:.1em;margin-right:auto}.film-bottom button,.film-bottom a{background:#07151c99;border:1px solid #d1b58266;padding:10px 17px;font-size:11px;min-height:44px}.film-bottom #film-play{background:#d8b77e;color:#17212a;border-color:#d8b77e}.film-bottom a{border:0;background:transparent}#film-status{position:absolute;bottom:100px;left:6vw;right:6vw;font-size:12px;color:#e7cfaa}.film-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:#b6a47622}.film-progress i{display:block;width:100%;height:100%;background:#dbb578;transform:scaleX(var(--film-progress,0));transform-origin:left}.film-curtain{position:absolute;inset:0;background:#040b10;opacity:0;pointer-events:none;transition:opacity .6s;z-index:5}.film-curtain.closed{opacity:1}#forest-space{position:absolute;inset:0}#forest-space canvas{width:100%;height:100%;display:block}.forest-fallback{background:url('assets/film/duo-opening/first-last-run/ending-still.jpg') center/cover}.film-ending{position:absolute;top:26%;left:6vw;max-width:460px;text-shadow:0 2px 25px #071018}.film-ending h2{font-size:clamp(34px,4vw,62px)}.film-ending p{color:#ced5d2;max-width:330px}.film-ending .text-link{color:#eedbb9}.entered .film-shade{background:linear-gradient(90deg,#07151ccc,transparent 72%),linear-gradient(0deg,#07151c,transparent 30%)}
+.expedition-paths{padding:110px 6vw 70px;background:#09121b;position:relative}.expedition-paths .section-heading{max-width:1220px;margin:0 auto 60px}.path-row{max-width:1220px;margin:0 auto 70px;display:grid;grid-template-columns:1.25fr 1fr;align-items:center;gap:7vw}.path-row:nth-of-type(even){grid-template-columns:1fr 1.25fr}.path-row:nth-of-type(even) .path-image{order:2}.path-image{display:block;aspect-ratio:1.6;overflow:hidden;position:relative}.path-image:after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 70px #09121b80}.path-image img{width:100%;height:100%;object-fit:cover;transition:transform .8s}.path-row a:hover img{transform:scale(1.035)}.path-copy h3{font:clamp(27px,3vw,44px)/1.5 var(--serif);margin-bottom:20px}.path-copy p{max-width:360px;font-size:14px}.path-copy .eyebrow{margin-bottom:18px}.home-reading{border-top:1px solid var(--line)}.reduced .film-curtain{transition:none}.reduced .film-journey.entered{height:100svh}.reduced .path-image img{transition:none}
+@media(max-width:700px){.film-stage video{object-fit:contain}.film-intro{left:7vw;top:16%;max-width:86vw}.film-intro h1{font-size:32px;margin-bottom:14px}.film-intro p{font-size:12px}.film-bottom{left:7vw;right:7vw;bottom:22px;gap:8px}.film-bottom span{flex-basis:100%;font-size:10px}.film-bottom button,.film-bottom a{padding:9px 12px;font-size:10px}.film-ending{top:22%;left:7vw;right:7vw}.film-ending h2{font-size:35px}.film-ending p{font-size:13px}#film-status{bottom:130px}.expedition-paths{padding:70px 7vw 20px}.path-row,.path-row:nth-of-type(even){grid-template-columns:1fr;gap:25px;margin-bottom:60px}.path-row:nth-of-type(even) .path-image{order:0}.path-copy h3{font-size:28px}.path-copy p{font-size:13px}}
+
+@media(max-width:700px){.forest-fallback{background-size:auto 100%;background-position:52% center}.film-ending{top:18%;max-width:330px}.film-ending h2{font-size:32px}.film-ending p{max-width:270px}}
+
+.film-journey{overflow-anchor:none}@media(max-width:700px){.forest-fallback{background-size:contain;background-repeat:no-repeat;background-position:center}.film-ending{top:15%;max-width:86vw}.film-ending h2{font-size:27px;margin-bottom:12px}.film-ending p{display:none}.film-ending .text-link{font-size:11px;padding:0}.entered .film-shade{background:linear-gradient(0deg,#07151c88,transparent 25%),linear-gradient(#07151c66,transparent 40%)}}
+/* 固定捲動區間，影片進度不再改變頁面高度。 */
+.film-journey,.film-journey.entered{height:500svh}
+.reduced .film-journey,.reduced .film-journey.entered{height:100svh}
+.film-curtain{display:none}
+
+/* 影片與立體世界分段呈現；遮幕的深淺也由捲動位置控制。 */
+.film-journey,.film-journey.entered{height:900svh}.film-curtain{display:block;transition:none}.film-stage #forest-space{background:#0b1723}.film-stage #forest-space canvas{width:100%;height:100%;display:block}
+@media(min-width:701px){.film-ending{max-width:520px}.film-ending h2{font-size:clamp(30px,3.2vw,46px);line-height:1.5}}
+
+/* 水霧接手原有遮幕，不再使用黑色底。 */
+.film-curtain{background:transparent}
+
+/* 第一幕原有捲動距離保留，再接一段完整室內旅程。 */
+.film-journey,.film-journey.entered{height:1504svh}
+.hall-copy{position:absolute;left:6vw;top:21%;max-width:350px;text-shadow:0 2px 22px #000;pointer-events:none;background:radial-gradient(ellipse at left,#07121aaa,transparent 75%);padding:20px 0}
+.hall-copy h2{font:clamp(27px,3vw,40px)/1.45 var(--serif);margin:15px 0;text-wrap:balance}
+.hall-copy p{font-size:14px;max-width:280px;color:#d7d8d2}
+.hall-copy .text-link{pointer-events:auto;color:#efd5a6}
+.reduced .film-journey,.reduced .film-journey.entered{height:100svh}
+@media(max-width:700px){.hall-copy{left:7vw;right:7vw;top:12%;max-width:86vw;padding:0}.hall-copy h2{font-size:25px;margin:10px 0}.hall-copy p{font-size:12px;max-width:260px}.hall-copy .eyebrow{font-size:9px}}
+
+
+/* 尾端延續深藍底色，讓內容沿捲動接入；不以黑幕切斷空間。 */
+.expedition-paths{background:linear-gradient(#101c25,#09121b 260px);border-top:1px solid #b3915540}
+
+/* 第三幕互動約保留兩個螢幕的捲動距離。 */
+.film-journey,.film-journey.entered{height:1686svh}
+.reduced .film-journey,.reduced .film-journey.entered{height:100svh}
+.film-stage #gallery-film{z-index:2;object-fit:cover;background:transparent;pointer-events:none}
+.film-bottom,.film-progress,#film-status{z-index:3}
+
+.gallery-framed .film-shade{opacity:0}
+
+.journey-marker{position:absolute;top:1334.32svh;left:0;width:1px;height:1px;pointer-events:none}
+.reduced .journey-marker{top:0}
+
+.film-stage #gallery-pillar{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.film-stage #gallery-pillar[hidden]{display:none}
+
+/* 星環交接的光暈與星屑：沿捲動展開，不使用自動循環閃光。 */
+.gallery-magic{position:absolute;left:50%;top:50%;width:min(100vw,177.7778svh);aspect-ratio:16/9;transform:translate(-50%,-50%);z-index:3;pointer-events:none;overflow:hidden;mix-blend-mode:screen;opacity:var(--magic-energy)}
+.gallery-magic[hidden]{display:none}
+.gallery-magic b{position:absolute;inset:0;background:radial-gradient(ellipse at center,#e9fbffb0 0%,#8adfff60 4%,#73bfff28 13%,transparent 38%);transform:scale(calc(.7 + var(--magic-phase)*.7))}
+.gallery-magic em{position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;border:1px solid #b9e5ff80;border-radius:50%;box-shadow:0 0 18px #8aceff55,inset 0 0 13px #8aceff33;transform:translate(-50%,-50%) scale(calc(.3 + var(--magic-phase)*2.2)) rotateX(55deg)}
+.gallery-magic i{position:absolute;left:50%;top:50%;width:var(--size);height:var(--size);border-radius:50%;background:#ffe2a0;box-shadow:0 0 8px 2px #f3c97e99;transform:rotate(var(--angle)) translateX(calc((35 + var(--magic-phase)*170)*1px)) scale(calc(1.1 - var(--magic-phase)*.5));opacity:.8}
+.gallery-magic i:nth-of-type(3n){background:#bcecff;box-shadow:0 0 9px 2px #75cfff88}
+.reduced .gallery-magic{display:none}
+
+
+
+/* 峰值以藍色光霧遮住不同景別的重影，兩端仍透明保留原場景。 */
+.gallery-magic:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,#e0f4ff 0%,#a2cce4 32%,#5c87a4 72%,#233d55 100%);opacity:var(--magic-veil,0)}
+.gallery-magic{mix-blend-mode:normal}
+
+/* 直式保留雙角色全身；橫式交接保持滿版，避免中途縮框。 */
+@media(max-aspect-ratio:1/1){.film-stage #gallery-film{object-fit:contain}}
+
+/* 首頁沉浸旅程保留內容入口，收起常駐操作說明。 */
+.home .motion-toggle,.home #film-cue{display:none!important}
+

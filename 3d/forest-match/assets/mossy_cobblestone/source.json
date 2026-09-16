@@ -1,0 +1,22 @@
+{
+  "source": "https://polyhaven.com/a/mossy_cobblestone",
+  "author": "Sơn Nguyễn",
+  "license": "CC0",
+  "files": [
+    {
+      "file": "mossy_cobblestone_diff_4k.jpg",
+      "bytes": 19894207,
+      "sha256": "da76a020da2185e74b5c0043c1f9759e7726d33fff8f615d4208615daf5696d9"
+    },
+    {
+      "file": "mossy_cobblestone_nor_gl_4k.jpg",
+      "bytes": 16684281,
+      "sha256": "c93ff437d0eabccb3476f78c282e251bae53474d68d0e33fc57d5ad2aef9acb8"
+    },
+    {
+      "file": "mossy_cobblestone_rough_4k.jpg",
+      "bytes": 10775058,
+      "sha256": "e7c11012b5a147948e926f0c0be8fce1426982bcb78bd11177b12011f7950349"
+    }
+  ]
+}

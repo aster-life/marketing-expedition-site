@@ -1,0 +1,20 @@
+{
+  "source": "https://polyhaven.com/a/wooden_bookshelf_worn",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "Ulan Cabanilla": "All"
+  },
+  "resolution": "2k",
+  "bytes": 10318006,
+  "files": [
+    "wooden_bookshelf_worn_2k.gltf",
+    "textures/wooden_bookshelf_worn_diff_2k.jpg",
+    "wooden_bookshelf_worn.bin",
+    "textures/wooden_bookshelf_worn_arm_2k.jpg",
+    "textures/wooden_bookshelf_worn_nor_gl_2k.jpg"
+  ],
+  "md5_verified": true,
+  "adoption": "adopted",
+  "verification": "2026-09-11：原始檔 MD5、實際材質近景、首頁整合及回捲檢查通過；非低階 GPU 效能驗證。"
+}

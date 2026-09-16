@@ -1,0 +1,13 @@
+{
+  "id": "fern_02",
+  "source": "https://polyhaven.com/a/fern_02",
+  "license": "CC0",
+  "files": [
+    "fern_02_1k.gltf",
+    "textures/fern_02_arm_1k.jpg",
+    "textures/fern_02_diff_1k.jpg",
+    "textures/fern_02_nor_gl_1k.jpg",
+    "fern_02.bin"
+  ],
+  "verified": true
+}

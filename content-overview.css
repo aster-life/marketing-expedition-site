@@ -1,0 +1,73 @@
+.collection{position:relative;isolation:isolate;z-index:12;min-height:900px;min-height:100svh;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#294157,#080f18 80%);color:#f1e5d1;padding:135px 0 40px}.collection-world{position:absolute;inset:0;z-index:-2;pointer-events:none}.collection-world canvas{width:100%;height:100%;display:block}.collection:after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(#08121b99,transparent 35%,#090c1599)}.collection-intro{text-align:center;padding:0 24px}.collection-intro>span{font-size:11px;letter-spacing:.24em;color:#d2b47d}.collection-intro h2{font:400 clamp(27px,3vw,43px)/1.5 var(--serif,serif);margin:16px 0 8px}.collection-intro p{font-size:14px;color:#b7b9b6}.collection-track{display:flex;align-items:center;gap:3vw;padding:55px 5vw 28px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;perspective:1400px}.collection-track::-webkit-scrollbar{display:none}.collection-piece{flex:0 0 20.5vw;min-width:220px;scroll-snap-align:center;text-decoration:none;color:inherit;transform:rotateY(9deg) translateY(18px);transition:transform .6s,filter .6s;filter:brightness(.78);outline-offset:8px}.collection-piece:nth-child(even){transform:rotateY(-9deg) translateY(-4px)}.collection-piece:hover,.collection-piece:focus-visible,.collection-piece.is-selected{transform:rotateY(0) translateY(-12px);filter:brightness(1)}.collection-frame{position:relative;padding:14px;background:repeating-linear-gradient(45deg,#48311b 0px,#bb9354 2px,#68502b 4px,#d3b574 5px,#806238 7px);border:3px solid #88643b;box-shadow:inset 0 0 0 2px #e1c68a,0 18px 24px #0008,5px 5px 0 #302316}.collection-frame:after{content:'';position:absolute;inset:5px;border:2px solid #e6c38388;pointer-events:none;box-shadow:inset 0 0 6px #24180c}.collection-frame img{display:block;width:100%;height:clamp(190px,19vw,310px);object-fit:cover;border:5px solid #171619;box-shadow:0 0 0 2px #997443}.collection-piece small{display:block;letter-spacing:.15em;color:#c2aa80;font-size:9px;margin:26px 0 10px}.collection-piece h3{font:400 clamp(20px,1.6vw,28px)/1.4 var(--serif,serif);margin:0}.collection-piece h3 span{float:right;color:#d5b777}.collection-piece p{font-size:12px;color:#bdbbb6;line-height:1.7}.collection-controls{display:flex;justify-content:center;align-items:center;gap:20px;margin:18px 20px 0;font-size:12px;color:#d4c19f}.collection-controls button{width:46px;height:46px;border:1px solid #a98a57;border-radius:50%;background:#10151c99;color:#ecd6ad;font-size:24px;cursor:pointer}.collection-controls button:hover{background:#8c703644}.collection-controls button:disabled{opacity:.3;cursor:default}.collection-position{font-variant-numeric:tabular-nums}.collection-hint{margin-left:15px;color:#b7b9b6}.collection a:focus-visible,.collection button:focus-visible{outline:2px solid #f2d39a}
+@media(max-width:900px){.collection{padding-top:110px}.collection-piece{flex-basis:42vw}.collection-track{padding-left:8vw;padding-right:8vw;gap:6vw}.collection-frame img{height:260px}}
+@media(max-width:540px){.collection{padding-top:95px;min-height:100svh}.collection-intro h2{font-size:25px}.collection-intro p{font-size:12px}.collection-track{padding-top:35px;gap:8vw}.collection-piece{flex-basis:74vw;min-width:0}.collection-frame img{height:230px}.collection-piece h3{font-size:24px}.collection-hint{display:none}}
+@media(prefers-reduced-motion:reduce){.collection-piece{transition:none}}.reduced .collection-piece{transition:none}/* 收藏廳精修：木芯、金屬壓邊與局部雕飾分層，避免整面條紋。 */
+.collection{background:#10151e;padding-top:115px;padding-bottom:34px;border-top:1px solid #b7986144}
+.collection-intro{position:relative;max-width:800px;margin:auto}.collection-intro:before{content:'✧';display:block;color:#d6b777;font-size:24px;margin-bottom:12px}.collection-intro h2{font-size:clamp(26px,2.6vw,40px)}
+.collection-track{position:relative;padding-top:45px;padding-bottom:38px;gap:3.8vw;padding-left:4.5vw;padding-right:4.5vw;perspective:1800px}
+.collection-piece{position:relative;flex-basis:19.8vw;transform:rotateY(12deg) rotateZ(-2deg) translateY(19px);filter:brightness(.84)}
+.collection-piece:nth-child(2){transform:rotateY(5deg) rotateZ(-1deg) translateY(-10px)}
+.collection-piece:nth-child(3){transform:rotateY(-5deg) rotateZ(1deg) translateY(10px)}
+.collection-piece:nth-child(4){transform:rotateY(-12deg) rotateZ(2deg) translateY(-5px)}
+.collection-piece.is-selected,.collection-piece:hover,.collection-piece:focus-visible{transform:rotateY(0) rotateZ(0) translateY(-15px);filter:brightness(1.08)}
+.collection-frame{padding:20px;border:2px solid #b5945b;background:linear-gradient(135deg,#9c794944,#211608aa),url('3d/hall-materials/wood_planks/wood_planks_diff_1k.jpg') center/320px;box-shadow:inset 0 0 0 3px #312114,inset 0 0 0 5px #c4a774,inset 0 0 0 8px #6d512e,3px 4px 0 #3b2c20,6px 8px 0 #171312,12px 28px 28px #0009}
+.collection-frame:before{content:'';position:absolute;left:10px;right:10px;top:4px;height:14px;background:url('assets/collection-ornament.svg') center/40px 15px repeat-x;opacity:.9}
+.collection-frame:after{inset:10px;border:1px solid #dbbf8655;box-shadow:inset 0 0 0 3px #17120e,inset 0 0 0 5px #b69256,inset 0 0 10px #0d0a07;background:url('assets/collection-ornament.svg') center bottom/40px 13px repeat-x}
+.collection-frame img{border:3px solid #231c17;box-shadow:0 0 0 1px #e3c895;aspect-ratio:1.25;height:auto;min-height:175px;max-height:300px}
+.collection-piece:after{content:'';position:absolute;left:-10%;right:-10%;height:26px;bottom:67px;border-radius:50%;background:#050609b3;filter:blur(16px);z-index:-1;transform:translateY(16px)}
+.collection-piece small{margin-top:27px;font-size:9px;letter-spacing:.17em}.collection-piece h3{font-size:clamp(20px,1.7vw,28px);text-shadow:0 2px 8px #000}.collection-piece p{color:#c4c2bb;line-height:1.8;margin-top:10px}
+.collection-controls{margin-top:8px}.collection-controls button{background:#0d141dde;box-shadow:inset 0 0 0 3px #b3966110}.collection:after{background:linear-gradient(#07111b77,transparent 32%,#090d1677)}
+@media(min-width:1000px) and (min-height:800px){.collection-track{padding-top:75px;padding-bottom:60px}.collection-frame img{aspect-ratio:1.05}}
+@media(max-width:900px){.collection-piece{flex-basis:42vw}.collection-track{gap:6vw;padding-left:8vw;padding-right:8vw}.collection-frame img{aspect-ratio:1.15;min-height:220px}}
+@media(max-width:540px){.collection{padding-top:90px}.collection-intro:before{margin-bottom:6px}.collection-intro h2{font-size:24px}.collection-track{padding-top:35px;gap:8vw}.collection-piece{flex-basis:74vw}.collection-frame{padding:19px}.collection-frame img{min-height:195px}.collection-piece h3{font-size:23px}.collection-controls{margin-top:0}}/* 保留畫面底部的導览與閱讀空間。 */
+@media(min-width:1000px){.collection{padding-top:100px}.collection-track{padding-top:38px;padding-bottom:26px}.collection-frame img{aspect-ratio:1.25}.collection-intro:before{margin-bottom:6px}.collection-piece small{margin-top:21px}.collection-controls{margin-top:0}}
+/* 電影式收藏展廳：單件聚焦，鄰件留在景深之中。 */
+.collection{--piece-width:min(48vw,680px);padding-top:80px;background:#080d16}
+.collection:after{background:radial-gradient(ellipse at 50% 42%,transparent 15%,#05091088 78%),linear-gradient(#080e19,transparent 22%,transparent 70%,#080d16);}
+.collection-intro h2{font-size:clamp(26px,2.4vw,38px);letter-spacing:.05em}
+.collection-track{gap:7vw;padding:42px calc((100% - var(--piece-width))/2) 34px;scroll-padding-inline:calc((100% - var(--piece-width))/2);perspective:1600px;overscroll-behavior-x:contain}
+.collection-piece,.collection-piece:nth-child(n){flex:0 0 var(--piece-width);min-width:0;transform:scale(.84) rotateY(var(--yaw,0deg));transform-origin:center;filter:brightness(.48) saturate(.65);transition:transform .8s cubic-bezier(.22,.68,.2,1),filter .8s;}
+.collection-piece.is-selected,.collection-piece:focus-visible{transform:scale(1) rotateY(0);filter:brightness(1) saturate(1)}
+.collection-frame{padding:15px;box-shadow:inset 0 0 0 3px #312114,inset 0 0 0 5px #ac8a52,inset 0 0 0 8px #584128,3px 5px 0 #30241b,0 28px 55px #000b}
+.collection-frame img{aspect-ratio:16/9;min-height:0;max-height:none;object-fit:cover}
+.collection-piece small{margin-top:25px;letter-spacing:.2em}.collection-piece h3{font-size:clamp(24px,2vw,32px)}
+.collection-piece p{font-size:14px;opacity:.65;transition:opacity .8s}.collection-piece.is-selected p{opacity:1}
+.collection-controls{margin-top:0;gap:25px}.collection-controls button{width:48px;height:48px;transition:background .25s,border-color .25s}.collection-controls button:hover{border-color:#f4d59a;background:#99723c33}
+@media(max-width:900px){.collection{--piece-width:70vw;padding-top:85px}.collection-track{gap:5vw}.collection-piece h3{font-size:25px}}
+@media(max-width:540px){.collection{--piece-width:82vw;padding-top:80px;min-height:760px;min-height:100svh}.collection-track{gap:5vw;padding-top:40px}.collection-frame{padding:12px}.collection-frame img{min-height:0}.collection-piece h3{font-size:23px}.collection-piece p{font-size:12px}.collection-piece small{font-size:8px}.collection-intro h2{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.collection-piece,.collection-piece p{transition:none!important}}
+.reduced .collection-piece,.reduced .collection-piece p{transition:none!important}
+
+@media(min-width:901px){.collection{padding-top:54px;--piece-width:min(44vw,600px)}.collection-intro:before{display:none}.collection-intro h2{margin-top:12px}.collection-track{padding-top:26px;padding-bottom:24px}.collection-piece small{margin-top:18px}.collection-piece p{margin-bottom:8px}}
+
+/* 畫框維持適中尺寸，不因短螢幕過度縮小。 */
+@media(min-width:901px){
+ .collection{--piece-width:min(44vw,600px)}
+ .collection-track{padding-top:22px;padding-bottom:18px}
+ .collection-piece small{margin-top:14px}
+ .collection-piece h3{font-size:clamp(24px,1.8vw,30px)}
+ .collection-piece p{margin-top:7px;margin-bottom:6px}
+}
+
+/* 首頁導覽隨頁面離開，不覆蓋展廳內容。 */
+.home .site-header{position:absolute}
+
+/* 選單僅在頂端感應、按鈕操作或鍵盤聚焦時浮現。 */
+.home.nav-reveal-ready .site-header{position:fixed;transform:translateY(-105%);transition:transform .28s ease;background:#09121bf5;border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.home.nav-reveal-ready.nav-visible .site-header,.home.nav-reveal-ready .site-header:focus-within{transform:translateY(0)}
+.home.nav-reveal-ready:not(.past-entry) #main-nav{display:flex}
+.home.nav-reveal-ready:not(.past-entry) .join-link{display:block}
+.nav-reveal-trigger{position:fixed;right:22px;top:12px;z-index:51;padding:8px 16px;min-height:44px;border:1px solid #dbb57866;background:#09121be8;color:var(--text);opacity:0;pointer-events:none}
+.nav-reveal-trigger:focus-visible{opacity:1;pointer-events:auto}
+@media(max-width:950px),(hover:none){
+ .nav-reveal-trigger{opacity:1;pointer-events:auto}
+ .home.nav-visible .nav-reveal-trigger{opacity:0;pointer-events:none}
+ .home.nav-reveal-ready:not(.past-entry) .menu-toggle,.home.nav-reveal-ready .menu-toggle{display:block}
+ .home.nav-reveal-ready:not(.past-entry) #main-nav,.home.nav-reveal-ready #main-nav{display:none;position:absolute;inset:100% 0 auto;max-height:calc(100svh - 90px);overflow:auto;background:#0a1727fa;padding:24px 6vw;flex-direction:column}
+ .home.nav-reveal-ready:not(.past-entry) #main-nav.open,.home.nav-reveal-ready #main-nav.open{display:flex}
+}
+@media(max-width:600px){.home.nav-reveal-ready:not(.past-entry) .join-link{display:none}}
+@media(prefers-reduced-motion:reduce){.home.nav-reveal-ready .site-header{transition:none}}
+.reduced.home.nav-reveal-ready .site-header,html.reduced .home.nav-reveal-ready .site-header{transition:none}
+
+.content-next{display:flex;align-items:center;justify-content:space-between;gap:32px;padding-block:60px}.content-next h2{font-size:30px}.content-next p{margin-bottom:0}@media(max-width:700px){.content-next{display:block}.content-next .text-link{margin-top:20px}}
