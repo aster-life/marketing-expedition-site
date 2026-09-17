@@ -1,20 +1,22 @@
 import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {createAtlasGallery} from './atlas-gallery.js?v=textile-1';
 import * as T from './assets/vendor/three.module.min.js';
-import {loadForestAssets} from './forest-assets.js?v=moon-1';
+import {loadForestAssets} from './forest-assets.js?v=moon-2';
 import {createExpeditionHall} from './expedition-hall.js?v=continuity-1';
 import {hallCamera} from './hall-camera.js?v=1';
-import {loadHallAssets} from './hall-assets.js?v=performance-3';
+import {loadHallAssets} from './hall-assets.js?v=performance-4';
 import {createInteriorReflections} from './interior-reflections.js?v=2';
 
 // 真實空間：石徑、岩台、樹木、拱橋與城堡各自具有完整幾何。
 export async function createForest(host,onFailure=()=>{},options={}){
+ const report=(stage,value,label)=>options.onProgress?.({stage,value,label});
  const constrained=options.constrained??(matchMedia('(max-width: 700px)').matches||(navigator.deviceMemory&&navigator.deviceMemory<=4));
  const renderer=new T.WebGLRenderer({antialias:!constrained,powerPreference:'high-performance'});
  renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,constrained?1:1.25));renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
- const assets=await loadForestAssets();
+ report('forest',.02,'正在喚醒森林入口');
+ const assets=await loadForestAssets((value,label)=>report('forest',.04+value*.53,label));
  const scene=new T.Scene();scene.background=new T.Color('#13283c');scene.fog=new T.FogExp2('#39618b',.0095);
  const camera=new T.PerspectiveCamera(54,16/9,.1,260);
  let seed=9271;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
@@ -22,6 +24,8 @@ export async function createForest(host,onFailure=()=>{},options={}){
  const loader=new T.TextureLoader(),base='./3d/forest-match/assets/mossy_cobblestone/mossy_cobblestone_';
  const terrainResolution=constrained?'1k':'2k';
  const [diff,normal,rough]=await Promise.all(['diff','nor_gl','rough'].map(n=>loader.loadAsync(`${base}${n}_${terrainResolution}.jpg`)));
+ report('forest',.68,'正在鋪設森林石徑');
+ await new Promise(resolve=>requestAnimationFrame(resolve));
  diff.colorSpace=T.SRGBColorSpace;for(const t of [diff,normal,rough]){t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
  const material=(color,extra={})=>new T.MeshStandardMaterial({color,roughness:.82,...extra});
  const rock=material('#8a9eb5',{roughness:.46,map:diff,normalMap:normal,normalScale:new T.Vector2(.75,.75),roughnessMap:rough});
@@ -154,9 +158,10 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
   host.dataset.interiorLoading='true';
   interiorPromise=(async()=>{
    const resolution=constrained?'1k':'2k';
-   const hallProps=await loadHallAssets({resolution});
+   const hallProps=await loadHallAssets({resolution,onProgress:(value,label)=>report('interior',value*.82,label)});
    hall=createExpeditionHall(scene,{stone,gold,glowMap,props:hallProps});
    gallery=createAtlasGallery(scene,{stone,gold,glowMap,props:hallProps});
+   report('interior',.9,'正在建立遠征本部');
    host.dataset.assetMetrics=JSON.stringify(hallProps.metrics);host.dataset.interiorReady='true';delete host.dataset.interiorLoading;
    try{
     const doorAsset=await new GLTFLoader().loadAsync(`./3d/hall-assets/large_castle_door/large_castle_door_${resolution}.gltf`);
@@ -165,6 +170,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
     doorPivots.forEach(o=>o.rotation.set(0,0,0));
     entryDoors.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material.color.set('#695444');for(const k of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[k])o.material[k].anisotropy=constrained?2:8;}});
     host.dataset.doorReady='true';
+    report('interior',1,'遠征本部已就緒');
    }catch(error){host.dataset.doorFailed='true';console.warn('星圖館門扇暫時無法載入。',error);}
    return {hall,gallery,entryDoors};
   })().catch(error=>{delete host.dataset.interiorLoading;host.dataset.interiorFailed='true';console.warn('室內資產暫時無法載入。',error);return null;});
@@ -191,6 +197,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
  const entryWarm=new T.PointLight('#ffc18b',0,12,1.6);entryWarm.position.set(0,4.5,1.6);masonry.add(entryWarm);
  let galleryVideo=null, galleryFrameReady=false;
  let width=0,height=0;host.append(renderer.domElement);renderer.domElement.addEventListener('webglcontextlost',onFailure);
+ report('forest',1,'森林入口已建立');
  requestAnimationFrame(()=>setTimeout(ensureInterior,400));
  return {prepareInterior:ensureInterior,setGalleryVideo(video){galleryVideo=video;filmMaterial.map=new T.VideoTexture(video);filmMaterial.map.colorSpace=T.SRGBColorSpace;filmMaterial.needsUpdate=true;},render(p,actTwo=0,actThree=0,filmPose=null){
   if(actTwo>.02&&!hall)ensureInterior();

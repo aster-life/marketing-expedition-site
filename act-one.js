@@ -32,8 +32,11 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=performance-4').then(async({createForest})=>{
-  world=await createForest(host,fallback);world.setGalleryVideo(galleryInteraction.video);
+ worldPromise=import('./forest-world.js?v=performance-5').then(async({createForest})=>{
+  world=await createForest(host,fallback,{onProgress:({stage,value,label})=>{
+   const range=stage==='interior'?[68,88]:[30,68];
+   loadingProgress(range[0]+(range[1]-range[0])*value,label);
+  }});world.setGalleryVideo(galleryInteraction.video);
   host.setAttribute('aria-label','沿森林石階進入遠征本部；中央地圖桌、典籍與成果展館隨捲動依序展開');host.dataset.scene='forest-headquarters-gallery';delete host.dataset.loading;schedule();return world;
  }).catch(error=>{console.warn('立體遠征場景暫時無法載入。',error);fallback();});
  return worldPromise;
@@ -92,17 +95,26 @@ async function warmWorld(preparedWorld){
  host.hidden=false;host.style.visibility='hidden';
  preparedWorld.render(0,0,0,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.warmed='true';
+ host.dataset.warmed='true';
+ loadingProgress(92,'正在預熱遠征本部');
+ // 先把第二幕的代表鏡位送進 GPU，避免使用者第一次走入大廳才現場編譯材質、陰影與反射。
+ preparedWorld.render(1,.42,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ preparedWorld.render(1,.64,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ preparedWorld.render(0,0,0,null);
+ host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.interiorWarmed='true';
 }
 async function prepareExperience(){
- loadingProgress(14,'準備第一道光');
- const openingReady=primeOpeningTail().then(()=>loadingProgress(38,'開場影像已就緒'));
- const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(54,'正在點亮星圖館'));
+ loadingProgress(10,'準備第一道光');
+ const openingReady=primeOpeningTail().then(()=>loadingProgress(22,'開場影像已就緒'));
+ const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(28,'星圖館影像已就緒'));
  const preparedWorld=await ensureWorld();
  loadingProgress(68,'正在建立遠征場景');
  await Promise.allSettled([openingReady,galleryReady,preparedWorld?.prepareInterior?.()]);
+ loadingProgress(90,'正在預熱森林鏡頭');
  await warmWorld(preparedWorld);
- loadingProgress(86,'立體空間已就緒');
+ loadingProgress(98,'立體空間已就緒');
  dispatchEvent(new CustomEvent('expedition:act-ready'));
 }
 prepareExperience().catch(error=>{console.warn('部分遠征內容仍在背景準備。',error);dispatchEvent(new CustomEvent('expedition:act-ready'));});

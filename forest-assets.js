@@ -1,12 +1,24 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
-export async function loadForestAssets(){
+export async function loadForestAssets(onProgress=()=>{}){
  const root='./3d/forest-match/assets/',loader=new GLTFLoader();
- const [tree,rocks,ferns]=await Promise.all([
-  loader.loadAsync(root+'tree_small_02/tree_small_02-web.glb'),
-  loader.loadAsync(root+'rock_moss_set_01/rock_moss_set_01_1k.gltf'),
-  loader.loadAsync(root+'fern_02/fern_02_1k.gltf')
- ]);
+ const sources=[
+  {path:root+'tree_small_02/tree_small_02-web.glb',weight:.76,bytes:20389512,label:'正在載入森林樹冠'},
+  {path:root+'rock_moss_set_01/rock_moss_set_01_1k.gltf',weight:.14,bytes:1466380,label:'正在載入岩石地貌'},
+  {path:root+'fern_02/fern_02_1k.gltf',weight:.10,bytes:900000,label:'正在載入林下植被'}
+ ];
+ const portions=sources.map(()=>0);
+ const report=(index,event,label)=>{
+  const total=event?.total||sources[index].bytes;
+  portions[index]=Math.max(portions[index],Math.min(1,(event?.loaded||0)/Math.max(1,total)));
+  onProgress(portions.reduce((sum,value,i)=>sum+value*sources[i].weight,0),label);
+ };
+ const [tree,rocks,ferns]=await Promise.all(sources.map((source,index)=>
+  loader.loadAsync(source.path,event=>report(index,event,source.label)).then(asset=>{
+   portions[index]=1;onProgress(portions.reduce((sum,value,i)=>sum+value*sources[i].weight,0),source.label);return asset;
+  })
+ ));
+ onProgress(1,'森林模型已就緒');
  // 材質本身降低黃綠與土褐，保留貼圖明暗，讓月光下的岩面與植物同屬冷色環境。
  for(const [asset,amount] of [[tree,.24],[rocks,.48],[ferns,.36]]){
   const seen=new Set();asset.scene.traverse(o=>{if(!o.isMesh)return;for(const mat of (Array.isArray(o.material)?o.material:[o.material])){

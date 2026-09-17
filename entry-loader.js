@@ -14,8 +14,10 @@
   let finished = false;
 
   const setProgress = (next, label) => {
-    target = Math.max(target, Math.min(100, Number(next) || 0));
-    if (label) status.textContent = label;
+    const requested = Math.min(100, Number(next) || 0);
+    const advances = requested >= target;
+    target = Math.max(target, requested);
+    if (label && advances) status.textContent = label;
   };
 
   const render = () => {
