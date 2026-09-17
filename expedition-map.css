@@ -168,3 +168,7 @@ html.reduced .has-relief .map-location:hover{translate:none}
 @media(prefers-reduced-motion:reduce){.route-traveller{animation:none;offset-distance:62%}.route-dashes{animation:none}}
 html.reduced .route-traveller{animation:none;offset-distance:62%}
 html.reduced .route-dashes{animation:none}
+
+/* 典籍山谷的標籤避開由星港上行的動態箭頭。 */
+.has-relief .map-location[data-region="2"]{margin-left:clamp(86px,5.5vw,110px);margin-top:-10px}
+@media(max-width:600px){.has-relief .map-location[data-region="2"]{margin-left:44px;margin-top:-6px}}
