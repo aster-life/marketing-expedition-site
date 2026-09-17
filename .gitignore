@@ -1,3 +1,12 @@
 .DS_Store
 Thumbs.db
 *.log
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+node_modules/
+__pycache__/
+.venv/
+_checks/

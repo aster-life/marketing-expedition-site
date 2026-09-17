@@ -1,4 +1,6 @@
 import * as T from './assets/vendor/three.module.min.js';
+import {createRegionEntrance} from './region-entrance.js?v=regions-1';
+import {createHarborFacade} from './harbor-facade.js?v=polish-1';
 
 // 獨立的小型地形場景；不修改前三幕的 renderer、相機或素材。
 export function createRelief(host, labels) {
@@ -8,6 +10,7 @@ export function createRelief(host, labels) {
   renderer.setPixelRatio(Math.min(devicePixelRatio, constrained?.85:1));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFShadowMap;
+  renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -79,13 +82,20 @@ export function createRelief(host, labels) {
   const ridgeMaterial=new T.MeshStandardMaterial({vertexColors:true,color:0x819394,roughness:.92,metalness:.08});mesh(ridgeGeo,ridgeMaterial,island,0,.5,-4.6);
   const sites=[[-6,0], [6,2.8], [5,-3.7], [-3.4,4.6]];
   const groups=sites.map(([x,z])=>{const g=new T.Group();g.position.set(x,.68,z);island.add(g);cylinder(1.55,.14,stone,g,0,0,0,32);return g;});
-  function tower(p,x,z,h){cylinder(.4,h,wall,p,x,h/2,z);cylinder(.46,.13,gold,p,x,h-.1,z);cone(.65,.9,roof,p,x,h+.37,z,8);box(.11,.3,.04,lamp,p,x,h*.65,z+.405);cylinder(.025,.6,gold,p,x,h+1,z);box(.38,.17,.02,gold,p,x+.18,h+1.15,z);}
-  const castle=groups[0];box(1.75,1.5,1.2,wall,castle,0,.75,0);box(1.86,.12,1.3,gold,castle,0,1.51,0);for(const x of [-.9,.9])for(const z of [-.6,.6])tower(castle,x,z,2.15);tower(castle,0,-.2,2.8);box(.4,.85,.04,roof,castle,0,.5,.63);for(let i=0;i<4;i++)box(.7+i*.15,.13, .28,stone,castle,0,.3-i*.08,.85+i*.22);
-  const harbor=groups[1];for(let i=0;i<3;i++){const x=-.9+i*.8;box(.65,.8,.85,wall,harbor,x,.42,-.2);const r=cone(.64,.5,roof,harbor,x,1.06,-.2,4);r.rotation.y=Math.PI/4;box(.15,.23,.03,lamp,harbor,x,.5,.245);}
+  const castle=groups[0],guildEntrance=createRegionEntrance(0,{stone:wall,wood,metal:gold,roof,glow:lamp});guildEntrance.scale.setScalar(.27);castle.add(guildEntrance);
+  box(2.8,1.4,2.5,wall,castle,0,.7,-1.15);box(2.95,.14,2.65,roof,castle,0,1.47,-1.15);
+  const harbor=groups[1];
+  const facade=createHarborFacade({stone,wood,brass:gold,roof,glow:lamp,depth:8});facade.scale.setScalar(.18);facade.position.set(0,.1,.3);harbor.add(facade);
+  box(2.16,1.04,1.8,stone,harbor,0,.62,-.65);box(2.3,.1,1.9,roof,harbor,0,1.16,-.65);
+  // 開放門洞內的暖光與近景入口一致，不再把中央窗戶當成進門位置。
+  box(.82,.8,.025,roof,harbor,0,.49,.285);
   for(let i=0;i<8;i++)box(2.9,.08,.13,wood,harbor,0,.05,.6+i*.17);
   const ship=new T.Group();harbor.add(ship);ship.position.set(1.6,-.65,1.4);const hull=mesh(new T.SphereGeometry(.65,12,6),wood,ship);hull.scale.set(.5,.35,1.5);cylinder(.035,2,gold,ship,0,.8,0);const sail=mesh(new T.PlaneGeometry(.85,1.15),wall,ship,.4,1,0);sail.material=wall.clone();sail.material.side=T.DoubleSide;sail.rotation.y=-.35;
-  const library=groups[2];box(2.3,.18,1.6,stone,library,0,.12,0);box(2,.13,1.4,gold,library,0,.28,0);box(1.8,1.2,.8,wall,library,0,.9,-.3);for(let i=0;i<5;i++){cylinder(.1,1.25,wall,library,-.85+i*.42,.96,.5);cylinder(.15,.13,gold,library,-.85+i*.42,1.54,.5);}box(2.15,.15,1.4,gold,library,0,1.66,0);const pediment=cone(1.53,.64,roof,library,0,2,0,4);pediment.scale.z=.65;pediment.rotation.y=Math.PI/4;for(let i=0;i<3;i++)box(2.1+i*.15,.1,.25,stone,library,0,.22-i*.07,.85+i*.2);
-  const camp=groups[3];const tent=cone(1.1,1.4,wall,camp,-.3,.78,0,4);tent.rotation.y=Math.PI/4;box(.34,.52,.06,wood,camp,-.3,.3,.77);const fire=cone(.25,.66,lamp,camp,.95,.5,.5,7);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;mesh(new T.DodecahedronGeometry(.12),stone,camp,.95+Math.cos(a)*.34,.12,.5+Math.sin(a)*.34);}const log=box(.7,.14,.14,wood,camp,.95,.15,.5);log.rotation.y=.6;
+  const library=groups[2],archiveEntrance=createRegionEntrance(2,{stone:wall,wood,metal:gold,roof,glow:lamp});archiveEntrance.scale.setScalar(.24);library.add(archiveEntrance);
+  box(2.7,1.4,2.2,wall,library,0,.7,-1.15);box(2.8,.1,2.3,roof,library,0,1.45,-1.15);
+  const camp=groups[3],campCloth=wall.clone();campCloth.color.set('#8e7754');campCloth.side=T.DoubleSide;
+  const campEntrance=createRegionEntrance(3,{stone:wall,wood,metal:gold,roof,glow:lamp,cloth:campCloth});campEntrance.scale.setScalar(.24);campEntrance.position.set(-.35,0,0);camp.add(campEntrance);
+  const fire=cone(.25,.66,lamp,camp,.95,.5,.5,7);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;mesh(new T.DodecahedronGeometry(.12),stone,camp,.95+Math.cos(a)*.34,.12,.5+Math.sin(a)*.34);}const log=box(.7,.14,.14,wood,camp,.95,.15,.5);log.rotation.y=.6;
   // 石砌基座、拱窗、屋頂稜線與碼頭結構，讓四區有各自的工藝細節。
   function line(points,r,material,parent=island){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return mesh(new T.TubeGeometry(curve,20,r,6,false),material,parent);}
   function archWindow(parent,x,y,z,w=.2,h=.38){
@@ -93,18 +103,9 @@ export function createRelief(host, labels) {
     line([[x-w/2,y-h/2,z+.02],[x-w/2,y+h*.18,z+.02],[x,y+h*.65,z+.02],[x+w/2,y+h*.18,z+.02],[x+w/2,y-h/2,z+.02]],.018,gold,parent);
     box(.025,h,.035,gold,parent,x,y,z+.04);box(w,.025,.035,gold,parent,x,y-.03,z+.04);
   }
-  for(const x of [-.9,.9])for(const z of [-.6,.6]){
-    for(let k=1;k<6;k++){const band=mesh(new T.TorusGeometry(.405,.018,4,24),stone,castle,x,k*.3,z);band.rotation.x=Math.PI/2;}
-    for(let k=0;k<8;k++){const a=k/8*Math.PI*2;line([[x+Math.cos(a)*.62,2.19,z+Math.sin(a)*.62],[x,2.96,z]],.012,gold,castle);}
-    for(const a of [0,Math.PI/2,Math.PI]){const pane=new T.Group();pane.position.set(x,1.2,z);pane.rotation.y=a;castle.add(pane);archWindow(pane,0,0,.413,.16,.38);}
-  }
-  for(const x of [-.6,.6])archWindow(castle,x,.92,.625,.22,.45);
-  for(let k=0;k<10;k++){const x=-1.05+k*.23;box(.11,.17,.15,stone,castle,x,1.63,.64);}
-  for(let i=0;i<3;i++){const x=-.9+i*.8;archWindow(harbor,x,.49,.248,.2,.31);for(let t=0;t<4;t++)box(.65,.016,.86,roof,harbor,x,.66+t*.08,-.2);cylinder(.055,.9,wood,harbor,x,-.25,1.7);}
+  for(let i=0;i<3;i++)cylinder(.055,.9,wood,harbor,-.9+i*.8,-.25,1.7);
   for(const z of [.75,1.45])for(let i=0;i<6;i++){cylinder(.025,.35,gold,harbor,-1.3+i*.52,.25,z);}line([[-1.3,.43,1.45],[0,.43,1.45],[1.3,.43,1.45]],.023,wood,harbor);
   line([[0,.4,-.7],[0,1.8,0],[0,.4,.8]],.015,gold,ship);
-  for(let i=0;i<5;i++){const x=-.85+i*.42;for(let j=0;j<6;j++){const a=j/6*Math.PI*2;cylinder(.018,1.12,stone,library,x+Math.cos(a)*.102,.96,.5+Math.sin(a)*.102,5);}}
-  for(const x of [-.6,0,.6])archWindow(library,x,.94,.115,.22,.54);
   for(let i=0;i<5;i++){const a=i/5*Math.PI*2;mesh(new T.DodecahedronGeometry(.18,1),cliff,camp,Math.cos(a)*1.2,.15,Math.sin(a)*1.2);}
   // 盤緣羅盤、固定鉚釘與厚實的展品底座。
   cylinder(7.8,.35,cliff,island,0,-1.7,0,64);cylinder(7.85,.055,gold,island,0,-1.51,0,64);
@@ -172,24 +173,58 @@ export function createRelief(host, labels) {
   const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('reduced');
   function illuminate(){beacons.forEach(({ring,light},i)=>{ring.visible=i===active||i===hovered;light.intensity=i===active?12:i===hovered?8:0;});}
   function cancelMotion(){cancelAnimationFrame(frame);settle?.();settle=null;}
+  // 手動視角與劇情特寫分開保存；離開筆記時回到原先的觀看角度。
+  let controlsEnabled=true, overview=null, renderQueued=0;
+  const homePosition=new T.Vector3(3,22,25);
+  const homePolar=new T.Spherical().setFromVector3(homePosition);
+  function captureView(){return {position:camera.position.clone(),look:look.clone(),zoom:camera.zoom};}
   function moveCamera(index,close=false){
     cancelMotion();
     if(unavailable)return Promise.resolve();
-    const from=groups.map(g=>g.scale.x),start=performance.now(),fromCamera=camera.position.clone(),fromLook=look.clone(),fromZoom=camera.zoom;
-    const [sx,sz]=sites[index],toLook=new T.Vector3(close?sx*.42:0,close?.6:0,close?sz*.3:0);
-    const toCamera=new T.Vector3(3+sx*.18+(close?sx*.25:0),close?20:22,close?23:25),zoom=close?1.14:1;
+    const start=performance.now(),from=captureView();
+    const [sx,sz]=sites[index];
+    const target=close&&index===1?{
+      look:new T.Vector3(sx,1.4,sz),position:new T.Vector3(sx+3.8,6.2,sz+12),zoom:Math.min(4.3,3.1*host.clientWidth/host.clientHeight)
+    }:close?{
+      look:new T.Vector3(sx*.78,.6,sz*.78),
+      position:new T.Vector3(sx*.78+3,22,sz*.78+25),zoom:1.48
+    }:(overview||{position:homePosition,look:new T.Vector3(),zoom:1});
     return new Promise(resolve=>{
       settle=resolve;
       const animate=now=>{
-        const p=reduceMotion()?1:Math.min(1,(now-start)/(close?560:440)),ease=p*p*(3-2*p);
-        groups.forEach((g,i)=>g.scale.setScalar(from[i]+((i===index?1.06:1)-from[i])*ease));
-        camera.position.lerpVectors(fromCamera,toCamera,ease);look.lerpVectors(fromLook,toLook,ease);
-        camera.zoom=fromZoom+(zoom-fromZoom)*ease;camera.lookAt(look);camera.updateProjectionMatrix();render();
+        const p=reduceMotion()?1:Math.min(1,(now-start)/820),ease=p*p*p*(p*(p*6-15)+10);
+        camera.position.lerpVectors(from.position,target.position,ease);look.lerpVectors(from.look,target.look,ease);
+        camera.zoom=from.zoom+(target.zoom-from.zoom)*ease;camera.lookAt(look);camera.updateProjectionMatrix();render();
         if(p<1)frame=requestAnimationFrame(animate);else{settle=null;resolve();}
       };
       frame=requestAnimationFrame(animate);
     });
   }
+  function requestRender(){if(!renderQueued)renderQueued=requestAnimationFrame(()=>{renderQueued=0;render();});}
+  function orbit(dx=0,dy=0,zoom=0){
+    if(!controlsEnabled||unavailable)return;
+    cancelMotion();
+    const spherical=new T.Spherical().setFromVector3(camera.position.clone().sub(look));
+    spherical.theta=T.MathUtils.clamp(spherical.theta+dx,homePolar.theta-.42,homePolar.theta+.42);
+    spherical.phi=T.MathUtils.clamp(spherical.phi+dy,homePolar.phi-.14,homePolar.phi+.12);
+    camera.position.copy(look).add(new T.Vector3().setFromSpherical(spherical));
+    camera.zoom=T.MathUtils.clamp(camera.zoom+zoom,.88,1.18);
+    camera.lookAt(look);camera.updateProjectionMatrix();requestRender();
+  }
+  // 桌機拖曳；觸控使用明確的旋轉按鈕，保留單指垂直捲頁。
+  const canvas=renderer.domElement;
+  let drag=null;
+  canvas.addEventListener('pointerdown',e=>{
+    if(!controlsEnabled||e.pointerType==='touch'||e.button!==0)return;
+    drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);canvas.classList.add('is-dragging');
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    orbit((drag.x-e.clientX)*.003,(drag.y-e.clientY)*.002);
+    drag.x=e.clientX;drag.y=e.clientY;
+  });
+  function stopDrag(){drag=null;canvas.classList.remove('is-dragging');}
+  canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);canvas.addEventListener('lostpointercapture',stopDrag);
   function render(){if(unavailable)return;renderer.render(scene,camera);projectFlow();const w=host.clientWidth,h=host.clientHeight;labels.forEach((label,i)=>{const [x,z]=sites[i];const point=new T.Vector3(x,.75,z+1.9).project(camera);label.style.left=((point.x+1)*50)+'%';label.style.top=((-point.y+1)*50)+'%';});}
   function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-15;camera.right=15;camera.top=15/aspect;camera.bottom=-15/aspect;camera.updateProjectionMatrix();render();}
   const observer=new ResizeObserver(resize);observer.observe(host);resize();host.classList.add('has-relief');
@@ -208,14 +243,17 @@ export function createRelief(host, labels) {
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();unavailable=true;flow.hidden=true;cancelMotion();host.classList.remove('has-relief');labels.forEach(l=>{l.style.removeProperty('left');l.style.removeProperty('top');});});
   window.addEventListener('pagehide',event=>{if(event.persisted)return;unavailable=true;cancelMotion();observer.disconnect();flowVisibility.disconnect();flowMode.disconnect();flowPreference.disconnect();motionQuery.removeEventListener('change',syncFlow);document.removeEventListener('visibilitychange',syncFlow);flow.remove();textures.forEach(t=>t.dispose());renderer.dispose();scene.traverse(o=>{o.geometry?.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());}});});
   return {
-    select(index){active=Math.max(0,Math.min(3,index));illuminate();routes.forEach((m,i)=>{m.emissiveIntensity=i===active?.65:i<active?.18:.02;m.color.set(i===active?0xc6a369:i<active?0x83714e:0x4c503e);});return moveCamera(active);},
+    select(index){active=Math.max(0,Math.min(3,index));illuminate();routes.forEach((m,i)=>{m.emissiveIntensity=i===active?.65:i<active?.18:.02;m.color.set(i===active?0xc6a369:i<active?0x83714e:0x4c503e);});render();},
     preview(index){hovered=index;illuminate();render();},
-    focus(index){active=index;hovered=-1;illuminate();return moveCamera(active,true);},
-    restore(){return moveCamera(active);},
+    focus(index){if(!overview)overview=captureView();controlsEnabled=false;stopDrag();active=index;hovered=-1;illuminate();return moveCamera(active,true);},
+    async restore(){await moveCamera(active);overview=null;controlsEnabled=true;},
+    orbit,
+    async reset(){if(!controlsEnabled)return;controlsEnabled=false;overview=null;await moveCamera(active);controlsEnabled=true;},
     arrive(progress){
       const next=reduceMotion()?1:Math.max(arrival,Math.min(1,progress));
       // 揭幕只需約 25 個視覺階段，避免高頻觸控捲動觸發每一幀完整 WebGL 重繪。
       if(next===arrival||(next<1&&arrival>=0&&next-arrival<.04))return;arrival=next;
+      renderer.shadowMap.needsUpdate=true;
       revealGroups.forEach((g,i)=>{const p=Math.max(0,Math.min(1,(next-.12-i*.12)/.4));g.scale.y=.02+.98*p*p*(3-2*p);});
       render();
     }

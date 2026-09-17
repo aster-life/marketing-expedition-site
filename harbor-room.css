@@ -1,0 +1,55 @@
+/* 星港的近景空間獨立載入；不改前段影片、森林與沙盤。 */
+.harbor-room-host{display:none}
+.expedition-journal.is-harbor-room{inset:0;width:100%;height:100svh;max-height:none;border:0;border-radius:0;background:#071018;overflow:hidden;box-shadow:none;perspective:none}
+.is-harbor-room .harbor-room-host{display:block;position:absolute;inset:0 0 0 380px;background:#0b1820}
+.harbor-room-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;opacity:0;transition:opacity .6s}
+.harbor-room-host[data-ready="true"] .harbor-room-canvas{opacity:1}
+.is-harbor-room .journal-spread{position:relative;width:380px;height:100%;overflow:auto;background:#0b171fee;animation:none;scrollbar-width:thin;border-right:1px solid #bb9c6340}
+.is-harbor-room .journal-plate{display:block;min-height:145px;height:clamp(145px,22svh,200px);flex-shrink:0}
+.is-harbor-room .journal-page{padding:22px 30px 28px;min-height:calc(100% - 200px);background:linear-gradient(150deg,#20323b55,transparent 70%);display:flex;flex-direction:column}
+.is-harbor-room .journal-page h2{font-size:32px;line-height:1.5}
+.is-harbor-room .journal-close{position:absolute;top:22px;right:24px;margin:0;float:none;z-index:8;border-radius:50%;background:#0a1721d9}
+.is-harbor-room .journal-next{margin-top:auto;padding-top:24px;flex-shrink:0}
+.is-harbor-room .journal-page-number{padding-top:12px}
+.harbor-room-heading{position:absolute;top:27px;left:32px;right:90px;pointer-events:none;color:#eddfc7;font:15px/1.7 var(--serif);letter-spacing:.14em;z-index:2}
+.harbor-room-heading small{display:block;font:9px/2 sans-serif;letter-spacing:.25em;color:#bbac8c}
+.harbor-room-status{position:absolute;inset:45% 5% auto;text-align:center;color:#d9c29a;font:15px/1.8 var(--serif);z-index:4}
+.harbor-room-status[hidden]{display:none}
+.harbor-room-tools{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:6px;border:1px solid #c5a56855;background:#09141deb;z-index:5;white-space:nowrap}
+.harbor-room-tools button{min-width:44px;min-height:42px;border:0;background:none;color:#d8c49e;font-family:inherit;font-size:12px;line-height:1.6;cursor:pointer;padding:8px 13px}
+.harbor-room-tools button:hover{background:#bb986024}
+.harbor-room-tools button:disabled{opacity:.3;cursor:wait}
+.harbor-room-tools span{color:#9caaa9;font-size:10px;padding:0 8px}
+.harbor-hotspot{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;gap:9px;align-items:center;padding:6px 12px 6px 6px;min-height:44px;border:1px solid #d0ac695c;border-radius:24px;background:#0a1720e8;color:#e9dcc2;white-space:nowrap;cursor:pointer;font-family:inherit;font-size:11px;line-height:1.5;box-shadow:0 4px 20px #0005;z-index:3}
+.harbor-hotspot b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid #c4a36c;color:#f2d69e;font:11px Georgia,serif}
+.harbor-hotspot[aria-pressed="true"]{border-color:#e5c38a;background:#23333ce8}
+.harbor-hotspot[hidden]{display:none}
+.harbor-hotspot:focus-visible,.harbor-room-tools button:focus-visible{outline:2px solid #efd4a3;outline-offset:4px}
+@media(max-width:1000px){
+ .is-harbor-room .harbor-room-host{inset:0 0 43svh}
+ .is-harbor-room .journal-spread{position:absolute;inset:57svh 0 0;width:100%;height:43svh;border-top:1px solid #b8986150;border-right:0}
+ .is-harbor-room .journal-page{padding:22px 26px 24px;min-height:0}
+ .is-harbor-room .journal-plate{height:130px;min-height:130px}
+ .is-harbor-room .journal-page h2{font-size:26px;margin:6px 0}
+ .is-harbor-room .journal-lead{font-size:15px;margin:6px 0}
+ .is-harbor-room .journal-close{right:14px;top:14px}
+ .harbor-room-heading{left:18px;top:16px;font-size:13px}
+ .harbor-room-tools{bottom:12px;padding:3px;gap:0}
+ .harbor-room-tools span{display:none}
+ .harbor-room-tools button{padding:7px 10px;font-size:11px}
+ .harbor-hotspot{font-size:10px;padding-right:9px;gap:5px}
+}
+@media(prefers-reduced-motion:reduce){.harbor-room-canvas{transition:none}}
+html.reduced .harbor-room-canvas{transition:none}
+/* 穿門時保留鏡頭空間；停穩後才出現可閱讀、可操作的內容。 */
+.is-harbor-room[aria-busy="true"] .journal-spread{opacity:0;pointer-events:none}
+.is-harbor-room .journal-spread{transition:opacity .4s ease}
+.is-harbor-room[aria-busy="true"] .harbor-room-heading,
+.is-harbor-room[aria-busy="true"] .harbor-room-tools,
+.is-harbor-room[aria-busy="true"] .harbor-hotspot{visibility:hidden;pointer-events:none}
+.expedition-journal.is-harbor-room[open]{animation:harbor-arrive .3s ease both}
+@keyframes harbor-arrive{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.expedition-journal.is-harbor-room[open]{animation:none}.is-harbor-room .journal-spread{transition:none}}
+html.reduced .expedition-journal.is-harbor-room[open]{animation:none}
+.is-harbor-room:has(.harbor-room-host[data-ready="false"]),
+.is-harbor-room .harbor-room-host[data-ready="false"]{background:transparent}
