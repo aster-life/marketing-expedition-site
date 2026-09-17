@@ -28,7 +28,7 @@ const hallBeats=[
  [.93,1.01,'光，指向下一站。','帶著清楚的方向，看看想法留下的成果。']
 ];
 function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝置無法顯示立體空間；保留影片終點，可繼續探索內容。';schedule();}
-// 先讓開場影片順暢解碼；使用者開始往門內前進後，才載入大型 3D 場景。
+// 載入幕先建立大型 3D 場景；捲動只控制已準備完成的鏡頭。
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
@@ -45,11 +45,11 @@ function draw(){frame=0;const rect=journey.getBoundingClientRect(),travel=Math.m
  video.pause();video.muted=true;target=clamp(p/.43);seek();intro.hidden=target>.13;intro.style.opacity=String(1-clamp(target/.13));
  const atEnd=Number.isFinite(video.duration)&&video.currentTime>=video.duration-.12;
  // 在最濃的水霧中交接畫面，霧層跟著捲動前進與退回。
- const ready=atEnd&&world&&!worldFailed;
- const inWorld=!!(p>=.45&&ready),blend=inWorld?clamp((p-.45)/.035):0;
+ const ready=(atEnd||video.dataset.tailReady==='true')&&world&&!worldFailed;
+ const inWorld=!!(p>=.445&&ready),blend=inWorld?clamp((p-.445)/.022):0;
  host.hidden=!inWorld;video.hidden=blend===1;video.style.opacity='1';host.style.opacity=String(blend);
- mist.render(ready?clamp((p-.425)/.105):0);
- if(inWorld)world.render(clamp((p-.485)/.465),actTwo,actThree,galleryState.pose);
+ mist.render(ready?clamp((p-.425)/.07):0);
+ if(inWorld)world.render(clamp((p-.467)/.483),actTwo,actThree,galleryState.pose);
  const textProgress=clamp((p-.86)/.04)*(1-clamp((travel-.92)/.03));ending.hidden=!(inWorld&&p>.86&&travel<.95);ending.style.opacity=String(textProgress);ending.style.visibility='visible';
  const beat=hallBeats.find(b=>actTwo>=b[0]&&actTwo<=b[1]);
  if(inWorld&&beat&&actThree===0){hallCopy.hidden=false;hallCopy.querySelector('h2').textContent=beat[2];hallCopy.querySelector('p').textContent=beat[3];hallCopy.querySelector('a').hidden=actTwo<.76||actTwo>.88;hallCopy.style.opacity=String(Math.min(clamp((actTwo-beat[0])/.015),clamp((beat[1]-actTwo)/.015)));}
@@ -74,13 +74,34 @@ const mediaReady=media=>new Promise(resolve=>{
  function done(){clearTimeout(timer);media.removeEventListener('canplay',done);media.removeEventListener('error',done);resolve();}
  media.addEventListener('canplay',done,{once:true});media.addEventListener('error',done,{once:true});media.load();
 });
+const seekReady=(media,time,timeout=6000)=>new Promise(resolve=>{
+ const timer=setTimeout(done,timeout);
+ function done(){clearTimeout(timer);media.removeEventListener('seeked',done);resolve();}
+ media.addEventListener('seeked',done,{once:true});media.currentTime=time;
+});
+async function primeOpeningTail(){
+ await mediaReady(video);
+ if(!Number.isFinite(video.duration)||video.duration<=0)return;
+ await seekReady(video,Math.max(0,video.duration-.06));
+ video.dataset.tailReady='true';
+ await seekReady(video,0,2500);
+}
+async function warmWorld(preparedWorld){
+ if(!preparedWorld)return;
+ const wasHidden=host.hidden;
+ host.hidden=false;host.style.visibility='hidden';
+ preparedWorld.render(0,0,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.warmed='true';
+}
 async function prepareExperience(){
  loadingProgress(14,'準備第一道光');
- const openingReady=mediaReady(video).then(()=>loadingProgress(38,'開場影像已就緒'));
+ const openingReady=primeOpeningTail().then(()=>loadingProgress(38,'開場影像已就緒'));
  const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(54,'正在點亮星圖館'));
  const preparedWorld=await ensureWorld();
  loadingProgress(68,'正在建立遠征場景');
  await Promise.allSettled([openingReady,galleryReady,preparedWorld?.prepareInterior?.()]);
+ await warmWorld(preparedWorld);
  loadingProgress(86,'立體空間已就緒');
  dispatchEvent(new CustomEvent('expedition:act-ready'));
 }
