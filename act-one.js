@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=performance-11').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=performance-14').then(async({createForest})=>{
   world=await createForest(host,fallback,{onProgress:({stage,value,label})=>{
    const range=stage==='interior'?[68,88]:[30,68];
    loadingProgress(range[0]+(range[1]-range[0])*value,label);

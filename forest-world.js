@@ -1,7 +1,7 @@
 import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {createAtlasGallery} from './atlas-gallery.js?v=textile-1';
 import * as T from './assets/vendor/three.module.min.js';
-import {loadForestAssets} from './forest-assets.js?v=moon-2';
+import {loadForestAssets} from './forest-assets.js?v=moon-3';
 import {createExpeditionHall} from './expedition-hall.js?v=performance-2';
 import {hallCamera} from './hall-camera.js?v=1';
 import {loadHallAssets} from './hall-assets.js?v=performance-4';
@@ -64,30 +64,44 @@ export async function createForest(host,onFailure=()=>{},options={}){
   for(let i=0;i<=segments;i++){const p=curve.getPointAt(i/segments),r=T.MathUtils.lerp(r1,r2,i/segments);for(let j=0;j<=radial;j++){const a=j/radial*Math.PI*2,rr=r*(1+.08*Math.sin(j*3.7+i*.7)),v=p.clone().addScaledVector(frames.normals[i],Math.cos(a)*rr).addScaledVector(frames.binormals[i],Math.sin(a)*rr);verts.push(v.x,v.y,v.z);uv.push(j/radial,i/segments*5);if(i<segments&&j<radial){const k=i*(radial+1)+j;idx.push(k,k+1,k+radial+1,k+1,k+radial+2,k+radial+1);}}}
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const o=add(g,bark);o.castShadow=true;
  }
- // 近景保留原始高精度樹；中遠景改用同一場景內的低面數立體樹群，避免重複複製數千個 mesh。
- const proxyTrees=[];
- const queueProxyTree=(x,y,z,h,r)=>proxyTrees.push({x,y,z,h,r});
+ // 鏡頭邊緣的第二排樹仍會進入近景，因此代理樹使用連續枝層與不規則樹冠，避免出現大型三角錐。
+ const heroTrees=[],proxyTrees=[];
+ const queueProxyTree=(x,y,z,h,r,near=false)=>proxyTrees.push({x,y,z,h,r,near});
  for(const side of [-1,1])for(let i=0;i<7;i++){
   const z=9-i*15,h=i<2?39+random()*5:23+random()*5,r=random()*6.28;
-  if(i<2)scene.add(assets.tree(side*(14+i*.8),groundY(z)-.4,z,h,r));else queueProxyTree(side*(14+i*.8),groundY(z)-.4,z,h,r);
+  const placement={x:side*(14+i*.8),y:groundY(z)-.4,z,h,r};if(i<5)heroTrees.push(placement);else queueProxyTree(placement.x,placement.y,z,h,r,false);
  }
  // 第二、三排錯開主樹，補足林冠與後景，中央視線仍保持開放。
  for(const side of [-1,1])for(let i=0;i<(constrained?6:10);i++){
   const z=6-i*11+(random()-.5)*4,x=side*(22+(i%2)*7+random()*3);
-  queueProxyTree(x,groundY(z)-.7,z,26+random()*10,random()*Math.PI*2);
+  const h=26+random()*10,r=random()*Math.PI*2,y=groundY(z)-.7;if(i<3)heroTrees.push({x,y,z,h,r});else queueProxyTree(x,y,z,h,r,i<4);
  }
- const proxyTrunks=new T.InstancedMesh(new T.CylinderGeometry(1,1,1,7),bark,proxyTrees.length);
- const proxyCrowns=new T.InstancedMesh(new T.ConeGeometry(1,1,7),material('#ffffff',{roughness:1,flatShading:true}),proxyTrees.length*3);
- const proxyDummy=new T.Object3D();let crownIndex=0;
+ scene.add(assets.treeBatch(heroTrees));
+ const proxyTrunks=new T.InstancedMesh(new T.CylinderGeometry(.8,1,1,9),bark,proxyTrees.length);
+ const crownProfile=[
+  [0,1],[.10,.91],[.045,.87],[.15,.78],[.07,.74],[.19,.64],[.09,.60],
+  [.225,.49],[.11,.45],[.255,.34],[.13,.30],[.235,.19],[.075,.15],[0,.14]
+ ].map(([radius,height])=>new T.Vector2(radius,height));
+ const crownMaterial=material('#ffffff',{roughness:.94,flatShading:true});
+ const proxyCrowns=new T.InstancedMesh(new T.LatheGeometry(crownProfile,12),crownMaterial,proxyTrees.length);
+ const nearTrees=proxyTrees.filter(tree=>tree.near);
+ const proxyBoughs=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),crownMaterial,nearTrees.length*6);
+ const proxyDummy=new T.Object3D();let boughIndex=0;
  proxyTrees.forEach((tree,i)=>{
-  proxyDummy.position.set(tree.x,tree.y+tree.h*.22,tree.z);proxyDummy.rotation.set(0,tree.r,0);proxyDummy.scale.set(tree.h*.026,tree.h*.44,tree.h*.026);proxyDummy.updateMatrix();proxyTrunks.setMatrixAt(i,proxyDummy.matrix);
-  for(const [j,[level,width,height]] of [[.42,.2,.36],[.61,.17,.31],[.78,.13,.25]].entries()){
-   const lean=Math.sin((i+1)*(j+2)*1.73)*.055,offset=Math.cos((i+2)*(j+1))*tree.h*.012;
-   proxyDummy.position.set(tree.x+Math.cos(tree.r+j)*offset,tree.y+tree.h*level,tree.z+Math.sin(tree.r+j)*offset);proxyDummy.rotation.set(lean,tree.r+j*.31,-lean*.7);proxyDummy.scale.set(tree.h*width*(1+lean),tree.h*height,tree.h*width*(.88-lean));proxyDummy.updateMatrix();
-   proxyCrowns.setMatrixAt(crownIndex,proxyDummy.matrix);proxyCrowns.setColorAt(crownIndex,new T.Color(['#203a32','#2b493d','#36584a'][j]));crownIndex++;
+  const lean=Math.sin((i+1)*1.73)*(tree.near?.025:.045),width=tree.near?1.06:.88;
+  proxyDummy.position.set(tree.x,tree.y+tree.h*.16,tree.z);proxyDummy.rotation.set(lean,tree.r,-lean*.55);proxyDummy.scale.set(tree.h*.028,tree.h*.32,tree.h*.028);proxyDummy.updateMatrix();proxyTrunks.setMatrixAt(i,proxyDummy.matrix);
+  proxyDummy.position.set(tree.x,tree.y,tree.z);proxyDummy.rotation.set(lean,tree.r,-lean*.55);proxyDummy.scale.set(tree.h*width,tree.h,tree.h*width*(.92+Math.sin(i*2.1)*.04));proxyDummy.updateMatrix();proxyCrowns.setMatrixAt(i,proxyDummy.matrix);
+  proxyCrowns.setColorAt(i,new T.Color(tree.near?['#2f5b4b','#386755','#284f43'][i%3]:['#1e3c35','#29493e','#335345'][i%3]));
+ });
+ nearTrees.forEach((tree,i)=>{
+  for(let j=0;j<6;j++){
+   const level=.28+j*.095,angle=tree.r+j*2.18+(i%2)*.55,radius=tree.h*(.13-j*.012);
+   proxyDummy.position.set(tree.x+Math.cos(angle)*radius,tree.y+tree.h*level,tree.z+Math.sin(angle)*radius);proxyDummy.rotation.set(j*.27,angle,-j*.12);proxyDummy.scale.set(tree.h*(.105-j*.006),tree.h*(.052+j*.002),tree.h*(.17-j*.012));proxyDummy.updateMatrix();
+   proxyBoughs.setMatrixAt(boughIndex,proxyDummy.matrix);proxyBoughs.setColorAt(boughIndex,new T.Color(['#3d6d59','#315f4f','#467660'][j%3]));boughIndex++;
   }
  });
- proxyTrunks.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceColor.needsUpdate=true;proxyTrunks.receiveShadow=true;proxyCrowns.receiveShadow=true;scene.add(proxyTrunks,proxyCrowns);
+ proxyTrunks.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceMatrix.setUsage(T.StaticDrawUsage);proxyBoughs.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceColor.needsUpdate=true;proxyBoughs.instanceColor.needsUpdate=true;
+ proxyTrunks.castShadow=proxyTrunks.receiveShadow=true;proxyCrowns.castShadow=proxyCrowns.receiveShadow=true;proxyBoughs.castShadow=proxyBoughs.receiveShadow=true;scene.add(proxyTrunks,proxyCrowns,proxyBoughs);
  for(let i=0;i<(constrained?60:110);i++){const z=12-random()*95;scene.add(assets.fern(i,pathX(z)+(i%2?1:-1)*(3.1+random()*5),groundY(z)-.1,z,1.3+random()*1.3,random()*6.28));}
  function arch(x,y,z,w,h,depth,mat=stone){const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(-w/2,h-w/2);shape.absarc(0,h-w/2,w/2,Math.PI,0,true);shape.lineTo(w/2,0);shape.lineTo(w/2+.35,0);shape.lineTo(w/2+.35,h-w/2);shape.absarc(0,h-w/2,w/2+.35,0,Math.PI,false);shape.lineTo(-w/2-.35,0);shape.closePath();const o=add(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.035,bevelThickness:.035,curveSegments:16}),mat,x,y,z);return o;}
  function bridge(x1,x2,y,z){const width=x2-x1,mid=(x1+x2)/2;box(mid,y,z,width,.4,2.2);const spans=Math.max(1,Math.round(width/5));for(let i=0;i<spans;i++){const x=x1+width/spans*(i+.5);arch(x,y-4,z-.7,width/spans-.6,3.9,1.4);}

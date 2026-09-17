@@ -30,9 +30,24 @@ export async function loadForestAssets(onProgress=()=>{}){
  }
  function templates(gltf){const list=[];gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(o.isMesh){const m=o.clone();m.applyMatrix4(o.parent.matrixWorld);list.push(m);}});return list;}
  const rockList=templates(rocks),fernList=templates(ferns);
+ const treeBounds=new T.Box3().setFromObject(tree.scene),treeSize=treeBounds.getSize(new T.Vector3()),treeCenter=treeBounds.getCenter(new T.Vector3());
+ tree.scene.updateMatrixWorld(true);
+ const treeMeshes=[];tree.scene.traverse(o=>{if(o.isMesh&&!o.isSkinnedMesh)treeMeshes.push({geometry:o.geometry,material:o.material,matrix:o.matrixWorld.clone()});});
  function place(source,x,y,z,sx,sy,sz,rotation=0){const child=source.clone(true),group=new T.Group();group.add(child);group.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(group),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());child.position.sub(new T.Vector3(center.x,bounds.min.y,center.z));group.scale.set(sx/size.x,sy/size.y,sz/size.z);group.position.set(x,y,z);group.rotation.y=rotation;group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return group;}
  return {
   tree:(x,y,z,h,r)=>{const b=new T.Box3().setFromObject(tree.scene),s=b.getSize(new T.Vector3());return place(tree.scene,x,y,z,h*s.x/s.y,h,h*s.z/s.y,r);},
+  treeBatch:(placements=[])=>{
+   const group=new T.Group(),normalizer=new T.Matrix4().makeTranslation(-treeCenter.x,-treeBounds.min.y,-treeCenter.z),axis=new T.Vector3(0,1,0);
+   for(const source of treeMeshes){
+    const mesh=new T.InstancedMesh(source.geometry,source.material,placements.length);mesh.castShadow=mesh.receiveShadow=true;mesh.frustumCulled=false;
+    placements.forEach((treePlacement,index)=>{
+     const scale=treePlacement.h/treeSize.y,placement=new T.Matrix4().compose(new T.Vector3(treePlacement.x,treePlacement.y,treePlacement.z),new T.Quaternion().setFromAxisAngle(axis,treePlacement.r),new T.Vector3(scale,scale,scale));
+     mesh.setMatrixAt(index,placement.multiply(normalizer).multiply(source.matrix));
+    });
+    mesh.instanceMatrix.setUsage(T.StaticDrawUsage);group.add(mesh);
+   }
+   return group;
+  },
   rock:(i,x,y,z,sx,sy,sz,r)=>place(rockList[i%rockList.length],x,y,z,sx,sy,sz,r),
   fern:(i,x,y,z,s,r)=>place(fernList[i%fernList.length],x,y,z,s,s*.48,s,r)
  };
