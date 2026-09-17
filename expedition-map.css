@@ -37,6 +37,13 @@
 .is-enhanced .expedition-stories{position:absolute;top:45%;left:6vw;margin:0}
 .is-enhanced .expedition-story:not([hidden]){animation:map-story-in .55s ease both}
 @keyframes map-story-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* 桌機版把沙盤的視覺重心提回畫面中央，保留底部呼吸空間。 */
+@media(min-width:1001px){
+ .expedition-chart{inset:-2% -1% 5% 25%;justify-content:center}
+ .expedition-chart:before{content:"";position:absolute;left:20%;right:2%;top:13%;bottom:15%;border-radius:50%;background:radial-gradient(ellipse,#b8843520 0%,#17303a1a 42%,transparent 72%);filter:blur(24px);pointer-events:none}
+ .expedition-terrain{width:min(100%,1420px);transform-origin:50% 47%;transform:translate(var(--map-x,0),calc(var(--map-y,0%) - 4.5%)) scale(.975)}
+ .has-relief .map-location[data-region="1"],.has-relief .map-location[data-region="3"]{margin-top:-12px}
+}
 @media(min-width:1000px) and (max-height:760px){.expedition-heading{padding-top:35px}.expedition-heading h2{font-size:42px;margin:12px 0}.is-enhanced .expedition-stories{top:43%}.expedition-story h3{font-size:22px;margin:10px 0}.expedition-story p{font-size:13px;margin-bottom:14px}.expedition-stops{bottom:55px}.expedition-scroll{bottom:18px}}
 @media(max-width:1000px){
  .expedition-stage{min-height:850px}
