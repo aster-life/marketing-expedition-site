@@ -2,7 +2,7 @@ import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {createAtlasGallery} from './atlas-gallery.js?v=textile-1';
 import * as T from './assets/vendor/three.module.min.js';
 import {loadForestAssets} from './forest-assets.js?v=moon-2';
-import {createExpeditionHall} from './expedition-hall.js?v=continuity-1';
+import {createExpeditionHall} from './expedition-hall.js?v=performance-2';
 import {hallCamera} from './hall-camera.js?v=1';
 import {loadHallAssets} from './hall-assets.js?v=performance-4';
 import {createInteriorReflections} from './interior-reflections.js?v=2';
@@ -12,9 +12,9 @@ export async function createForest(host,onFailure=()=>{},options={}){
  const report=(stage,value,label)=>options.onProgress?.({stage,value,label});
  const constrained=options.constrained??(matchMedia('(max-width: 700px)').matches||(navigator.deviceMemory&&navigator.deviceMemory<=4));
  const renderer=new T.WebGLRenderer({antialias:!constrained,powerPreference:'high-performance'});
- renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,constrained?1:1.25));renderer.outputColorSpace=T.SRGBColorSpace;
+ renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,constrained?.85:1));renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
- renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+ renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  report('forest',.02,'正在喚醒森林入口');
  const assets=await loadForestAssets((value,label)=>report('forest',.04+value*.53,label));
  const scene=new T.Scene();scene.background=new T.Color('#13283c');scene.fog=new T.FogExp2('#39618b',.0095);
@@ -44,7 +44,7 @@ export async function createForest(host,onFailure=()=>{},options={}){
  for(let i=0;i<rp.count;i++){const x=rp.getX(i),y=rp.getY(i),z=rp.getZ(i);const n=1+.14*Math.sin(x*11+y*8)*Math.cos(z*9)+.07*Math.sin(z*21+x*17);rp.setXYZ(i,x*n,y*n,z*n);}geoRock.computeVertexNormals();
  let rockId=0;function boulder(x,y,z,sx,sy,sz){const group=new T.Group(),layers=Math.max(1,Math.ceil(sy/(sx*.6))),layerHeight=sy*2/layers;for(let k=0;k<layers;k++){const o=assets.rock(rockId++,x+(random()-.5)*sx*.25,y-sy*.65+k*layerHeight*.76,z+(random()-.5)*sz*.2,sx*2,layerHeight,sz*2,random()*6.28);group.add(o);}scene.add(group);return group;}
  const hemi=new T.HemisphereLight('#88b8f5','#182d46',2.7);scene.add(hemi);
- const moon=new T.DirectionalLight('#97c2ff',3.7);moon.position.set(-18,48,-28);moon.castShadow=true;moon.shadow.mapSize.set(constrained?1024:2048,constrained?1024:2048);Object.assign(moon.shadow.camera,{left:-30,right:30,top:40,bottom:-30,near:1,far:140});moon.shadow.bias=-.0005;scene.add(moon);scene.add(moon.target);moon.target.position.set(0,4,-25);
+ const moon=new T.DirectionalLight('#97c2ff',3.7);moon.position.set(-18,48,-28);moon.castShadow=true;moon.shadow.mapSize.set(constrained?512:1024,constrained?512:1024);Object.assign(moon.shadow.camera,{left:-30,right:30,top:40,bottom:-30,near:1,far:140});moon.shadow.bias=-.0005;scene.add(moon);scene.add(moon.target);moon.target.position.set(0,4,-25);
  const fill=new T.DirectionalLight('#eeb66b',.32);fill.position.set(8,12,16);scene.add(fill);
  const glowCanvas=document.createElement('canvas');glowCanvas.width=glowCanvas.height=128;const gc=glowCanvas.getContext('2d'),gr=gc.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'#fff1d7');gr.addColorStop(.12,'#ffdc9ca0');gr.addColorStop(.5,'#ffb96325');gr.addColorStop(1,'#ffb96300');gc.fillStyle=gr;gc.fillRect(0,0,128,128);const glowMap=new T.CanvasTexture(glowCanvas);
  function glow(x,y,z,size=2){const o=new T.Sprite(new T.SpriteMaterial({map:glowMap,fog:false,transparent:true,depthWrite:false,blending:T.AdditiveBlending}));o.position.set(x,y,z);o.scale.setScalar(size);scene.add(o);}
@@ -64,17 +64,30 @@ export async function createForest(host,onFailure=()=>{},options={}){
   for(let i=0;i<=segments;i++){const p=curve.getPointAt(i/segments),r=T.MathUtils.lerp(r1,r2,i/segments);for(let j=0;j<=radial;j++){const a=j/radial*Math.PI*2,rr=r*(1+.08*Math.sin(j*3.7+i*.7)),v=p.clone().addScaledVector(frames.normals[i],Math.cos(a)*rr).addScaledVector(frames.binormals[i],Math.sin(a)*rr);verts.push(v.x,v.y,v.z);uv.push(j/radial,i/segments*5);if(i<segments&&j<radial){const k=i*(radial+1)+j;idx.push(k,k+1,k+radial+1,k+1,k+radial+2,k+radial+1);}}}
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const o=add(g,bark);o.castShadow=true;
  }
- const leafShape=new T.Shape();leafShape.moveTo(0,0);leafShape.quadraticCurveTo(.32,.26,0,.75);leafShape.quadraticCurveTo(-.32,.26,0,0);const leafGeo=new T.ShapeGeometry(leafShape,3);
- const leafMat=material('#38583b',{side:T.DoubleSide}),leaves=new T.InstancedMesh(leafGeo,leafMat,30000);let leafCount=0;
- function leafAt(x,y,z,s){if(leafCount>=30000)return;dummy.position.set(x,y,z);dummy.rotation.set(random()*3,random()*6,random()*6);dummy.scale.setScalar(s);dummy.updateMatrix();leaves.setMatrixAt(leafCount++,dummy.matrix);}
- for(const side of [-1,1])for(let i=0;i<7;i++){const z=9-i*15;scene.add(assets.tree(side*(14+i*.8),groundY(z)-.4,z,i<2?39+random()*5:23+random()*5,random()*6.28));}
+ // 近景保留原始高精度樹；中遠景改用同一場景內的低面數立體樹群，避免重複複製數千個 mesh。
+ const proxyTrees=[];
+ const queueProxyTree=(x,y,z,h,r)=>proxyTrees.push({x,y,z,h,r});
+ for(const side of [-1,1])for(let i=0;i<7;i++){
+  const z=9-i*15,h=i<2?39+random()*5:23+random()*5,r=random()*6.28;
+  if(i<2)scene.add(assets.tree(side*(14+i*.8),groundY(z)-.4,z,h,r));else queueProxyTree(side*(14+i*.8),groundY(z)-.4,z,h,r);
+ }
  // 第二、三排錯開主樹，補足林冠與後景，中央視線仍保持開放。
  for(const side of [-1,1])for(let i=0;i<(constrained?6:10);i++){
   const z=6-i*11+(random()-.5)*4,x=side*(22+(i%2)*7+random()*3);
-  const tree=assets.tree(x,groundY(z)-.7,z,26+random()*10,random()*Math.PI*2);
-  tree.traverse(o=>{if(o.isMesh)o.castShadow=false;});
-  scene.add(tree);
+  queueProxyTree(x,groundY(z)-.7,z,26+random()*10,random()*Math.PI*2);
  }
+ const proxyTrunks=new T.InstancedMesh(new T.CylinderGeometry(1,1,1,7),bark,proxyTrees.length);
+ const proxyCrowns=new T.InstancedMesh(new T.ConeGeometry(1,1,7),material('#ffffff',{roughness:1,flatShading:true}),proxyTrees.length*3);
+ const proxyDummy=new T.Object3D();let crownIndex=0;
+ proxyTrees.forEach((tree,i)=>{
+  proxyDummy.position.set(tree.x,tree.y+tree.h*.22,tree.z);proxyDummy.rotation.set(0,tree.r,0);proxyDummy.scale.set(tree.h*.026,tree.h*.44,tree.h*.026);proxyDummy.updateMatrix();proxyTrunks.setMatrixAt(i,proxyDummy.matrix);
+  for(const [j,[level,width,height]] of [[.42,.2,.36],[.61,.17,.31],[.78,.13,.25]].entries()){
+   const lean=Math.sin((i+1)*(j+2)*1.73)*.055,offset=Math.cos((i+2)*(j+1))*tree.h*.012;
+   proxyDummy.position.set(tree.x+Math.cos(tree.r+j)*offset,tree.y+tree.h*level,tree.z+Math.sin(tree.r+j)*offset);proxyDummy.rotation.set(lean,tree.r+j*.31,-lean*.7);proxyDummy.scale.set(tree.h*width*(1+lean),tree.h*height,tree.h*width*(.88-lean));proxyDummy.updateMatrix();
+   proxyCrowns.setMatrixAt(crownIndex,proxyDummy.matrix);proxyCrowns.setColorAt(crownIndex,new T.Color(['#203a32','#2b493d','#36584a'][j]));crownIndex++;
+  }
+ });
+ proxyTrunks.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceMatrix.setUsage(T.StaticDrawUsage);proxyCrowns.instanceColor.needsUpdate=true;proxyTrunks.receiveShadow=true;proxyCrowns.receiveShadow=true;scene.add(proxyTrunks,proxyCrowns);
  for(let i=0;i<(constrained?60:110);i++){const z=12-random()*95;scene.add(assets.fern(i,pathX(z)+(i%2?1:-1)*(3.1+random()*5),groundY(z)-.1,z,1.3+random()*1.3,random()*6.28));}
  function arch(x,y,z,w,h,depth,mat=stone){const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(-w/2,h-w/2);shape.absarc(0,h-w/2,w/2,Math.PI,0,true);shape.lineTo(w/2,0);shape.lineTo(w/2+.35,0);shape.lineTo(w/2+.35,h-w/2);shape.absarc(0,h-w/2,w/2+.35,0,Math.PI,false);shape.lineTo(-w/2-.35,0);shape.closePath();const o=add(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.035,bevelThickness:.035,curveSegments:16}),mat,x,y,z);return o;}
  function bridge(x1,x2,y,z){const width=x2-x1,mid=(x1+x2)/2;box(mid,y,z,width,.4,2.2);const spans=Math.max(1,Math.round(width/5));for(let i=0;i<spans;i++){const x=x1+width/spans*(i+.5);arch(x,y-4,z-.7,width/spans-.6,3.9,1.4);}
@@ -218,14 +231,21 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
    }
    camera.lookAt(...pose.look);
   }
-  const indoors=smooth(.30,.43,interiorProgress);scene.fog.color.set('#39618b').lerp(new T.Color('#252e38'),indoors);scene.fog.density=.0095-indoors*.006;
+  const indoors=smooth(.30,.43,interiorProgress),outdoorsVisible=interiorProgress<.36;scene.fog.color.set('#39618b').lerp(new T.Color('#252e38'),indoors);scene.fog.density=.0095-indoors*.006;
   hemi.intensity=2.7-indoors*2.1;moon.intensity=3.7*(1-indoors);fill.intensity=.32*(1-indoors);castleLight.intensity=270*(1-indoors);
-  outdoors.forEach(o=>{o.visible=interiorProgress<.43;});
+  // 穿門時不再同時替森林與整座本部重畫陰影；相機進入石牆後由室內燈光與材質接手層次。
+  moon.visible=outdoorsVisible;moon.castShadow=interiorProgress<.15;fill.visible=outdoorsVisible;castleLight.visible=outdoorsVisible;renderer.shadowMap.enabled=interiorProgress<.15;
+  outdoors.forEach(o=>{o.visible=outdoorsVisible;});
   // 穿過外拱後，外殼退出繪製；室內獨立頂部接手，降低已離開視野的幾何負擔。
-  castle.visible=interiorProgress<.43;
+  castle.visible=outdoorsVisible;
 
   const opened=hall?.update(interiorProgress)??0;
-  if(gallery&&hall){gallery.group.visible=interiorProgress>.8;hall.group.visible=actThree<.36;if(actThree>0)gallery.render(actThree,camera,w/h<1);}
+  if(gallery&&hall){
+   // 尚未靠近本部時不送出室內數千個物件；成果館只有在 render() 先設定展品狀態後才顯示。
+   hall.group.visible=interiorProgress>.15&&actThree<.36;
+   gallery.group.visible=actThree>0;
+   if(actThree>0)gallery.render(actThree,camera,w/h<1);
+  }
   camera.updateProjectionMatrix();water.uniforms.phase.value=(t+interiorProgress)*12;
   if(hall&&interiorProgress>.48&&actThree===0)reflectInterior('hall',hall.group,[1.2,19.8,-112]);
   if(gallery&&actThree>.2)reflectInterior('gallery',gallery.group,[6.3,20,-157]);
@@ -256,7 +276,8 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
   renderer.setViewport(0,0,w,h);renderer.setScissorTest(false);renderer.clear();
   renderer.setViewport(viewport.x,viewport.y,viewport.w,viewport.h);
   renderer.setScissor(viewport.x,viewport.y,viewport.w,viewport.h);renderer.setScissorTest(true);
-  renderer.render(scene,camera);renderer.setScissorTest(false);
+  const renderStarted=performance.now();renderer.render(scene,camera);renderer.setScissorTest(false);
+  host.dataset.renderMs=(performance.now()-renderStarted).toFixed(1);host.dataset.calls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);host.dataset.pixelRatio=String(renderer.getPixelRatio());
   host.dataset.act=actThree>0?'three':actTwo>0?'two':'one';host.dataset.galleryProgress=actThree.toFixed(4);host.dataset.progress=actTwo.toFixed(4);host.dataset.door=opened.toFixed(3);host.dataset.camera=camera.position.toArray().map(v=>v.toFixed(3)).join(',');
- },captureFrame(p,actTwo,actThree){this.render(p,actTwo,actThree);return renderer.domElement.toDataURL('image/png');},getStats(){return {...renderer.info.render,geometries:renderer.info.memory.geometries};}};
+ },flushGpu(){renderer.getContext().finish();},captureFrame(p,actTwo,actThree){this.render(p,actTwo,actThree);return renderer.domElement.toDataURL('image/png');},getStats(){return {...renderer.info.render,geometries:renderer.info.memory.geometries};}};
 }

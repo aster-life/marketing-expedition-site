@@ -135,7 +135,7 @@ export function createExpeditionHall(scene,{stone,gold,glowMap,props}){
  for(let i=0;i<8;i++){const a=i*Math.PI/4;tube([[-1.5,8,-39.4],[-1.5+Math.cos(a)*2.6,8+Math.sin(a)*2.6,-39.4]],.04,brass);}
  const ambient=new T.HemisphereLight('#a9c3d7','#322314',1);hall.add(ambient);
  const cool=new T.SpotLight('#91c4e7',370,48,.72,.65,1.5);cool.position.set(-7,12,-13);cool.target.position.set(1,0,-22);hall.add(cool,cool.target);
- const tableLight=new T.SpotLight('#ffd49b',0,25,.8,.5,1.5);tableLight.position.set(1.2,9,-21);tableLight.target.position.set(1.2,0,-21);tableLight.castShadow=true;tableLight.shadow.mapSize.set(1024,1024);tableLight.shadow.bias=-.0003;hall.add(tableLight,tableLight.target);
+ const tableLight=new T.SpotLight('#ffd49b',0,25,.8,.5,1.5);tableLight.position.set(1.2,9,-21);tableLight.target.position.set(1.2,0,-21);hall.add(tableLight,tableLight.target);
  // 主桌為立體浮雕沙盤；邊緣、山脈、塔樓與路線都是幾何。
  const table=new T.Group();table.position.set(1.2,0,-21);hall.add(table);
  cyl(0,.19,0,3.2,3.5,.36,wall,table);cyl(0,.78,0,1.4,2.35,1.2,wood,table);cyl(0,1.35,0,3.25,3.05,.22,brass,table);

@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=performance-5').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=performance-11').then(async({createForest})=>{
   world=await createForest(host,fallback,{onProgress:({stage,value,label})=>{
    const range=stage==='interior'?[68,88]:[30,68];
    loadingProgress(range[0]+(range[1]-range[0])*value,label);
@@ -98,12 +98,22 @@ async function warmWorld(preparedWorld){
  host.dataset.warmed='true';
  loadingProgress(92,'正在預熱遠征本部');
  // 先把第二幕的代表鏡位送進 GPU，避免使用者第一次走入大廳才現場編譯材質、陰影與反射。
+ preparedWorld.render(1,.2,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  preparedWorld.render(1,.42,0,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  preparedWorld.render(1,.64,0,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ loadingProgress(95,'正在預熱成果星圖館');
+ // 第三幕的反射與材質在載入幕完成，避免第一次捲入成果館時同步建立 GPU 資源。
+ preparedWorld.render(1,1,.28,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ preparedWorld.render(1,1,.45,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ // WebGL 預熱呼叫可能只排入 GPU 佇列；在載入幕仍可見時完成佇列，避免首度捲入本部才停住。
+ preparedWorld.flushGpu?.();
  preparedWorld.render(0,0,0,null);
- host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.interiorWarmed='true';
+ host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.interiorWarmed='true';host.dataset.galleryWarmed='true';
 }
 async function prepareExperience(){
  loadingProgress(10,'準備第一道光');
