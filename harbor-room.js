@@ -4,6 +4,7 @@ import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
 import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
 import {createHarborPaper} from './harbor-paper.js';
+import {prewarmRoom} from './room-prewarm.js';
 
 export const harborExhibits=[
  {title:'一段連續的遠征',subject:'01 / 網站實作',lead:'從一束光，到可以探索的世界。',detail:'你正在瀏覽的行銷遠征，是影片、3D 空間與內容導覽的整合實作。沿著作品閱讀它的問題、設計取捨與仍在調整的地方。',discoveries:['影片與立體場景如何銜接','鏡頭、角色比例與載入的取捨','從沉浸開場走向清楚的內容入口'],href:'works.html#site-case',action:'閱讀網站作品',label:'網站作品'},
@@ -174,7 +175,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   const w=host.clientWidth,h=host.clientHeight;
   anchors.forEach((p,i)=>{const v=p.clone().project(camera);const visible=v.z>-1&&v.z<1&&Math.abs(v.x)<.84&&Math.abs(v.y)<.8&&(!busy||selection===i);buttons[i].hidden=!visible;buttons[i].style.left=`${(v.x*.5+.5)*w}px`;buttons[i].style.top=`${(-v.y*.5+.5)*h}px`;});
  }
- function draw(){if(!active||disposed||document.hidden)return;renderer.render(scene,camera);project();host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);}
+ function draw(){if(!active||disposed||document.hidden)return;const started=performance.now();renderer.render(scene,camera);const elapsed=performance.now()-started;host.dataset.renderMs=elapsed.toFixed(1);host.dataset.maxRenderMs=Math.max(Number(host.dataset.maxRenderMs||0),elapsed).toFixed(1);project();host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);}
  function cancelMotion(){cancelAnimationFrame(raf);raf=0;finishMotion?.();finishMotion=null;busy=false;}
  function move(position,target,duration=1050){
   cancelMotion();busy=true;controls.forEach(b=>b.disabled=true);buttons.forEach(b=>b.disabled=true);
@@ -216,6 +217,8 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   architecture.traverse(o=>{if(!o.isMesh||Array.isArray(o.material))return;let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);for(const name of Object.keys(g.attributes))if(!['position','normal','uv'].includes(name))g.deleteAttribute(name);if(!g.attributes.uv)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));const list=groups.get(o.material)||[];list.push(g);groups.set(o.material,list);old.add(o.geometry);});
   scene.remove(architecture);
   for(const [mat,geometries] of groups){const combined=mergeGeometries(geometries);if(!combined)throw new Error('展廳幾何無法合併');const item=new T.Mesh(combined,mat);item.castShadow=!mat.isMeshBasicMaterial;item.receiveShadow=true;scene.add(item);geometries.forEach(g=>g.dispose());}old.forEach(g=>g.dispose());
+  camera.position.set(7.6,10,40);camera.lookAt(0,3,15.5);
+  await prewarmRoom(renderer,scene,camera,host);
   renderer.shadowMap.needsUpdate=true;status.hidden=true;host.dataset.ready='true';
  }catch(error){dispose();throw error;}
  return {

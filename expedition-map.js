@@ -103,7 +103,7 @@ if (root) {
     roomHost=document.createElement('div');roomHost.className='harbor-room-host';roomHost.dataset.ready='false';journal.append(roomHost);
     const slot={index,host:roomHost,retired:false,room:null};roomSlot=slot;
     const callbacks={index,quiet,onSelect:exhibit=>{if(roomSlot===slot)exhibitNote(exhibit);},onOverview:()=>{if(mode==='reading'&&active===index)fillNote(index);}};
-    const module=index===1?import('./harbor-room.js?v=room-light-1'):import('./region-room.js?v=room-light-1');
+    const module=index===1?import('./harbor-room.js?v=room-performance-1'):import('./region-room.js?v=room-performance-1');
     slot.promise=module.then(api=>index===1?api.createHarborRoom(slot.host,callbacks):api.createRegionRoom(slot.host,callbacks)).then(room=>{
       if(slot.retired){room.dispose();throw new Error('已離開此區域');}
       slot.room=room;return room;
@@ -209,7 +209,7 @@ if (root) {
   let worldPromise;
   function prepareWorld(){
     if(worldPromise)return worldPromise;
-    worldPromise=import('./expedition-relief.js?v=regions-1').then(({ createRelief }) => {
+    worldPromise=import('./expedition-relief.js?v=map-performance-1').then(({ createRelief }) => {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);

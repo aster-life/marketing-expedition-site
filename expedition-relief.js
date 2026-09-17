@@ -1,6 +1,7 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {createRegionEntrance} from './region-entrance.js?v=regions-1';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
+import {batchStaticMeshes} from './static-batch.js';
 
 // 獨立的小型地形場景；不修改前三幕的 renderer、相機或素材。
 export function createRelief(host, labels) {
@@ -167,6 +168,7 @@ export function createRelief(host, labels) {
   // 海面上的金色方位刻線。
   for(let i=0;i<20;i++)box(.025,.015,.12+(i%5===0?.12:0),gold,island,-10+i, -.77,7.8);
   // 地標揭幕與相機各自管理，捲動不會中斷點擊後的靠近動作。
+  groups.forEach(batchStaticMeshes);
   const revealGroups=groups.map(g=>{const wrap=new T.Group();wrap.position.copy(g.position);island.add(wrap);wrap.add(g);g.position.set(0,0,0);return wrap;});
   let active=0,hovered=-1,frame=0,settle,unavailable=false,arrival=-1;
   const look=new T.Vector3(0,0,0);
@@ -225,13 +227,20 @@ export function createRelief(host, labels) {
   });
   function stopDrag(){drag=null;canvas.classList.remove('is-dragging');}
   canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);canvas.addEventListener('lostpointercapture',stopDrag);
-  function render(){if(unavailable)return;renderer.render(scene,camera);projectFlow();const w=host.clientWidth,h=host.clientHeight;labels.forEach((label,i)=>{const [x,z]=sites[i];const point=new T.Vector3(x,.75,z+1.9).project(camera);label.style.left=((point.x+1)*50)+'%';label.style.top=((-point.y+1)*50)+'%';});}
+  function render(){if(unavailable)return;const started=performance.now();renderer.render(scene,camera);host.dataset.renderMs=(performance.now()-started).toFixed(1);host.dataset.calls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);host.dataset.renders=String(Number(host.dataset.renders||0)+1);projectFlow();const w=host.clientWidth,h=host.clientHeight;labels.forEach((label,i)=>{const [x,z]=sites[i];const point=new T.Vector3(x,.75,z+1.9).project(camera);label.style.left=((point.x+1)*50)+'%';label.style.top=((-point.y+1)*50)+'%';});}
   function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-15;camera.right=15;camera.top=15/aspect;camera.bottom=-15/aspect;camera.updateProjectionMatrix();render();}
   const observer=new ResizeObserver(resize);observer.observe(host);resize();host.classList.add('has-relief');
   const textures=new Set([waves]);
   wall.color.set(0xb4afa4);wall.metalness=.22;stone.color.set(0x83938e);cliff.color.set(0x48616c);grass.color.set(0x52634f);
-  const loader=new T.TextureLoader();
-  function texture(material,key,path,repeat,color=false){loader.load(path,t=>{if(unavailable){t.dispose();return;}t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(...repeat);if(color)t.colorSpace=T.SRGBColorSpace;textures.add(t);material[key]=t;material.needsUpdate=true;render();},undefined,()=>{});}
+  const loader=new T.TextureLoader(),textureLoads=new Map();
+  function texture(material,key,path,repeat,color=false){
+    const id=JSON.stringify([path,repeat,color]);
+    if(!textureLoads.has(id))textureLoads.set(id,new Promise(resolve=>loader.load(path,t=>{
+      if(unavailable){t.dispose();resolve(null);return;}
+      t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(...repeat);if(color)t.colorSpace=T.SRGBColorSpace;textures.add(t);resolve(t);
+    },undefined,()=>resolve(null))));
+    textureLoads.get(id).then(t=>{if(!t||unavailable)return;material[key]=t;material.needsUpdate=true;requestRender();});
+  }
   const asset='./3d/interior-candidates/';
   for(const material of [wall,stone,cliff]){
     texture(material,'map',asset+'rustic_stone_wall_02/rustic_stone_wall_02_diff_1k.jpg',[1,1],true);
