@@ -132,7 +132,7 @@ if (root) {
   const loader = new IntersectionObserver(entries => {
     if (!entries.some(entry => entry.isIntersecting)) return;
     loader.disconnect();
-    import('./expedition-relief.js?v=performance-1').then(({ createRelief }) => {
+    import('./expedition-relief.js?v=performance-2').then(({ createRelief }) => {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);

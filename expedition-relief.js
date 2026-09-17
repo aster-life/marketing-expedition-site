@@ -4,9 +4,10 @@ import * as T from './assets/vendor/three.module.min.js';
 export function createRelief(host, labels) {
   const constrained=matchMedia('(max-width: 700px)').matches||(navigator.deviceMemory&&navigator.deviceMemory<=4);
   const renderer = new T.WebGLRenderer({ alpha: true, antialias: !constrained, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, constrained?1:1.25));
+  // 沙盤佔據大面積畫面；限制 DPR 可大幅降低每次捲動時的像素填充量。
+  renderer.setPixelRatio(Math.min(devicePixelRatio, constrained?.85:1));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = T.PCFSoftShadowMap;
+  renderer.shadowMap.type = T.PCFShadowMap;
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -25,7 +26,7 @@ export function createRelief(host, labels) {
   function cylinder(r,h,m,p,x=0,y=0,z=0,n=12){return mesh(new T.CylinderGeometry(r,r,h,n),m,p,x,y,z);}
   function cone(r,h,m,p,x=0,y=0,z=0,n=6){return mesh(new T.ConeGeometry(r,h,n),m,p,x,y,z);}
   scene.add(new T.HemisphereLight(0xb9d6e1,0x273426,1.3));
-  const sun = new T.DirectionalLight(0xffd69a,3.3); sun.position.set(-9,17,8);sun.castShadow=true;sun.shadow.mapSize.set(constrained?512:1024,constrained?512:1024);Object.assign(sun.shadow.camera,{left:-16,right:16,top:14,bottom:-14});sun.shadow.normalBias=.05;sun.shadow.bias=-.0002;scene.add(sun);
+  const sun = new T.DirectionalLight(0xffd69a,3.3); sun.position.set(-9,17,8);sun.castShadow=true;sun.shadow.mapSize.set(512,512);Object.assign(sun.shadow.camera,{left:-16,right:16,top:14,bottom:-14});sun.shadow.normalBias=.05;sun.shadow.bias=-.0002;scene.add(sun);
   const rim=new T.DirectionalLight(0x7eafdb,1.5);rim.position.set(10,8,-12);scene.add(rim);
   // 石質底座、金屬包邊與有厚度的海岸。
   // 圓角展盤與抬高的連續收邊，讓後緣呈現實體厚度。
@@ -113,11 +114,15 @@ export function createRelief(host, labels) {
   const waveData=new Uint8Array(128*128*4);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const p=(y*128+x)*4,v=125+Math.sin(y*.45+Math.sin(x*.16)*2)*20+rand()*12;waveData[p]=waveData[p+1]=waveData[p+2]=v;waveData[p+3]=255;}
   const waves=new T.DataTexture(waveData,128,128);waves.wrapS=waves.wrapT=T.RepeatWrapping;waves.repeat.set(4,4);waves.needsUpdate=true;water.bumpMap=waves;water.bumpScale=.065;water.roughness=.42;
   // 林地避開四個入口與中央路徑。
-  for(let i=0;i<(constrained?110:190);i++){const x=-8+rand()*16,z=-3+rand()*8.5;if(sites.some(([sx,sz])=>Math.hypot(x-sx,z-sz)<2)||Math.abs(x)<1||z>5.6)continue;
-    const h=.4+rand()*.6;const foliage=new T.Group();foliage.position.set(x,.67,z);island.add(foliage);
-    cylinder(.032,h*.65,wood,foliage,0,h*.25,0,6);
-    for(let tier=0;tier<3;tier++){const crown=cone(.25*(1-tier*.23),h*.58,roof,foliage,0,h*(.35+tier*.21),0,8);crown.rotation.y=i*.37+tier*.7;}
-  }
+  // 森林以四個 InstancedMesh 批次繪製，保留密度但把數百次 draw call 壓成四次。
+  const trees=[];
+  for(let i=0;i<(constrained?90:170);i++){const x=-8+rand()*16,z=-3+rand()*8.5;if(sites.some(([sx,sz])=>Math.hypot(x-sx,z-sz)<2)||Math.abs(x)<1||z>5.6)continue;trees.push({x,z,h:.4+rand()*.6,spin:i*.37});}
+  const dummy=new T.Object3D(),trunks=new T.InstancedMesh(new T.CylinderGeometry(.032,.032,1,6),wood,trees.length),crownGeometry=new T.ConeGeometry(1,1,8),crowns=[0,1,2].map(()=>new T.InstancedMesh(crownGeometry,roof,trees.length));
+  trees.forEach(({x,z,h,spin},index)=>{
+    dummy.position.set(x,.67+h*.25,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h*.65,1);dummy.updateMatrix();trunks.setMatrixAt(index,dummy.matrix);
+    crowns.forEach((batch,tier)=>{const radius=.25*(1-tier*.23);dummy.position.set(x,.67+h*(.35+tier*.21),z);dummy.rotation.set(0,spin+tier*.7,0);dummy.scale.set(radius,h*.58,radius);dummy.updateMatrix();batch.setMatrixAt(index,dummy.matrix);});
+  });
+  [trunks,...crowns].forEach(batch=>{batch.castShadow=!constrained;batch.receiveShadow=true;batch.instanceMatrix.setUsage(T.StaticDrawUsage);batch.instanceMatrix.needsUpdate=true;island.add(batch);});
   const routes=[],routeCurves=[];
   for(let i=0;i<3;i++){
     const a=sites[i],b=sites[i+1];
@@ -209,7 +214,8 @@ export function createRelief(host, labels) {
     restore(){return moveCamera(active);},
     arrive(progress){
       const next=reduceMotion()?1:Math.max(arrival,Math.min(1,progress));
-      if(next===arrival)return;arrival=next;
+      // 揭幕只需約 25 個視覺階段，避免高頻觸控捲動觸發每一幀完整 WebGL 重繪。
+      if(next===arrival||(next<1&&arrival>=0&&next-arrival<.04))return;arrival=next;
       revealGroups.forEach((g,i)=>{const p=Math.max(0,Math.min(1,(next-.12-i*.12)/.4));g.scale.y=.02+.98*p*p*(3-2*p);});
       render();
     }
