@@ -1,7 +1,7 @@
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{const t=clamp(v);return t*t*(3-2*t);};
 const filmRoot='assets/film/gallery-invitation/star-reveal-1/';
-export const galleryMedia={src:filmRoot+'web-1080p.mp4',poster:filmRoot+'actual-start.jpg'};
+export const galleryMedia={src:filmRoot+'web-1080p-fastseek.mp4',poster:filmRoot+'actual-start.jpg'};
 
 // 沿前廳轉角接入角色影片，星象儀只在影片中首次揭示。
 export function galleryTimeline(progress){

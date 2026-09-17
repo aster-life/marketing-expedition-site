@@ -9,8 +9,9 @@ import {createInteriorReflections} from './interior-reflections.js?v=2';
 
 // 真實空間：石徑、岩台、樹木、拱橋與城堡各自具有完整幾何。
 export async function createForest(host,onFailure=()=>{},options={}){
- const renderer=new T.WebGLRenderer({antialias:true});
- renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=T.SRGBColorSpace;
+ const constrained=options.constrained??(matchMedia('(max-width: 700px)').matches||(navigator.deviceMemory&&navigator.deviceMemory<=4));
+ const renderer=new T.WebGLRenderer({antialias:!constrained,powerPreference:'high-performance'});
+ renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,constrained?1:1.25));renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
  const [assets,hallProps]=await Promise.all([loadForestAssets(),loadHallAssets()]);
@@ -19,7 +20,7 @@ export async function createForest(host,onFailure=()=>{},options={}){
  let seed=9271;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const smooth=(a,b,x)=>{const t=T.MathUtils.clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
  const loader=new T.TextureLoader(),base='./3d/forest-match/assets/mossy_cobblestone/mossy_cobblestone_';
- const [diff,normal,rough]=await Promise.all(['diff','nor_gl','rough'].map(n=>loader.loadAsync(base+n+'_4k.jpg')));
+ const [diff,normal,rough]=await Promise.all(['diff','nor_gl','rough'].map(n=>loader.loadAsync(base+n+'_2k.jpg')));
  diff.colorSpace=T.SRGBColorSpace;for(const t of [diff,normal,rough]){t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
  const material=(color,extra={})=>new T.MeshStandardMaterial({color,roughness:.82,...extra});
  const rock=material('#8a9eb5',{roughness:.46,map:diff,normalMap:normal,normalScale:new T.Vector2(.75,.75),roughnessMap:rough});
@@ -38,7 +39,7 @@ export async function createForest(host,onFailure=()=>{},options={}){
  for(let i=0;i<rp.count;i++){const x=rp.getX(i),y=rp.getY(i),z=rp.getZ(i);const n=1+.14*Math.sin(x*11+y*8)*Math.cos(z*9)+.07*Math.sin(z*21+x*17);rp.setXYZ(i,x*n,y*n,z*n);}geoRock.computeVertexNormals();
  let rockId=0;function boulder(x,y,z,sx,sy,sz){const group=new T.Group(),layers=Math.max(1,Math.ceil(sy/(sx*.6))),layerHeight=sy*2/layers;for(let k=0;k<layers;k++){const o=assets.rock(rockId++,x+(random()-.5)*sx*.25,y-sy*.65+k*layerHeight*.76,z+(random()-.5)*sz*.2,sx*2,layerHeight,sz*2,random()*6.28);group.add(o);}scene.add(group);return group;}
  const hemi=new T.HemisphereLight('#88b8f5','#182d46',2.7);scene.add(hemi);
- const moon=new T.DirectionalLight('#97c2ff',3.7);moon.position.set(-18,48,-28);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-30,right:30,top:40,bottom:-30,near:1,far:140});moon.shadow.bias=-.0005;scene.add(moon);scene.add(moon.target);moon.target.position.set(0,4,-25);
+ const moon=new T.DirectionalLight('#97c2ff',3.7);moon.position.set(-18,48,-28);moon.castShadow=true;moon.shadow.mapSize.set(constrained?1024:2048,constrained?1024:2048);Object.assign(moon.shadow.camera,{left:-30,right:30,top:40,bottom:-30,near:1,far:140});moon.shadow.bias=-.0005;scene.add(moon);scene.add(moon.target);moon.target.position.set(0,4,-25);
  const fill=new T.DirectionalLight('#eeb66b',.32);fill.position.set(8,12,16);scene.add(fill);
  const glowCanvas=document.createElement('canvas');glowCanvas.width=glowCanvas.height=128;const gc=glowCanvas.getContext('2d'),gr=gc.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'#fff1d7');gr.addColorStop(.12,'#ffdc9ca0');gr.addColorStop(.5,'#ffb96325');gr.addColorStop(1,'#ffb96300');gc.fillStyle=gr;gc.fillRect(0,0,128,128);const glowMap=new T.CanvasTexture(glowCanvas);
  function glow(x,y,z,size=2){const o=new T.Sprite(new T.SpriteMaterial({map:glowMap,fog:false,transparent:true,depthWrite:false,blending:T.AdditiveBlending}));o.position.set(x,y,z);o.scale.setScalar(size);scene.add(o);}
@@ -63,13 +64,13 @@ export async function createForest(host,onFailure=()=>{},options={}){
  function leafAt(x,y,z,s){if(leafCount>=30000)return;dummy.position.set(x,y,z);dummy.rotation.set(random()*3,random()*6,random()*6);dummy.scale.setScalar(s);dummy.updateMatrix();leaves.setMatrixAt(leafCount++,dummy.matrix);}
  for(const side of [-1,1])for(let i=0;i<7;i++){const z=9-i*15;scene.add(assets.tree(side*(14+i*.8),groundY(z)-.4,z,i<2?39+random()*5:23+random()*5,random()*6.28));}
  // 第二、三排錯開主樹，補足林冠與後景，中央視線仍保持開放。
- for(const side of [-1,1])for(let i=0;i<10;i++){
+ for(const side of [-1,1])for(let i=0;i<(constrained?6:10);i++){
   const z=6-i*11+(random()-.5)*4,x=side*(22+(i%2)*7+random()*3);
   const tree=assets.tree(x,groundY(z)-.7,z,26+random()*10,random()*Math.PI*2);
   tree.traverse(o=>{if(o.isMesh)o.castShadow=false;});
   scene.add(tree);
  }
- for(let i=0;i<110;i++){const z=12-random()*95;scene.add(assets.fern(i,pathX(z)+(i%2?1:-1)*(3.1+random()*5),groundY(z)-.1,z,1.3+random()*1.3,random()*6.28));}
+ for(let i=0;i<(constrained?60:110);i++){const z=12-random()*95;scene.add(assets.fern(i,pathX(z)+(i%2?1:-1)*(3.1+random()*5),groundY(z)-.1,z,1.3+random()*1.3,random()*6.28));}
  function arch(x,y,z,w,h,depth,mat=stone){const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(-w/2,h-w/2);shape.absarc(0,h-w/2,w/2,Math.PI,0,true);shape.lineTo(w/2,0);shape.lineTo(w/2+.35,0);shape.lineTo(w/2+.35,h-w/2);shape.absarc(0,h-w/2,w/2+.35,0,Math.PI,false);shape.lineTo(-w/2-.35,0);shape.closePath();const o=add(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.035,bevelThickness:.035,curveSegments:16}),mat,x,y,z);return o;}
  function bridge(x1,x2,y,z){const width=x2-x1,mid=(x1+x2)/2;box(mid,y,z,width,.4,2.2);const spans=Math.max(1,Math.round(width/5));for(let i=0;i<spans;i++){const x=x1+width/spans*(i+.5);arch(x,y-4,z-.7,width/spans-.6,3.9,1.4);}
   for(const side of [-1,1]){box(mid,y+1,z+side*1.1,width,.13,.15,gold);for(let i=0;i<=width;i++)box(x1+i,y+.5,z+side*1.1,.09,1,.09,stone);}for(const x of [x1,x2])lantern(x,y+.1,z,1);
@@ -117,7 +118,7 @@ export async function createForest(host,onFailure=()=>{},options={}){
  for(const [x,y,z,w] of [[-11,7,-22,2.6],[13,9,-30,2],[-17,15,-43,3.4],[18,19,-57,3],[-8,22,-77,2.8],[8,25,-88,2.4]])cascade(x,y,z,w);
  const mistCanvas=document.createElement('canvas');mistCanvas.width=mistCanvas.height=128;const mc=mistCanvas.getContext('2d'),mg=mc.createRadialGradient(64,64,0,64,64,64);mg.addColorStop(0,'#c8e6ff70');mg.addColorStop(.5,'#9cc9ef25');mg.addColorStop(1,'#9cc9ef00');mc.fillStyle=mg;mc.fillRect(0,0,128,128);const mistMap=new T.CanvasTexture(mistCanvas);
 for(let i=0;i<40;i++){const z=-10-random()*95,o=new T.Sprite(new T.SpriteMaterial({map:mistMap,transparent:true,opacity:.3,depthWrite:false}));o.position.set((random()-.5)*36,groundY(z)+random()*3,z);o.scale.set(9+random()*12,3+random()*4,1);scene.add(o);}
-for(let i=0;i<90;i++){const z=16-random()*100,x=(i%2?1:-1)*(5+random()*10);scene.add(assets.fern(i,x,groundY(z),z,1.5+random()*2,random()*6.28));}
+for(let i=0;i<(constrained?48:90);i++){const z=16-random()*100,x=(i%2?1:-1)*(5+random()*10);scene.add(assets.fern(i,x,groundY(z),z,1.5+random()*2,random()*6.28));}
 const castleLight=new T.PointLight('#83bde6',270,70,1.4);castleLight.position.set(0,34,-66);scene.add(castleLight);
 // 少量實際暖光照亮近景石面，讓燈籠與地面產生關係。
 for(const z of [5,-14,-33]){const lampLight=new T.PointLight('#ffc17b',18,10,2);lampLight.position.set(pathX(z)+2.6,1.1+groundY(z),z);scene.add(lampLight);}
@@ -145,7 +146,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
  const hall=createExpeditionHall(scene,{stone,gold,glowMap,props:hallProps});
 
  const gallery=createAtlasGallery(scene,{stone,gold,glowMap,props:hallProps});
- const reflectInterior=createInteriorReflections(renderer,scene);
+ const reflectInterior=constrained?()=>{}:createInteriorReflections(renderer,scene);
  host.dataset.assetMetrics=JSON.stringify(hallProps.metrics);
  const filmMaterial=new T.MeshBasicMaterial({color:0xffffff,toneMapped:false,fog:false});
  const filmSurface=new T.Mesh(new T.PlaneGeometry(12,6.75),filmMaterial);filmSurface.position.set(14,19.3,-174);filmSurface.visible=false;scene.add(filmSurface);

@@ -1,9 +1,9 @@
-import {createGalleryInteraction} from './gallery-interaction.js?v=full-width-1';
+import {createGalleryInteraction} from './gallery-interaction.js?v=performance-1';
 import {createMistTransition} from './mist-transition.js?v=2';
 const $=s=>document.querySelector(s),video=$('#opening-film'),journey=$('#atlas');
 const intro=$('.film-intro'),ending=$('.film-ending'),play=$('#film-play'),sound=$('#film-sound'),status=$('#film-status'),host=$('#forest-space');
 const reduced=()=>document.documentElement.classList.contains('reduced'),clamp=v=>Math.max(0,Math.min(1,v));
-let target=0,frame=0,manual=false,lastReduced=reduced(),world=null,worldFailed=false;
+let target=0,frame=0,manual=false,lastReduced=reduced(),world=null,worldFailed=false,worldPromise=null,skipUntil=0;
 const curtain=$('.film-curtain'),mist=createMistTransition(curtain);
 const galleryInteraction=createGalleryInteraction($('.film-stage'),schedule);
 const hallCopy=document.createElement('div');hallCopy.className='hall-copy';hallCopy.hidden=true;
@@ -28,10 +28,19 @@ const hallBeats=[
  [.93,1.01,'光，指向下一站。','帶著清楚的方向，看看想法留下的成果。']
 ];
 function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝置無法顯示立體空間；保留影片終點，可繼續探索內容。';schedule();}
-import('./forest-world.js?v=textile-1').then(async({createForest})=>{world=await createForest(host,fallback);world.setGalleryVideo(galleryInteraction.video);host.setAttribute('aria-label','沿森林石階進入遠征本部；中央地圖桌、典籍與成果展館隨捲動依序展開');host.dataset.scene='forest-headquarters-gallery';schedule();}).catch(fallback);
+// 先讓開場影片順暢解碼；使用者開始往門內前進後，才載入大型 3D 場景。
+function ensureWorld(){
+ if(world||worldFailed||worldPromise)return worldPromise;
+ host.dataset.loading='true';
+ worldPromise=import('./forest-world.js?v=performance-1').then(async({createForest})=>{
+  world=await createForest(host,fallback);world.setGalleryVideo(galleryInteraction.video);
+  host.setAttribute('aria-label','沿森林石階進入遠征本部；中央地圖桌、典籍與成果展館隨捲動依序展開');host.dataset.scene='forest-headquarters-gallery';delete host.dataset.loading;schedule();return world;
+ }).catch(error=>{console.warn('立體遠征場景暫時無法載入。',error);fallback();});
+ return worldPromise;
+}
 // 捲動位置是唯一時間來源；停止捲動後不繼續播放。
 function seek(){if(reduced()||!Number.isFinite(video.duration)||video.seeking)return;const time=Math.min(target*video.duration,Math.max(0,video.duration-.04));if(Math.abs(video.currentTime-time)>.025)video.currentTime=time;}
-function draw(){frame=0;const rect=journey.getBoundingClientRect(),travel=Math.max(0,-rect.top/Math.max(1,innerHeight*5.2)),p=clamp(travel),actTwo=clamp(travel-.95),galleryProgress=clamp((travel-1.95)/1.1),galleryState=galleryInteraction.render(galleryProgress,!reduced()&&!!world),actThree=galleryState.scene;const stage=journey.querySelector('.film-stage'),expand=reduced()?0:(galleryState.pose?.passage??0),fullHeight=stage.clientWidth*9/16,stageHeight=innerHeight+(fullHeight-innerHeight)*expand;stage.style.height=stageHeight+'px';stage.style.top=(-Math.max(0,stageHeight-innerHeight)*clamp((galleryProgress-.78)/.16))+'px';document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);play.hidden=!reduced();sound.hidden=!reduced();host.hidden=true;hallCopy.hidden=true;galleryCopy.hidden=true;
+function draw(){frame=0;const rect=journey.getBoundingClientRect(),travel=Math.max(0,-rect.top/Math.max(1,innerHeight*5.2)),p=clamp(travel),actTwo=clamp(travel-.95),galleryProgress=clamp((travel-1.95)/1.1);if(!reduced()&&Date.now()>skipUntil&&((p>.07&&travel<1.95)||location.hash==='#gallery-transition'))ensureWorld();const galleryState=galleryInteraction.render(galleryProgress,!reduced()&&!!world),actThree=galleryState.scene;const stage=journey.querySelector('.film-stage'),expand=reduced()?0:(galleryState.pose?.passage??0),fullHeight=stage.clientWidth*9/16,stageHeight=innerHeight+(fullHeight-innerHeight)*expand;stage.style.height=stageHeight+'px';stage.style.top=(-Math.max(0,stageHeight-innerHeight)*clamp((galleryProgress-.78)/.16))+'px';document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);play.hidden=!reduced();sound.hidden=!reduced();host.hidden=true;hallCopy.hidden=true;galleryCopy.hidden=true;
  if(reduced()){video.hidden=false;video.style.opacity='1';curtain.style.opacity='0';intro.hidden=manual;ending.hidden=true;$('#film-cue').textContent='已減少動態，可自行播放或直接探索。';return;}
  video.pause();video.muted=true;target=clamp(p/.43);seek();intro.hidden=target>.13;intro.style.opacity=String(1-clamp(target/.13));
  const atEnd=Number.isFinite(video.duration)&&video.currentTime>=video.duration-.12;
@@ -53,7 +62,7 @@ video.addEventListener('seeked',schedule);video.addEventListener('loadeddata',sc
 play.addEventListener('click',async()=>{if(!reduced())return;if(!video.paused){video.pause();manual=false;play.textContent='繼續播放';return;}try{if(video.ended)video.currentTime=0;await video.play();manual=true;intro.hidden=true;play.textContent='暫停播放';}catch{status.textContent='影片暫時無法播放，可直接探索下方內容。';}});
 sound.addEventListener('click',()=>{if(!reduced())return;video.muted=!video.muted;sound.setAttribute('aria-pressed',String(!video.muted));sound.textContent=video.muted?'音效 OFF':'音效 ON';});
 video.addEventListener('ended',()=>{if(reduced()){manual=false;play.textContent='重新播放';}});
-$('#film-skip').addEventListener('click',()=>{video.pause();manual=false;play.textContent='播放開場';});
+$('#film-skip').addEventListener('click',()=>{skipUntil=Date.now()+2000;video.pause();manual=false;play.textContent='播放開場';});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();manual=false;play.textContent='播放開場';}});
 addEventListener('scroll',()=>{if(reduced()&&journey.getBoundingClientRect().bottom<0){video.pause();manual=false;}schedule();},{passive:true});addEventListener('resize',schedule);
 new MutationObserver(()=>{if(lastReduced!==reduced()){lastReduced=reduced();video.pause();manual=false;intro.style.opacity='1';play.textContent='播放開場';}schedule();}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});schedule();
