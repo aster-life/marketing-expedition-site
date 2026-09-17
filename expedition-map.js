@@ -128,7 +128,7 @@ if (root) {
   journal.addEventListener('cancel',event=>{event.preventDefault();closeJournal();});
   journal.addEventListener('close',returnToMap);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mode==='approaching'){event.preventDefault();returnToMap();}});
-  // 只有地圖進入附近視野才載入立體場景；失敗時原圖與筆記仍可使用。
+  // 只有地圖進入附近視野才載入立體場景；載入前維持暗場，避免舊平面圖閃現。
   const loader = new IntersectionObserver(entries => {
     if (!entries.some(entry => entry.isIntersecting)) return;
     loader.disconnect();
@@ -136,8 +136,12 @@ if (root) {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);
+      requestAnimationFrame(()=>terrain.classList.remove('is-relief-loading'));
       schedule();
-    }).catch(error => console.warn('立體地圖暫時無法載入，保留平面地圖。', error));
+    }).catch(error => {
+      terrain.classList.add('is-relief-unavailable');
+      console.error('立體地圖無法載入。', error);
+    });
   }, { rootMargin: '500px' });
   loader.observe(root);
   window.addEventListener('scroll', schedule, { passive: true });

@@ -6,7 +6,8 @@
 .expedition-heading p{font-size:14px;color:#a6b3b5;line-height:1.9;margin:0}
 .expedition-chart{position:absolute;inset:0 -2% 0 24%;display:flex;align-items:center;mask-image:linear-gradient(90deg,transparent,#000 9%,#000 98%,transparent)}
 .expedition-terrain{position:relative;width:100%;aspect-ratio:1100/740;transform:translate(var(--map-x,0),var(--map-y,0));transition:transform 1.2s cubic-bezier(.2,.65,.2,1)}
-.atlas-drawing{display:block;width:100%;height:auto}
+.is-relief-loading .map-location{opacity:0;pointer-events:none}
+.is-relief-loading:before{content:"";position:absolute;inset:17% 11%;border-radius:50%;background:radial-gradient(ellipse,#c3913e1c 0%,#17333b12 45%,transparent 72%);filter:blur(18px);pointer-events:none}
 .site-aura{opacity:0;transition:opacity .9s}
 .site-ring{opacity:.2;transition:opacity .9s}
 .map-site.is-active .site-aura,.map-site.is-active .site-ring{opacity:1}
@@ -90,7 +91,6 @@ html.reduced .expedition-terrain,html.reduced .map-route,html.reduced .site-aura
 html.reduced .is-enhanced .expedition-story:not([hidden]){animation:none}
 /* 立體沙盤與深色探險檔案，延續原網站的夜色與古銅金。 */
 .relief-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.has-relief .atlas-drawing{visibility:hidden}
 .has-relief .map-location{border:1px solid #bb9a6355;box-shadow:0 7px 20px #0006;background:#10232aeb;cursor:pointer;font-family:inherit}
 .map-location{border:0;cursor:pointer;font-family:inherit}
 .expedition-chart:has(.has-relief){mask-image:none}
