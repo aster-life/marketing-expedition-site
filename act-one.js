@@ -96,30 +96,19 @@ async function warmWorld(preparedWorld){
  preparedWorld.render(0,0,0,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  host.dataset.warmed='true';
- loadingProgress(92,'正在預熱遠征本部');
- // 先把第二幕入口與代表鏡位送進 GPU，門檻兩側都預熱，避免剛進大廳才建立材質與陰影狀態。
- preparedWorld.render(1,.16,0,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,.2,0,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,.24,0,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,.42,0,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,.64,0,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.flushGpu?.();
- loadingProgress(95,'正在預熱成果星圖館');
- // 第三幕從初次顯示到展品展開都預先走過，避免入口幀第一次建立成果館的材質狀態。
- preparedWorld.render(1,1,.06,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,1,.12,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- preparedWorld.render(1,1,.28,null);
- await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ loadingProgress(92,'正在預熱成果星圖館');
+ // 只走會切換主要可見物件的代表畫面；避免為相近鏡位反覆送出數百萬個三角形。
  preparedWorld.render(1,1,.45,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- // WebGL 預熱呼叫可能只排入 GPU 佇列；在載入幕仍可見時完成佇列，避免首度捲入成果館才停住。
+ preparedWorld.render(1,1,.08,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ loadingProgress(95,'正在預熱遠征本部入口');
+ // 最後預熱第一次進門的重疊畫面，讓本部資源保持在近期 GPU 狀態。
+ preparedWorld.render(1,.225,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ preparedWorld.render(.52,0,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ // 載入幕仍可見時完成代表畫面的 GPU 佇列。
  preparedWorld.flushGpu?.();
  preparedWorld.render(0,0,0,null);
  host.hidden=wasHidden;host.style.removeProperty('visibility');host.dataset.interiorWarmed='true';host.dataset.galleryWarmed='true';
