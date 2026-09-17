@@ -23,6 +23,14 @@ export function createGalleryInteraction(stage,schedule,{pillar}={}){
  film.poster=galleryMedia.poster;
  stage.append(film);
  let failed=false,requested=false,decoded=false,decodedTime=0;
+ const requestMedia=()=>{if(requested)return;requested=true;film.src=galleryMedia.src;film.preload='auto';film.load();};
+ const prepare=()=>new Promise(resolve=>{
+  requestMedia();
+  if(film.readyState>=3||failed)return resolve();
+  const timer=setTimeout(done,10000);
+  function done(){clearTimeout(timer);film.removeEventListener('canplay',done);film.removeEventListener('error',done);resolve();}
+  film.addEventListener('canplay',done,{once:true});film.addEventListener('error',done,{once:true});
+ });
 
  const rememberFrame=()=>{if(film.readyState>=2&&!film.seeking){decoded=true;decodedTime=film.currentTime;}};
  film.addEventListener('loadeddata',rememberFrame);
@@ -33,12 +41,13 @@ export function createGalleryInteraction(stage,schedule,{pillar}={}){
  film.addEventListener('error',()=>{failed=true;schedule();});
  return {
   video:film,
+  prepare,
   render(progress,enabled){
    const state=galleryTimeline(progress);
    stage.classList.toggle('gallery-framed',enabled&&!!state.pose);
    film.pause();film.hidden=true;replay.hidden=true;stage.classList.remove('gallery-performing');
    if(!enabled){pillar?.render(null);return state;}
-   if(progress>.20&&!requested){requested=true;film.src=galleryMedia.src;film.preload='auto';film.load();}
+   if(progress>.20)requestMedia();
    if(failed){pillar?.render(null);return {...state,opacity:0};}
    const duration=film.duration,desired=Number.isFinite(duration)?Math.min(state.film*duration,duration-.045):0;
    if(Number.isFinite(duration)&&!film.seeking&&Math.abs(film.currentTime-desired)>.026)film.currentTime=desired;

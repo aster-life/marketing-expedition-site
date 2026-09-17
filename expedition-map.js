@@ -128,22 +128,26 @@ if (root) {
   journal.addEventListener('cancel',event=>{event.preventDefault();closeJournal();});
   journal.addEventListener('close',returnToMap);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mode==='approaching'){event.preventDefault();returnToMap();}});
-  // 只有地圖進入附近視野才載入立體場景；載入前維持暗場，避免舊平面圖閃現。
-  const loader = new IntersectionObserver(entries => {
-    if (!entries.some(entry => entry.isIntersecting)) return;
-    loader.disconnect();
-    import('./expedition-relief.js?v=performance-2').then(({ createRelief }) => {
+  // 進場幕期間先完成立體地圖，使用者開始捲動時不再臨時建立 WebGL 場景。
+  let worldPromise;
+  function prepareWorld(){
+    if(worldPromise)return worldPromise;
+    worldPromise=import('./expedition-relief.js?v=performance-2').then(({ createRelief }) => {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);
       requestAnimationFrame(()=>terrain.classList.remove('is-relief-loading'));
       schedule();
+      dispatchEvent(new CustomEvent('expedition:loading-progress',{detail:{value:100,label:'遠征準備完成'}}));
+      dispatchEvent(new CustomEvent('expedition:ready'));
     }).catch(error => {
       terrain.classList.add('is-relief-unavailable');
       console.error('立體地圖無法載入。', error);
+      dispatchEvent(new CustomEvent('expedition:ready'));
     });
-  }, { rootMargin: '500px' });
-  loader.observe(root);
+    return worldPromise;
+  }
+  addEventListener('expedition:act-ready',prepareWorld,{once:true});
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule, { passive: true });
   reduced.addEventListener('change', schedule);

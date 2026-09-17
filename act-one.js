@@ -1,4 +1,4 @@
-import {createGalleryInteraction} from './gallery-interaction.js?v=performance-1';
+import {createGalleryInteraction} from './gallery-interaction.js?v=performance-2';
 import {createMistTransition} from './mist-transition.js?v=2';
 const $=s=>document.querySelector(s),video=$('#opening-film'),journey=$('#atlas');
 const intro=$('.film-intro'),ending=$('.film-ending'),play=$('#film-play'),sound=$('#film-sound'),status=$('#film-status'),host=$('#forest-space');
@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=performance-3').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=performance-4').then(async({createForest})=>{
   world=await createForest(host,fallback);world.setGalleryVideo(galleryInteraction.video);
   host.setAttribute('aria-label','沿森林石階進入遠征本部；中央地圖桌、典籍與成果展館隨捲動依序展開');host.dataset.scene='forest-headquarters-gallery';delete host.dataset.loading;schedule();return world;
  }).catch(error=>{console.warn('立體遠征場景暫時無法載入。',error);fallback();});
@@ -66,6 +66,25 @@ $('#film-skip').addEventListener('click',()=>{skipUntil=Date.now()+2000;video.pa
 document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();manual=false;play.textContent='播放開場';}});
 addEventListener('scroll',()=>{if(reduced()&&journey.getBoundingClientRect().bottom<0){video.pause();manual=false;}schedule();},{passive:true});addEventListener('resize',schedule);
 new MutationObserver(()=>{if(lastReduced!==reduced()){lastReduced=reduced();video.pause();manual=false;intro.style.opacity='1';play.textContent='播放開場';}schedule();}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});schedule();
+
+const loadingProgress=(value,label)=>dispatchEvent(new CustomEvent('expedition:loading-progress',{detail:{value,label}}));
+const mediaReady=media=>new Promise(resolve=>{
+ if(media.readyState>=3)return resolve();
+ const timer=setTimeout(done,10000);
+ function done(){clearTimeout(timer);media.removeEventListener('canplay',done);media.removeEventListener('error',done);resolve();}
+ media.addEventListener('canplay',done,{once:true});media.addEventListener('error',done,{once:true});media.load();
+});
+async function prepareExperience(){
+ loadingProgress(14,'準備第一道光');
+ const openingReady=mediaReady(video).then(()=>loadingProgress(38,'開場影像已就緒'));
+ const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(54,'正在點亮星圖館'));
+ const preparedWorld=await ensureWorld();
+ loadingProgress(68,'正在建立遠征場景');
+ await Promise.allSettled([openingReady,galleryReady,preparedWorld?.prepareInterior?.()]);
+ loadingProgress(86,'立體空間已就緒');
+ dispatchEvent(new CustomEvent('expedition:act-ready'));
+}
+prepareExperience().catch(error=>{console.warn('部分遠征內容仍在背景準備。',error);dispatchEvent(new CustomEvent('expedition:act-ready'));});
 
 // 審閱接點：定位在揭開石柱之前，不直接跳過入場。
 if(location.hash==='#gallery-transition')requestAnimationFrame(()=>{scrollTo(0,innerHeight*5.2*(1.95+.53*1.1));schedule();});

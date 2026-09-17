@@ -192,7 +192,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
  let galleryVideo=null, galleryFrameReady=false;
  let width=0,height=0;host.append(renderer.domElement);renderer.domElement.addEventListener('webglcontextlost',onFailure);
  requestAnimationFrame(()=>setTimeout(ensureInterior,400));
- return {setGalleryVideo(video){galleryVideo=video;filmMaterial.map=new T.VideoTexture(video);filmMaterial.map.colorSpace=T.SRGBColorSpace;filmMaterial.needsUpdate=true;},render(p,actTwo=0,actThree=0,filmPose=null){
+ return {prepareInterior:ensureInterior,setGalleryVideo(video){galleryVideo=video;filmMaterial.map=new T.VideoTexture(video);filmMaterial.map.colorSpace=T.SRGBColorSpace;filmMaterial.needsUpdate=true;},render(p,actTwo=0,actThree=0,filmPose=null){
   if(actTwo>.02&&!hall)ensureInterior();
   const w=host.clientWidth||innerWidth,h=host.clientHeight||innerHeight;
   if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);}
