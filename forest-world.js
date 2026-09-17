@@ -4,7 +4,7 @@ import * as T from './assets/vendor/three.module.min.js';
 import {loadForestAssets} from './forest-assets.js?v=moon-1';
 import {createExpeditionHall} from './expedition-hall.js?v=continuity-1';
 import {hallCamera} from './hall-camera.js?v=1';
-import {loadHallAssets} from './hall-assets.js?v=treasury-1';
+import {loadHallAssets} from './hall-assets.js?v=performance-3';
 import {createInteriorReflections} from './interior-reflections.js?v=2';
 
 // 真實空間：石徑、岩台、樹木、拱橋與城堡各自具有完整幾何。
@@ -14,13 +14,14 @@ export async function createForest(host,onFailure=()=>{},options={}){
  renderer.setPixelRatio(options.pixelRatio??Math.min(devicePixelRatio,constrained?1:1.25));renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
- const [assets,hallProps]=await Promise.all([loadForestAssets(),loadHallAssets()]);
+ const assets=await loadForestAssets();
  const scene=new T.Scene();scene.background=new T.Color('#13283c');scene.fog=new T.FogExp2('#39618b',.0095);
  const camera=new T.PerspectiveCamera(54,16/9,.1,260);
  let seed=9271;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const smooth=(a,b,x)=>{const t=T.MathUtils.clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
  const loader=new T.TextureLoader(),base='./3d/forest-match/assets/mossy_cobblestone/mossy_cobblestone_';
- const [diff,normal,rough]=await Promise.all(['diff','nor_gl','rough'].map(n=>loader.loadAsync(base+n+'_2k.jpg')));
+ const terrainResolution=constrained?'1k':'2k';
+ const [diff,normal,rough]=await Promise.all(['diff','nor_gl','rough'].map(n=>loader.loadAsync(`${base}${n}_${terrainResolution}.jpg`)));
  diff.colorSpace=T.SRGBColorSpace;for(const t of [diff,normal,rough]){t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
  const material=(color,extra={})=>new T.MeshStandardMaterial({color,roughness:.82,...extra});
  const rock=material('#8a9eb5',{roughness:.46,map:diff,normalMap:normal,normalScale:new T.Vector2(.75,.75),roughnessMap:rough});
@@ -143,19 +144,32 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
  }
  for(const [x,y,z,size] of sprayPoints){const spray=new T.Sprite(new T.SpriteMaterial({map:mistMap,color:'#c1ddf3',transparent:true,opacity:.8,depthWrite:false}));spray.position.set(x,y,z);spray.scale.set(size,size*.36,1);scene.add(spray);}
  const outdoors=scene.children.filter(o=>!o.isLight&&o!==moon.target&&o!==sky);
- const hall=createExpeditionHall(scene,{stone,gold,glowMap,props:hallProps});
-
- const gallery=createAtlasGallery(scene,{stone,gold,glowMap,props:hallProps});
  const reflectInterior=constrained?()=>{}:createInteriorReflections(renderer,scene);
- host.dataset.assetMetrics=JSON.stringify(hallProps.metrics);
  const filmMaterial=new T.MeshBasicMaterial({color:0xffffff,toneMapped:false,fog:false});
  const filmSurface=new T.Mesh(new T.PlaneGeometry(12,6.75),filmMaterial);filmSurface.position.set(14,19.3,-174);filmSurface.visible=false;scene.add(filmSurface);
- // 門扇遮住首幀，靠近後開啟；揭示與影片行走共用捲動起點。
- const entryDoors=(await new GLTFLoader().loadAsync('./3d/hall-assets/large_castle_door/large_castle_door_2k.gltf')).scene;
- entryDoors.scale.setScalar(4.2);entryDoors.position.set(14.185,15.6,-169);scene.add(entryDoors);
- const doorPivots=['large_castle_door_left','large_castle_door_right'].map(name=>entryDoors.getObjectByName(name));
- doorPivots.forEach(o=>o.rotation.set(0,0,0));
- entryDoors.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material.color.set('#695444');for(const k of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[k])o.material[k].anisotropy=8;}});
+ let hall=null,gallery=null,entryDoors=null,doorPivots=[],interiorPromise=null;
+ // 第一個森林畫面先完成；室內桌櫃與城門在背景載入，避免轉場同時解析全部資產。
+ function ensureInterior(){
+  if(interiorPromise)return interiorPromise;
+  host.dataset.interiorLoading='true';
+  interiorPromise=(async()=>{
+   const resolution=constrained?'1k':'2k';
+   const hallProps=await loadHallAssets({resolution});
+   hall=createExpeditionHall(scene,{stone,gold,glowMap,props:hallProps});
+   gallery=createAtlasGallery(scene,{stone,gold,glowMap,props:hallProps});
+   host.dataset.assetMetrics=JSON.stringify(hallProps.metrics);host.dataset.interiorReady='true';delete host.dataset.interiorLoading;
+   try{
+    const doorAsset=await new GLTFLoader().loadAsync(`./3d/hall-assets/large_castle_door/large_castle_door_${resolution}.gltf`);
+    entryDoors=doorAsset.scene;entryDoors.scale.setScalar(4.2);entryDoors.position.set(14.185,15.6,-169);scene.add(entryDoors);
+    doorPivots=['large_castle_door_left','large_castle_door_right'].map(name=>entryDoors.getObjectByName(name)).filter(Boolean);
+    doorPivots.forEach(o=>o.rotation.set(0,0,0));
+    entryDoors.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material.color.set('#695444');for(const k of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[k])o.material[k].anisotropy=constrained?2:8;}});
+    host.dataset.doorReady='true';
+   }catch(error){host.dataset.doorFailed='true';console.warn('星圖館門扇暫時無法載入。',error);}
+   return {hall,gallery,entryDoors};
+  })().catch(error=>{delete host.dataset.interiorLoading;host.dataset.interiorFailed='true';console.warn('室內資產暫時無法載入。',error);return null;});
+  return interiorPromise;
+ }
  // 石牆包住原模型的拱頂；保留模型比例，不把古堡門拉成橫向平板。
  const surround=new T.Shape();surround.moveTo(-15,0);surround.lineTo(15,0);surround.lineTo(15,19);surround.lineTo(-15,19);surround.closePath();
  const opening=new T.Path();opening.moveTo(-3.9,0);opening.lineTo(-3.9,8.0);opening.absarc(0,8.0,3.9,Math.PI,0,true);opening.lineTo(3.9,0);opening.closePath();surround.holes.push(opening);
@@ -177,32 +191,37 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
  const entryWarm=new T.PointLight('#ffc18b',0,12,1.6);entryWarm.position.set(0,4.5,1.6);masonry.add(entryWarm);
  let galleryVideo=null, galleryFrameReady=false;
  let width=0,height=0;host.append(renderer.domElement);renderer.domElement.addEventListener('webglcontextlost',onFailure);
+ requestAnimationFrame(()=>setTimeout(ensureInterior,400));
  return {setGalleryVideo(video){galleryVideo=video;filmMaterial.map=new T.VideoTexture(video);filmMaterial.map.colorSpace=T.SRGBColorSpace;filmMaterial.needsUpdate=true;},render(p,actTwo=0,actThree=0,filmPose=null){
+  if(actTwo>.02&&!hall)ensureInterior();
   const w=host.clientWidth||innerWidth,h=host.clientHeight||innerHeight;
   if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);}
   camera.aspect=w/h;camera.fov=w/h<1?68:54;
   const t=smooth(0,1,p),z=12-t*37;
   camera.position.set(pathX(z)*.6+Math.sin(t*Math.PI)*.8,3.2+groundY(z),z);camera.lookAt(Math.sin(t*Math.PI)*-2,14+t*3,-85);
-  if(actTwo>0){
-   const pose=hallCamera(actTwo);camera.position.fromArray(pose.position);
+  const interiorProgress=hall?actTwo:Math.min(actTwo,.29);
+  if(interiorProgress>0){
+   const pose=hallCamera(interiorProgress);camera.position.fromArray(pose.position);
    if(w/h<1){
     // 窄畫面以較遠、較短的桌側弧線保留整張桌子，不裁切主體。
-    const amount=smooth(.4,.49,actTwo)*(1-smooth(.88,.96,actTwo));
+    const amount=smooth(.4,.49,interiorProgress)*(1-smooth(.88,.96,interiorProgress));
     const dx=(pose.position[0]-1.2)*.55,dz=pose.position[2]+112,len=Math.hypot(dx,dz)||1;
     camera.position.x=T.MathUtils.lerp(camera.position.x,1.2+dx/len*12,amount);
     camera.position.z=T.MathUtils.lerp(camera.position.z,-112+dz/len*12,amount);
    }
    camera.lookAt(...pose.look);
   }
-  const indoors=smooth(.30,.43,actTwo);scene.fog.color.set('#39618b').lerp(new T.Color('#252e38'),indoors);scene.fog.density=.0095-indoors*.006;
+  const indoors=smooth(.30,.43,interiorProgress);scene.fog.color.set('#39618b').lerp(new T.Color('#252e38'),indoors);scene.fog.density=.0095-indoors*.006;
   hemi.intensity=2.7-indoors*2.1;moon.intensity=3.7*(1-indoors);fill.intensity=.32*(1-indoors);castleLight.intensity=270*(1-indoors);
-  outdoors.forEach(o=>{o.visible=actTwo<.43;});
+  outdoors.forEach(o=>{o.visible=interiorProgress<.43;});
   // 穿過外拱後，外殼退出繪製；室內獨立頂部接手，降低已離開視野的幾何負擔。
-  castle.visible=actTwo<.43;
+  castle.visible=interiorProgress<.43;
 
-  const opened=hall.update(actTwo);gallery.group.visible=actTwo>.8;hall.group.visible=actThree<.36;if(actThree>0)gallery.render(actThree,camera,w/h<1);camera.updateProjectionMatrix();water.uniforms.phase.value=(t+actTwo)*12;
-  if(actTwo>.48&&actThree===0)reflectInterior('hall',hall.group,[1.2,19.8,-112]);
-  if(actThree>.2)reflectInterior('gallery',gallery.group,[6.3,20,-157]);
+  const opened=hall?.update(interiorProgress)??0;
+  if(gallery&&hall){gallery.group.visible=interiorProgress>.8;hall.group.visible=actThree<.36;if(actThree>0)gallery.render(actThree,camera,w/h<1);}
+  camera.updateProjectionMatrix();water.uniforms.phase.value=(t+interiorProgress)*12;
+  if(hall&&interiorProgress>.48&&actThree===0)reflectInterior('hall',hall.group,[1.2,19.8,-112]);
+  if(gallery&&actThree>.2)reflectInterior('gallery',gallery.group,[6.3,20,-157]);
   // 製作取景可指定鏡位，主網站未傳入時沿用捲動運鏡。
   if(options.cameraPose){camera.position.fromArray(options.cameraPose.position);camera.lookAt(...options.cameraPose.look);camera.fov=options.cameraPose.fov??54;camera.updateProjectionMatrix();}
   // 以核定尾幀的同鏡位交接；保持影片與 3D 的 16:9 取景，再平順展回裝置尺寸。
@@ -221,8 +240,8 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
   }
 
   if(galleryVideo?.readyState>=2)galleryFrameReady=true;
-  filmSurface.visible=!!filmPose?.portal&&galleryFrameReady;
-  entryDoors.visible=actThree>0;masonry.visible=actThree>0;
+  filmSurface.visible=!!entryDoors&&!!filmPose?.portal&&galleryFrameReady;
+  if(entryDoors)entryDoors.visible=actThree>0;masonry.visible=!!entryDoors&&actThree>0;
   entryWarm.intensity=12*smooth(.34,.61,actThree)*(1-smooth(.72,.85,actThree));
   const entryOpen=galleryFrameReady?(filmPose?.doorOpen??0):0;
   doorPivots.forEach((pivot,i)=>{pivot.rotation.y=(i===0?1:-1)*entryOpen*Math.PI/2;});

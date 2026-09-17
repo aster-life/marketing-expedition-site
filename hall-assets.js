@@ -3,10 +3,12 @@ import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
 
 // CC0 原始 glTF 與材質保留於資產目錄；不改写原始模型。
-export async function loadHallAssets(){
+export async function loadHallAssets({resolution='2k'}={}){
  const loader=new GLTFLoader();
  const ids=['wooden_table_02','wooden_bookshelf_worn','book_encyclopedia_set_01','treasure_chest'];
- const results=await Promise.all(ids.map(id=>loader.loadAsync(`./3d/hall-assets/${id}/${id}_${id==='treasure_chest'?'1k':'2k'}.gltf`)));
+ // 逐件解析，避免多組 glTF 與圖片在同一個主執行緒尖峰完成。
+ const results=[];
+ for(const id of ids)results.push(await loader.loadAsync(`./3d/hall-assets/${id}/${id}_${id==='treasure_chest'?'1k':resolution}.gltf`));
  const models=Object.fromEntries(ids.map((id,i)=>[id,results[i].scene]));
  // 同材質靜態書籍合併繪製，保留每本書的實際幾何與 UV。
  const originalBooks=models.book_encyclopedia_set_01;originalBooks.updateMatrixWorld(true);

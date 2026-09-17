@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=performance-1').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=performance-3').then(async({createForest})=>{
   world=await createForest(host,fallback);world.setGalleryVideo(galleryInteraction.video);
   host.setAttribute('aria-label','沿森林石階進入遠征本部；中央地圖桌、典籍與成果展館隨捲動依序展開');host.dataset.scene='forest-headquarters-gallery';delete host.dataset.loading;schedule();return world;
  }).catch(error=>{console.warn('立體遠征場景暫時無法載入。',error);fallback();});
