@@ -121,6 +121,35 @@ html.reduced .is-enhanced .expedition-story:not([hidden]){animation:none}
 @media(max-width:700px){.expedition-journal{width:92vw;max-height:90svh}.journal-spread{grid-template-columns:1fr;min-height:0}.journal-plate{min-height:210px}.journal-page{padding:28px 24px;border-left:0;border-top:1px solid #b9965a77}.journal-page h2{font-size:30px;margin:12px 0}.journal-lead{font-size:18px}.journal-rule{margin:18px 0}.journal-page #journal-detail{font-size:13px}.journal-plate figcaption{bottom:18px;left:24px}}
 @media(prefers-reduced-motion:reduce){.journal-spread{animation:none}}
 html.reduced .journal-spread{animation:none}
+/* 桌面總覽以可用視窗分配高度；導覽保有自己的列，不再被最低高度推到屏外。 */
+@media(min-width:1001px){
+ .is-enhanced .expedition-stage{min-height:0;height:100svh;display:grid;grid-template-columns:minmax(0,min(25vw,345px)) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) 48px 18px;row-gap:clamp(12px,2svh,20px);padding:clamp(18px,4svh,46px) 6vw 14px}
+ .is-enhanced .expedition-heading{grid-column:1;grid-row:1;width:100%;padding:0}
+ .is-enhanced .expedition-heading .eyebrow{margin-bottom:10px}
+ .is-enhanced .expedition-heading h2{font-size:clamp(32px,6.6svh,67px);line-height:1.25;margin:12px 0}
+ .is-enhanced .expedition-stories{position:relative;grid-column:1;grid-row:2;top:auto;left:auto;width:100%;max-width:none;min-height:0;margin:0;align-self:center}
+ .is-enhanced .expedition-story .eyebrow{margin-bottom:10px}
+ .is-enhanced .expedition-story h3{font-size:clamp(20px,3svh,28px);line-height:1.5;margin:10px 0}
+ .is-enhanced .expedition-story p{margin-bottom:14px}
+ .is-enhanced .expedition-stops{position:relative;grid-column:1/-1;grid-row:3;inset:auto;align-self:stretch}
+ .is-enhanced .expedition-stops button{min-height:44px;padding-top:8px;padding-bottom:8px}
+ .is-enhanced .expedition-scroll{position:relative;grid-column:1/-1;grid-row:4;inset:auto}
+ .is-enhanced .expedition-chart{inset:0 -1% 128px 28%}
+ .is-enhanced .expedition-terrain{width:min(100%,calc((100svh - 120px)*1.65),1420px);flex-shrink:0;transform:translate(var(--map-x,0),var(--map-y,0)) scale(.975)}
+ .is-enhanced .map-view-controls{bottom:98px;right:6vw}
+}
+@media(min-width:1001px) and (max-height:650px){
+ .is-enhanced .expedition-stage{grid-template-columns:minmax(0,29vw) minmax(0,1fr);row-gap:10px;padding-top:16px;padding-bottom:10px}
+ .is-enhanced .expedition-heading .eyebrow{margin-bottom:6px}
+ .is-enhanced .expedition-heading h2{font-size:clamp(30px,6svh,39px);margin:8px 0}
+ .is-enhanced .expedition-heading p{font-size:12px;line-height:1.7}
+ .is-enhanced .expedition-story .eyebrow{margin-bottom:6px}
+ .is-enhanced .expedition-story h3{font-size:20px;margin:6px 0}
+ .is-enhanced .expedition-story p{font-size:13px;line-height:1.7;margin-bottom:10px}
+ .is-enhanced .expedition-enter{min-height:44px;padding:6px 0}
+ .is-enhanced .map-view-controls{bottom:90px}
+ .is-enhanced .map-view-controls span{display:none}
+}
 
 .expedition-journal{overflow-x:hidden;scrollbar-width:thin}
 .journal-page,.journal-plate{min-width:0}
