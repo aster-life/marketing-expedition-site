@@ -98,7 +98,8 @@ html.reduced .is-enhanced .expedition-story:not([hidden]){animation:none}
 .expedition-journal{padding:0;border:1px solid #b8986155;width:min(1060px,92vw);max-width:none;max-height:90svh;overflow:auto;background:#0c1920;color:#ede6d8;box-shadow:0 35px 100px #000b,0 0 0 6px #b6945020;perspective:1800px}
 .expedition-journal::backdrop{background:#02080dde;backdrop-filter:blur(7px)}
 .journal-spread{display:grid;grid-template-columns:1.08fr 1fr;min-height:590px;transform-origin:left center;animation:journal-unfold .65s cubic-bezier(.2,.65,.2,1)}
-.journal-close{position:absolute;right:12px;top:10px;z-index:3;width:44px;height:44px;background:#08151cba;border:1px solid #c6a36855;color:#e6d8bb;font-size:29px;cursor:pointer}
+.journal-close{position:absolute;right:12px;top:10px;z-index:3;display:grid;place-items:center;box-sizing:border-box;width:44px;height:44px;padding:0;background:#08151cba;border:1px solid #c6a36855;color:#e6d8bb;line-height:1;cursor:pointer}
+.journal-close svg{display:block;width:24px;height:24px;pointer-events:none}
 .journal-plate{margin:0;position:relative;min-height:100%;overflow:hidden;background:#142128}
 .journal-plate img{width:100%;height:100%;position:absolute;object-fit:cover;filter:brightness(.78) saturate(.8)}
 .journal-plate:after{content:"";position:absolute;inset:0;box-shadow:inset -18px 0 35px #0007;background:linear-gradient(0deg,#071219df,transparent 30%)}
