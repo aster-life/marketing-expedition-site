@@ -1,3 +1,4 @@
+import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
@@ -177,12 +178,18 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  }
  function draw(){if(!active||disposed||document.hidden)return;const started=performance.now();renderer.render(scene,camera);const elapsed=performance.now()-started;host.dataset.renderMs=elapsed.toFixed(1);host.dataset.maxRenderMs=Math.max(Number(host.dataset.maxRenderMs||0),elapsed).toFixed(1);project();host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);}
  function cancelMotion(){cancelAnimationFrame(raf);raf=0;finishMotion?.();finishMotion=null;busy=false;}
- function move(position,target,duration=1050){
+ function move(position,target,duration=1050,via=[]){
   cancelMotion();busy=true;controls.forEach(b=>b.disabled=true);buttons.forEach(b=>b.disabled=true);
   const from=camera.position.clone(),fromLook=look.clone(),to=new T.Vector3(...position),toLook=new T.Vector3(...target);const started=performance.now();
+  const journey=via.length?createCameraJourney([{at:0,position:from.toArray(),target:fromLook.toArray()},...via,{at:1,position,target}]):null;
   return new Promise(resolve=>{
    finishMotion=resolve;
-   const frame=now=>{const t=quiet()?1:Math.min(1,(now-started)/duration),e=t*t*t*(t*(t*6-15)+10);camera.position.lerpVectors(from,to,e);look.lerpVectors(fromLook,toLook,e);camera.lookAt(look);draw();
+   const frame=now=>{
+    const t=quiet()?1:Math.min(1,(now-started)/duration),e=t*t*t*(t*(t*6-15)+10);
+    if(journey){
+     const pose=journey(t);camera.position.fromArray(pose.position);look.fromArray(pose.target);host.dataset.entryPhase=pose.phase;
+    }else{camera.position.lerpVectors(from,to,e);look.lerpVectors(fromLook,toLook,e);}
+    camera.lookAt(look);draw();
     if(t<1&&active)raf=requestAnimationFrame(frame);else{busy=false;raf=0;finishMotion=null;controls.forEach(b=>b.disabled=false);buttons.forEach(b=>b.disabled=false);draw();resolve();}
    };raf=requestAnimationFrame(frame);
   });
@@ -227,14 +234,11 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
    host.dataset.entryPhase='exterior';
    const narrow=host.clientWidth/host.clientHeight<1;
    camera.position.set(7.6,10,narrow?49:40);look.set(0,3,15.5);camera.lookAt(look);resize();
-   if(!quiet()){
-    await move([0,2.65,18.6],[0,2.65,11],750);
-    if(!active)return;
-    host.dataset.entryPhase='threshold';
-    await move([0,2.65,14],[0,2.4,-1],520);
-    if(!active)return;
-   }
-   host.dataset.entryPhase='interior';const v=overviewView();await move(v.position,v.target,550);
+   // 單一連續運鏡穿過外觀與門檻；互動鎖定保持到抵達室內。
+   const v=overviewView();await move(v.position,v.target,1820,[
+    {at:750/1820,position:[0,2.65,Math.max(18.6,v.position[2]+7)],target:[0,2.65,11]},
+    {at:1270/1820,position:[0,2.65,Math.max(14,v.position[2]+3)],target:[0,2.4,-1]}
+   ]);
    if(active)host.dataset.entryPhase='ready';
   },
   suspend(){active=false;pointer=null;cancelMotion();host.dataset.entryPhase='idle';},

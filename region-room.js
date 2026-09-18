@@ -1,3 +1,4 @@
+import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
 import {buildRegionScene} from './region-scenes.js?v=room-light-1';
@@ -28,12 +29,18 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
  }
  function draw(){if(!active||disposed||document.hidden)return;const started=performance.now();renderer.render(scene,camera);const elapsed=performance.now()-started;host.dataset.renderMs=elapsed.toFixed(1);host.dataset.maxRenderMs=Math.max(Number(host.dataset.maxRenderMs||0),elapsed).toFixed(1);project();host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);}
  function cancelMotion(){cancelAnimationFrame(raf);raf=0;finishMotion?.();finishMotion=null;busy=false;}
- function move(position,target,duration=1050){
+ function move(position,target,duration=1050,via=[]){
   cancelMotion();busy=true;controls.forEach(b=>b.disabled=true);buttons.forEach(b=>b.disabled=true);
   const from=camera.position.clone(),fromLook=look.clone(),to=new T.Vector3(...position),toLook=new T.Vector3(...target);const started=performance.now();
+  const journey=via.length?createCameraJourney([{at:0,position:from.toArray(),target:fromLook.toArray()},...via,{at:1,position,target}]):null;
   return new Promise(resolve=>{
    finishMotion=resolve;
-   const frame=now=>{const t=quiet()?1:Math.min(1,(now-started)/duration),e=t*t*t*(t*(t*6-15)+10);camera.position.lerpVectors(from,to,e);look.lerpVectors(fromLook,toLook,e);camera.lookAt(look);draw();
+   const frame=now=>{
+    const t=quiet()?1:Math.min(1,(now-started)/duration),e=t*t*t*(t*(t*6-15)+10);
+    if(journey){
+     const pose=journey(t);camera.position.fromArray(pose.position);look.fromArray(pose.target);host.dataset.entryPhase=pose.phase;
+    }else{camera.position.lerpVectors(from,to,e);look.lerpVectors(fromLook,toLook,e);}
+    camera.lookAt(look);draw();
     if(t<1&&active)raf=requestAnimationFrame(frame);else{busy=false;raf=0;finishMotion=null;controls.forEach(b=>b.disabled=false);buttons.forEach(b=>b.disabled=false);draw();resolve();}
    };raf=requestAnimationFrame(frame);
   });
@@ -76,11 +83,15 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
    active=true;selection=-1;orbitOffset=0;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));host.dataset.entryPhase='exterior';
    const narrow=host.clientWidth/host.clientHeight<1;
    camera.position.set(entry[0][0],entry[0][1],entry[0][2]+(narrow?8:0));look.set(0,2.6,index===3?0:15);camera.lookAt(look);resize();
-   if(!quiet()){
-    await move(entry[1],[0,2.5,index===3?0:12],750);if(!active)return;
-    host.dataset.entryPhase='threshold';await move(entry[2],[0,2,-1],520);if(!active)return;
-   }
-   host.dataset.entryPhase='interior';const v=overviewView();await move(v.position,v.target,550);if(active)host.dataset.entryPhase='ready';
+   // 共用連續取景，保留各地點的入口與室內終點。
+   const v=overviewView(),approach=[...entry[1]],threshold=[...entry[2]];
+   // 最終鏡位較遠（營地或窄畫面）時，門檻也向外移，避免走過頭再倒退。
+   approach[2]=Math.max(approach[2],v.position[2]+7);threshold[2]=Math.max(threshold[2],v.position[2]+3);
+   await move(v.position,v.target,1820,[
+    {at:750/1820,position:approach,target:[0,2.5,index===3?0:12]},
+    {at:1270/1820,position:threshold,target:[0,2,-1]}
+   ]);
+   if(active)host.dataset.entryPhase='ready';
   },
   suspend(){active=false;pointer=null;cancelMotion();host.dataset.entryPhase='idle';},
   dispose

@@ -103,7 +103,7 @@ if (root) {
     roomHost=document.createElement('div');roomHost.className='harbor-room-host';roomHost.dataset.ready='false';journal.append(roomHost);
     const slot={index,host:roomHost,retired:false,room:null};roomSlot=slot;
     const callbacks={index,quiet,onSelect:exhibit=>{if(roomSlot===slot)exhibitNote(exhibit);},onOverview:()=>{if(mode==='reading'&&active===index)fillNote(index);}};
-    const module=index===1?import('./harbor-room.js?v=room-performance-1'):import('./region-room.js?v=room-performance-1');
+    const module=index===1?import('./harbor-room.js?v=continuous-entry-2'):import('./region-room.js?v=continuous-entry-2');
     slot.promise=module.then(api=>index===1?api.createHarborRoom(slot.host,callbacks):api.createRegionRoom(slot.host,callbacks)).then(room=>{
       if(slot.retired){room.dispose();throw new Error('已離開此區域');}
       slot.room=room;return room;
