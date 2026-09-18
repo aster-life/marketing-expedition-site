@@ -14,7 +14,7 @@ export function createRelief(host, labels) {
   renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.18;
   renderer.domElement.className = 'relief-canvas';
   renderer.domElement.setAttribute('aria-hidden','true');
   host.prepend(renderer.domElement);
@@ -23,38 +23,19 @@ export function createRelief(host, labels) {
   camera.position.set(3,22,25); camera.lookAt(0,0,0);
   const island = new T.Group();scene.add(island);
   const mat = (color, metalness=0, roughness=.8) => new T.MeshStandardMaterial({color,metalness,roughness});
-  const stone=mat(0x384b4c,.25), wall=mat(0x837151,.5), roof=mat(0x1b353c,.5), gold=mat(0xcda25d,.7,.32), wood=mat(0x604c37), cliff=mat(0x1d343a), grass=mat(0x263b34,.15), snow=mat(0x646e60,.2), water=mat(0x163d4b,.55,.3);
+  const stone=mat(0x384b4c,.25), wall=mat(0x837151,.5), roof=mat(0x27434b,.12), gold=mat(0xcda25d,.7,.32), wood=mat(0x887052), cliff=mat(0x1d343a), grass=mat(0x263b34,.15), snow=mat(0x646e60,.2), water=mat(0x163d4b,.55,.3);
   const lamp = new T.MeshStandardMaterial({color:0xffd187,emissive:0xffaa44,emissiveIntensity:2});
   function mesh(geometry,material,parent=island,x=0,y=0,z=0){const m=new T.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
   function box(w,h,d,m,p,x=0,y=0,z=0){return mesh(new T.BoxGeometry(w,h,d),m,p,x,y,z);}
   function cylinder(r,h,m,p,x=0,y=0,z=0,n=12){return mesh(new T.CylinderGeometry(r,r,h,n),m,p,x,y,z);}
   function cone(r,h,m,p,x=0,y=0,z=0,n=6){return mesh(new T.ConeGeometry(r,h,n),m,p,x,y,z);}
-  scene.add(new T.HemisphereLight(0xb9d6e1,0x273426,1.3));
-  const sun = new T.DirectionalLight(0xffd69a,3.3); sun.position.set(-9,17,8);sun.castShadow=true;sun.shadow.mapSize.set(512,512);Object.assign(sun.shadow.camera,{left:-16,right:16,top:14,bottom:-14});sun.shadow.normalBias=.05;sun.shadow.bias=-.0002;scene.add(sun);
-  const rim=new T.DirectionalLight(0x7eafdb,1.5);rim.position.set(10,8,-12);scene.add(rim);
-  // 石質底座、金屬包邊與有厚度的海岸。
-  // 圓角展盤與抬高的連續收邊，讓後緣呈現實體厚度。
-  function trayShape(w,d,r){
-    const s=new T.Shape(),x=-w/2,z=-d/2;
-    s.moveTo(x+r,z);s.lineTo(x+w-r,z);s.quadraticCurveTo(x+w,z,x+w,z+r);
-    s.lineTo(x+w,z+d-r);s.quadraticCurveTo(x+w,z+d,x+w-r,z+d);
-    s.lineTo(x+r,z+d);s.quadraticCurveTo(x,z+d,x,z+d-r);
-    s.lineTo(x,z+r);s.quadraticCurveTo(x,z,x+r,z);return s;
-  }
-  function tray(w,d,r,depth,y,material){
-    const g=new T.ExtrudeGeometry(trayShape(w,d,r),{depth,bevelEnabled:true,bevelSize:.07,bevelThickness:.05,bevelSegments:3,curveSegments:12});
-    g.rotateX(-Math.PI/2);return mesh(g,material,island,0,y,0);
-  }
-  tray(24,17,.8,.5,-1.5,cliff);
-  tray(24,17,.8,.1,-1,gold);
-  tray(23.68,16.68,.7,.08,-.89,water);
-  const rimShape=trayShape(24,17,.8);
-  rimShape.holes.push(trayShape(23.64,16.64,.65));
-  const rimGeo=new T.ExtrudeGeometry(rimShape,{depth:.15,bevelEnabled:true,bevelSize:.025,bevelThickness:.025,bevelSegments:2,curveSegments:12});
-  rimGeo.rotateX(-Math.PI/2);mesh(rimGeo,gold,island,0,-.83,0);
+  scene.add(new T.HemisphereLight(0xc4d9e6,0x3d5149,1.65));
+  const sun = new T.DirectionalLight(0xffe3b7,3.6); sun.position.set(-9,17,8);sun.castShadow=true;sun.shadow.mapSize.set(constrained?512:1024,constrained?512:1024);Object.assign(sun.shadow.camera,{left:-16,right:16,top:14,bottom:-14});sun.shadow.normalBias=.05;sun.shadow.bias=-.0002;scene.add(sun);
+  const rim=new T.DirectionalLight(0x9dcced,1.85);rim.position.set(10,8,-12);scene.add(rim);
+  // 沿不規則海岸保留岩層厚度，移除矩形展盤與外圍金框。
   const coords=[[-10,-1],[-9,-5],[-6,-6],[-4,-7],[-1,-6.3],[2,-7],[4,-5.9],[7,-6],[8,-4],[9,-2],[8.5,0],[10,2],[8,3.5],[5.5,4],[6,5.5],[3,6.5],[0,6],[-2,7],[-5,6.3],[-7,5],[-7.5,3],[-9,2]];
   function land(scale,depth,y,material){const shape=new T.Shape();coords.forEach(([x,z],i)=>i?shape.lineTo(x*scale,-z*scale):shape.moveTo(x*scale,-z*scale));shape.closePath();const g=new T.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.16,bevelThickness:.12});g.rotateX(-Math.PI/2);return mesh(g,material,island,0,y,0);}
-  land(1,1,-.75,cliff);land(.98,.16,.26,stone);land(.96,.12,.47,grass);
+  land(.94,.35,-1.02,cliff);land(1,1,-.75,cliff);land(1.007,.045,-.24,stone);land(.98,.16,.26,stone);land(.96,.12,.47,grass);
   // 山稜採不同高度、角度與明暗面，避免只有平面符號。
   let seed=51;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
   // 連續地形網格：山腳相連，峰面有稜線與侵蝕起伏。
@@ -77,11 +58,25 @@ export function createRelief(host, labels) {
     const erosion=.17*Math.sin(x*8+z*5)+.12*Math.sin(x*3-z*9);
     // 山腳下沉於島面，避免矩形網格在海岸之外露出。
     const h=edge*(peaks+erosion);ridgePos.setY(i,-1.4+(h+1.4)*coastInset(x,z-4.6));
-    const c=new T.Color().lerpColors(new T.Color(0x283c37),new T.Color(0x77817a),Math.min(1,h/2.7));ridgeColors.push(c.r,c.g,c.b);
+    const c=new T.Color().lerpColors(new T.Color(0x364e49),new T.Color(0x899f9d),Math.min(1,h/2.7));ridgeColors.push(c.r,c.g,c.b);
   }
   ridgeGeo.setAttribute('color',new T.Float32BufferAttribute(ridgeColors,3));ridgeGeo.computeVertexNormals();
-  const ridgeMaterial=new T.MeshStandardMaterial({vertexColors:true,color:0x819394,roughness:.92,metalness:.08});mesh(ridgeGeo,ridgeMaterial,island,0,.5,-4.6);
+  const ridgeMaterial=new T.MeshStandardMaterial({vertexColors:true,color:0xa4b9b3,roughness:.92,metalness:.08});mesh(ridgeGeo,ridgeMaterial,island,0,.5,-4.6);
   const sites=[[-6,0], [6,2.8], [5,-3.7], [-3.4,4.6]];
+  // 細小地勢與苔色變化，避免中央呈現一整塊平滑的板材。
+  const earth=new T.MeshStandardMaterial({vertexColors:true,roughness:.96,metalness:0});
+  const ground=new T.PlaneGeometry(20,14,72,48);ground.rotateX(-Math.PI/2);
+  const gp=ground.attributes.position,tones=[],inside=[];
+  for(let i=0;i<gp.count;i++){
+    const x=gp.getX(i),z=gp.getZ(i),edge=coastInset(x,z);
+    const clear=Math.min(1,Math.max(0,Math.min(...sites.map(([sx,sz])=>Math.hypot(x-sx,z-sz)))-1.65));
+    const grain=(Math.sin(x*2.3+z*.9)+Math.cos(z*3.4-x*.7)+2)/4;
+    gp.setY(i,.735+edge*clear*(.02+.065*grain));inside.push(edge>0);
+    const c=new T.Color().lerpColors(new T.Color(0x253d34),new T.Color(0x4b6247),grain*.8);
+    tones.push(c.r,c.g,c.b);
+  }
+  const indices=[];for(let i=0;i<ground.index.count;i+=3){const a=ground.index.getX(i),b=ground.index.getX(i+1),c=ground.index.getX(i+2);if(inside[a]&&inside[b]&&inside[c])indices.push(a,b,c);}
+  ground.setIndex(indices);ground.setAttribute('color',new T.Float32BufferAttribute(tones,3));ground.computeVertexNormals();mesh(ground,earth);
   const groups=sites.map(([x,z])=>{const g=new T.Group();g.position.set(x,.68,z);island.add(g);cylinder(1.55,.14,stone,g,0,0,0,32);return g;});
   const castle=groups[0],guildEntrance=createRegionEntrance(0,{stone:wall,wood,metal:gold,roof,glow:lamp});guildEntrance.scale.setScalar(.27);castle.add(guildEntrance);
   box(2.8,1.4,2.5,wall,castle,0,.7,-1.15);box(2.95,.14,2.65,roof,castle,0,1.47,-1.15);
@@ -104,27 +99,48 @@ export function createRelief(host, labels) {
     line([[x-w/2,y-h/2,z+.02],[x-w/2,y+h*.18,z+.02],[x,y+h*.65,z+.02],[x+w/2,y+h*.18,z+.02],[x+w/2,y-h/2,z+.02]],.018,gold,parent);
     box(.025,h,.035,gold,parent,x,y,z+.04);box(w,.025,.035,gold,parent,x,y-.03,z+.04);
   }
+  // 屋脊、分片金屬瓦與簷口有真實厚度，沿用既有入口輪廓。
+  const patina=mat(0x6d8584,.35,.65);
+  function pitchedRoof(parent,width,depth,y,z){
+    const slope=.38,half=width/2;
+    for(const side of [-1,1]){
+      const panel=box(half+.12,.07,depth,roof,parent,side*half/2,y,z);panel.rotation.z=-side*slope;
+      for(let row=0;row<8;row++){const seam=box(half+.14,.025,.025,patina,parent,side*half/2,y+.04,z-depth/2+row*depth/7);seam.rotation.z=-side*slope;}
+      box(.045,.08,depth,patina,parent,side*half,y-Math.sin(slope)*half/2,z);
+    }
+    box(.065,.08,depth+.12,patina,parent,0,y+Math.sin(slope)*half/2,z);
+  }
+  pitchedRoof(castle,3.15,2.85,1.86,-1.12);pitchedRoof(library,2.95,2.7,1.8,-1.08);
+  for(const x of [-.78,0,.78])archWindow(castle,x,.8,-2.41,.25,.5);
+  for(const side of [-1,1])for(let z=-1.8;z<-.1;z+=.5){box(.04,.36,.18,lamp,castle,side*1.42,.88,z);}
+  for(const x of [-.95,.9]){cylinder(.16,.32,wood,harbor,x,.25,1.25,10);cylinder(.164,.025,patina,harbor,x,.17,1.25,10);cylinder(.164,.025,patina,harbor,x,.35,1.25,10);}
   for(let i=0;i<3;i++)cylinder(.055,.9,wood,harbor,-.9+i*.8,-.25,1.7);
   for(const z of [.75,1.45])for(let i=0;i<6;i++){cylinder(.025,.35,gold,harbor,-1.3+i*.52,.25,z);}line([[-1.3,.43,1.45],[0,.43,1.45],[1.3,.43,1.45]],.023,wood,harbor);
   line([[0,.4,-.7],[0,1.8,0],[0,.4,.8]],.015,gold,ship);
   for(let i=0;i<5;i++){const a=i/5*Math.PI*2;mesh(new T.DodecahedronGeometry(.18,1),cliff,camp,Math.cos(a)*1.2,.15,Math.sin(a)*1.2);}
-  // 盤緣羅盤、固定鉚釘與厚實的展品底座。
-  cylinder(7.8,.35,cliff,island,0,-1.7,0,64);cylinder(7.85,.055,gold,island,0,-1.51,0,64);
-  for(const z of [-8,8])for(let x=-11;x<=11;x+=.7){mesh(new T.SphereGeometry(.045,6,4),gold,island,x,-.87,z);}
-  for(let j=0;j<3;j++){const r=mesh(new T.TorusGeometry(.55+j*.18,.012,5,64),gold,island,9.8,-.77,6.5);r.rotation.x=-Math.PI/2;}
-  for(let j=0;j<8;j++){const a=j/8*Math.PI*2;line([[9.8,-.76,6.5],[9.8+Math.cos(a)*.94,-.76,6.5+Math.sin(a)*.94]],.009,gold);}
+  // 港灣水面依碼頭輪廓保留，讓船隻有落點而不再形成矩形底板。
+  const cove=mesh(new T.CircleGeometry(2.15,48),water,island,6.3,-.42,4.3);
+  cove.rotation.x=-Math.PI/2;cove.scale.set(1.15,.68,1);cove.castShadow=false;
   const waveData=new Uint8Array(128*128*4);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const p=(y*128+x)*4,v=125+Math.sin(y*.45+Math.sin(x*.16)*2)*20+rand()*12;waveData[p]=waveData[p+1]=waveData[p+2]=v;waveData[p+3]=255;}
   const waves=new T.DataTexture(waveData,128,128);waves.wrapS=waves.wrapT=T.RepeatWrapping;waves.repeat.set(4,4);waves.needsUpdate=true;water.bumpMap=waves;water.bumpScale=.065;water.roughness=.42;
   // 林地避開四個入口與中央路徑。
   // 森林以四個 InstancedMesh 批次繪製，保留密度但把數百次 draw call 壓成四次。
   const trees=[];
   for(let i=0;i<(constrained?90:170);i++){const x=-8+rand()*16,z=-3+rand()*8.5;if(sites.some(([sx,sz])=>Math.hypot(x-sx,z-sz)<2)||Math.abs(x)<1||z>5.6)continue;trees.push({x,z,h:.4+rand()*.6,spin:i*.37});}
-  const dummy=new T.Object3D(),trunks=new T.InstancedMesh(new T.CylinderGeometry(.032,.032,1,6),wood,trees.length),crownGeometry=new T.ConeGeometry(1,1,8),crowns=[0,1,2].map(()=>new T.InstancedMesh(crownGeometry,roof,trees.length));
+  const dummy=new T.Object3D(),trunks=new T.InstancedMesh(new T.CylinderGeometry(.032,.032,1,6),wood,trees.length),crownGeometry=new T.ConeGeometry(1,1,8),crowns=[0,1,2].map(()=>new T.InstancedMesh(crownGeometry,mat(0x33554d,0,.92),trees.length));
   trees.forEach(({x,z,h,spin},index)=>{
     dummy.position.set(x,.67+h*.25,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h*.65,1);dummy.updateMatrix();trunks.setMatrixAt(index,dummy.matrix);
-    crowns.forEach((batch,tier)=>{const radius=.25*(1-tier*.23);dummy.position.set(x,.67+h*(.35+tier*.21),z);dummy.rotation.set(0,spin+tier*.7,0);dummy.scale.set(radius,h*.58,radius);dummy.updateMatrix();batch.setMatrixAt(index,dummy.matrix);});
+    crowns.forEach((batch,tier)=>{const radius=.25*(1-tier*.23);dummy.position.set(x,.67+h*(.35+tier*.21),z);dummy.rotation.set(0,spin+tier*.7,0);dummy.scale.set(radius,h*.58,radius);dummy.updateMatrix();batch.setMatrixAt(index,dummy.matrix);batch.setColorAt(index,new T.Color().setHSL(.43+Math.sin(index)*.025,.23,.27+(index%5)*.04));});
   });
   [trunks,...crowns].forEach(batch=>{batch.castShadow=!constrained;batch.receiveShadow=true;batch.instanceMatrix.setUsage(T.StaticDrawUsage);batch.instanceMatrix.needsUpdate=true;island.add(batch);});
+  // 岸邊碎岩以單次繪製增加不規則輪廓，不複製高面數模型。
+  const rockCount=coords.length*3,rocks=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),stone,rockCount);
+  for(let i=0;i<rockCount;i++){
+    const a=coords[Math.floor(i/3)],b=coords[(Math.floor(i/3)+1)%coords.length],t=(i%3)/3;
+    dummy.position.set((a[0]+(b[0]-a[0])*t)*.97,.28,(a[1]+(b[1]-a[1])*t)*.97);
+    dummy.rotation.set(i*.7,i*.4,i*.2);dummy.scale.set(.17+(i%3)*.06,.24,.21+(i%4)*.035);dummy.updateMatrix();rocks.setMatrixAt(i,dummy.matrix);
+  }
+  rocks.castShadow=true;rocks.receiveShadow=true;island.add(rocks);
   const routes=[],routeCurves=[];
   for(let i=0;i<3;i++){
     const a=sites[i],b=sites[i+1];
@@ -165,8 +181,6 @@ export function createRelief(host, labels) {
     syncFlow();
   }
   const beacons=sites.map(([x,z])=>{const ring=mesh(new T.TorusGeometry(1.7,.032,8,64),lamp,island,x,.8,z);ring.rotation.x=-Math.PI/2;const light=new T.PointLight(0xffbd60,0,6,2);light.position.set(x,3,z);island.add(light);return {ring,light};});
-  // 海面上的金色方位刻線。
-  for(let i=0;i<20;i++)box(.025,.015,.12+(i%5===0?.12:0),gold,island,-10+i, -.77,7.8);
   // 地標揭幕與相機各自管理，捲動不會中斷點擊後的靠近動作。
   groups.forEach(batchStaticMeshes);
   const revealGroups=groups.map(g=>{const wrap=new T.Group();wrap.position.copy(g.position);island.add(wrap);wrap.add(g);g.position.set(0,0,0);return wrap;});
@@ -228,10 +242,10 @@ export function createRelief(host, labels) {
   function stopDrag(){drag=null;canvas.classList.remove('is-dragging');}
   canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);canvas.addEventListener('lostpointercapture',stopDrag);
   function render(){if(unavailable)return;const started=performance.now();renderer.render(scene,camera);host.dataset.renderMs=(performance.now()-started).toFixed(1);host.dataset.calls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);host.dataset.renders=String(Number(host.dataset.renders||0)+1);projectFlow();const w=host.clientWidth,h=host.clientHeight;labels.forEach((label,i)=>{const [x,z]=sites[i];const point=new T.Vector3(x,.75,z+1.9).project(camera);label.style.left=((point.x+1)*50)+'%';label.style.top=((-point.y+1)*50)+'%';});}
-  function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-15;camera.right=15;camera.top=15/aspect;camera.bottom=-15/aspect;camera.updateProjectionMatrix();render();}
+  function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const aspect=w/h;const halfWidth=Math.max(12.4,aspect*7.5);camera.left=-halfWidth;camera.right=halfWidth;camera.top=halfWidth/aspect;camera.bottom=-halfWidth/aspect;camera.updateProjectionMatrix();render();}
   const observer=new ResizeObserver(resize);observer.observe(host);resize();host.classList.add('has-relief');
   const textures=new Set([waves]);
-  wall.color.set(0xb4afa4);wall.metalness=.22;stone.color.set(0x83938e);cliff.color.set(0x48616c);grass.color.set(0x52634f);
+  wall.color.set(0xe0d6bf);wall.metalness=.06;stone.color.set(0xafbfb7);stone.metalness=.04;cliff.color.set(0x78959d);grass.color.set(0x90a38c);grass.metalness=0;
   const loader=new T.TextureLoader(),textureLoads=new Map();
   function texture(material,key,path,repeat,color=false){
     const id=JSON.stringify([path,repeat,color]);

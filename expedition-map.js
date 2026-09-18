@@ -209,7 +209,7 @@ if (root) {
   let worldPromise;
   function prepareWorld(){
     if(worldPromise)return worldPromise;
-    worldPromise=import('./expedition-relief.js?v=map-performance-1').then(({ createRelief }) => {
+    worldPromise=import('./expedition-relief.js?v=island-light-1').then(({ createRelief }) => {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);
