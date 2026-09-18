@@ -103,6 +103,13 @@ async function warmWorld(preparedWorld){
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  preparedWorld.render(1,1,.08,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ loadingProgress(94,'正在準備本部燈光與金屬反射');
+ // 先完成室內反射與室外燈光退出後的材質版本，再預熱穿門重疊畫面。
+ // 否則第一次走到 .36 / .48 才會同步編譯、擷取反射，阻塞捲動。
+ preparedWorld.render(1,.49,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ preparedWorld.render(1,.38,0,null);
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  loadingProgress(95,'正在預熱遠征本部入口');
  // 最後預熱第一次進門的重疊畫面，讓本部資源保持在近期 GPU 狀態。
  preparedWorld.render(1,.225,0,null);
