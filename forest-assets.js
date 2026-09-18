@@ -38,14 +38,36 @@ export async function loadForestAssets(onProgress=()=>{}){
   tree:(x,y,z,h,r)=>{const b=new T.Box3().setFromObject(tree.scene),s=b.getSize(new T.Vector3());return place(tree.scene,x,y,z,h*s.x/s.y,h,h*s.z/s.y,r);},
   treeBatch:(placements=[])=>{
    const group=new T.Group(),normalizer=new T.Matrix4().makeTranslation(-treeCenter.x,-treeBounds.min.y,-treeCenter.z),axis=new T.Vector3(0,1,0);
-   for(const source of treeMeshes){
-    const mesh=new T.InstancedMesh(source.geometry,source.material,placements.length);mesh.castShadow=mesh.receiveShadow=true;mesh.frustumCulled=false;
-    placements.forEach((treePlacement,index)=>{
-     const scale=treePlacement.h/treeSize.y,placement=new T.Matrix4().compose(new T.Vector3(treePlacement.x,treePlacement.y,treePlacement.z),new T.Quaternion().setFromAxisAngle(axis,treePlacement.r),new T.Vector3(scale,scale,scale));
-     mesh.setMatrixAt(index,placement.multiply(normalizer).multiply(source.matrix));
-    });
-    mesh.instanceMatrix.setUsage(T.StaticDrawUsage);group.add(mesh);
-   }
+   group.name='forest-detail-trees';
+   const transforms=placements.map(treePlacement=>{
+    const scale=treePlacement.h/treeSize.y;
+    return new T.Matrix4().compose(new T.Vector3(treePlacement.x,treePlacement.y,treePlacement.z),new T.Quaternion().setFromAxisAngle(axis,treePlacement.r),new T.Vector3(scale,scale,scale)).multiply(normalizer);
+   });
+   // 使用完整樹冠包圍盒判斷，不替換模型，也不以樹幹中心判斷可見性。
+   const bounds=transforms.map(matrix=>treeBounds.clone().applyMatrix4(matrix));
+   const batches=treeMeshes.map(source=>{
+    const mesh=new T.InstancedMesh(source.geometry,source.material,placements.length);
+    mesh.castShadow=mesh.receiveShadow=true;mesh.frustumCulled=false;
+    const matrices=transforms.map(matrix=>matrix.clone().multiply(source.matrix));
+    matrices.forEach((matrix,index)=>mesh.setMatrixAt(index,matrix));
+    mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);group.add(mesh);
+    return {mesh,matrices};
+   });
+   const frustum=new T.Frustum(),viewProjection=new T.Matrix4(),worldBounds=new T.Box3();
+   let lastSelection=placements.map((_,i)=>i).join(',');
+   group.userData.updateVisibility=(camera,shadowPass)=>{
+    // 森林陰影仍啟用時保留所有投影者；穿門後才剔除視野外的完整樹木。
+    camera.updateMatrixWorld();group.updateWorldMatrix(true,false);
+    viewProjection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);frustum.setFromProjectionMatrix(viewProjection);
+    const visible=[];
+    bounds.forEach((bound,index)=>{if(shadowPass||frustum.intersectsBox(worldBounds.copy(bound).applyMatrix4(group.matrixWorld)))visible.push(index);});
+    const selection=visible.join(',');if(selection===lastSelection)return;
+    lastSelection=selection;
+    for(const {mesh,matrices} of batches){
+     visible.forEach((sourceIndex,index)=>mesh.setMatrixAt(index,matrices[sourceIndex]));
+     mesh.count=visible.length;mesh.instanceMatrix.needsUpdate=true;
+    }
+   };
    return group;
   },
   rock:(i,x,y,z,sx,sy,sz,r)=>place(rockList[i%rockList.length],x,y,z,sx,sy,sz,r),

@@ -8,7 +8,7 @@
   const status = loader.querySelector('.entry-loader__status');
   const startedAt = performance.now();
   const minimumDuration = 900;
-  const hardTimeout = 25000;
+  const slowNoticeDelay = 25000;
   let target = 7;
   let displayed = 0;
   let finished = false;
@@ -32,7 +32,7 @@
     requestAnimationFrame(render);
   };
 
-  const release = async (timedOut = false) => {
+  const release = async () => {
     if (finished) return;
     finished = true;
     const remaining = Math.max(0, minimumDuration - (performance.now() - startedAt));
@@ -40,19 +40,25 @@
     target = displayed = 100;
     bar.style.width = '100%';
     value.textContent = '100%';
-    status.textContent = timedOut ? '先開始探索，其餘內容將在背景完成。' : '遠征準備完成';
+    status.textContent = '遠征準備完成';
     loader.querySelector('[role="progressbar"]').setAttribute('aria-valuenow', '100');
-    await new Promise(resolve => setTimeout(resolve, timedOut ? 260 : 420));
+    await new Promise(resolve => setTimeout(resolve, 420));
     loader.classList.add('is-leaving');
     root.classList.remove('is-preloading');
     document.querySelectorAll('body > header, body > main, body > footer').forEach(node => node.removeAttribute('inert'));
     setTimeout(() => loader.remove(), 850);
-    window.dispatchEvent(new CustomEvent('expedition:entered', { detail: { timedOut } }));
+    window.dispatchEvent(new CustomEvent('expedition:entered', { detail: { timedOut: false } }));
   };
 
   document.querySelectorAll('body > header, body > main, body > footer').forEach(node => node.setAttribute('inert', ''));
   window.addEventListener('expedition:loading-progress', event => setProgress(event.detail?.value, event.detail?.label));
-  window.addEventListener('expedition:ready', () => release(false), { once: true });
-  setTimeout(() => release(true), hardTimeout);
+  window.addEventListener('expedition:ready', () => release(), { once: true });
+  // 經過時間不是完成證據；場景尚未就緒時維持進度與捲動鎖定。
+  setTimeout(() => {
+    if (!finished) {
+      loader.dataset.slow = 'true';
+      status.textContent = '場景仍在準備中，完成後會自動進入。';
+    }
+  }, slowNoticeDelay);
   requestAnimationFrame(render);
 })();

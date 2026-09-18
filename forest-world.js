@@ -1,7 +1,7 @@
 import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {createAtlasGallery} from './atlas-gallery.js?v=textile-1';
 import * as T from './assets/vendor/three.module.min.js';
-import {loadForestAssets} from './forest-assets.js?v=moon-3';
+import {loadForestAssets} from './forest-assets.js?v=visibility-4';
 import {createExpeditionHall} from './expedition-hall.js?v=performance-2';
 import {hallCamera} from './hall-camera.js?v=1';
 import {loadHallAssets} from './hall-assets.js?v=performance-4';
@@ -76,7 +76,7 @@ export async function createForest(host,onFailure=()=>{},options={}){
   const z=6-i*11+(random()-.5)*4,x=side*(22+(i%2)*7+random()*3);
   const h=26+random()*10,r=random()*Math.PI*2,y=groundY(z)-.7;if(i<3)heroTrees.push({x,y,z,h,r});else queueProxyTree(x,y,z,h,r,i<4);
  }
- scene.add(assets.treeBatch(heroTrees));
+ const detailTrees=assets.treeBatch(heroTrees);scene.add(detailTrees);
  const proxyTrunks=new T.InstancedMesh(new T.CylinderGeometry(.8,1,1,9),bark,proxyTrees.length);
  const crownProfile=[
   [0,1],[.10,.91],[.045,.87],[.15,.78],[.07,.74],[.19,.64],[.09,.60],
@@ -287,6 +287,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
   const entryOpen=galleryFrameReady?(filmPose?.doorOpen??0):0;
   doorPivots.forEach((pivot,i)=>{pivot.rotation.y=(i===0?1:-1)*entryOpen*Math.PI/2;});
   if(filmSurface.visible){filmMaterial.map.needsUpdate=true;const distance=Math.abs(camera.position.z-filmSurface.position.z);const viewHeight=2*distance*Math.tan(T.MathUtils.degToRad(camera.fov)/2);const containScale=Math.min(viewHeight/6.75,viewHeight*camera.aspect/12);filmSurface.scale.setScalar(T.MathUtils.lerp(1,containScale,filmPose.portalProgress??0));}
+  detailTrees.userData.updateVisibility(camera,renderer.shadowMap.enabled);
   renderer.setViewport(0,0,w,h);renderer.setScissorTest(false);renderer.clear();
   renderer.setViewport(viewport.x,viewport.y,viewport.w,viewport.h);
   renderer.setScissor(viewport.x,viewport.y,viewport.w,viewport.h);renderer.setScissorTest(true);
