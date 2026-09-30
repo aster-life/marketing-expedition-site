@@ -19,11 +19,11 @@ export async function loadForestAssets(onProgress=()=>{}){
   })
  ));
  onProgress(1,'森林模型已就緒');
- // 材質本身降低黃綠與土褐，保留貼圖明暗，讓月光下的岩面與植物同屬冷色環境。
- for(const [asset,amount] of [[tree,.24],[rocks,.48],[ferns,.36]]){
+ // 材質只輕微降飽和，保留植物的綠與岩石的暖褐，讓森林接得上開場影片的藍紫夜色與暖燈。
+ for(const [asset,amount] of [[tree,.06],[rocks,.22],[ferns,.08]]){
   const seen=new Set();asset.scene.traverse(o=>{if(!o.isMesh)return;for(const mat of (Array.isArray(o.material)?o.material:[o.material])){
    if(seen.has(mat))continue;seen.add(mat);
-   mat.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>\nfloat gray=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(gray),${amount.toFixed(2)})*vec3(.84,.94,1.0);`);};
+   mat.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>\nfloat gray=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(gray),${amount.toFixed(2)})*vec3(.95,.97,1.0);`);};
    mat.customProgramCacheKey=()=>`forest-moon-${amount}`;
    if(asset===rocks)mat.roughness=.64;
   }});

@@ -1,5 +1,5 @@
 import {createGalleryInteraction} from './gallery-interaction.js?v=performance-2';
-import {createMistTransition} from './mist-transition.js?v=2';
+import {createMistTransition} from './mist-transition.js?v=grade-1';
 const $=s=>document.querySelector(s),video=$('#opening-film'),journey=$('#atlas');
 const intro=$('.film-intro'),ending=$('.film-ending'),play=$('#film-play'),sound=$('#film-sound'),status=$('#film-status'),host=$('#forest-space');
 const reduced=()=>document.documentElement.classList.contains('reduced'),clamp=v=>Math.max(0,Math.min(1,v));
@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=names-1').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=grade-1').then(async({createForest})=>{
   world=await createForest(host,fallback,{onProgress:({stage,value,label})=>{
    const range=stage==='interior'?[68,88]:[30,68];
    loadingProgress(range[0]+(range[1]-range[0])*value,label);

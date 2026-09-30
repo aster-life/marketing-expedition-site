@@ -20,3 +20,6 @@ html.reduced{scroll-behavior:auto}.reduced .scene-art{transform:none!important}.
 
 /* 中文標題優先在標點處換行，避免斷在詞中間；放不下時才硬斷。 */
 .page-hero h1,.prose h2{word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance}
+
+/* 嚮導貓：沿用開場影片的長相，半身圓形裁切、細金邊、不加卡片框（隊員才用卡片）。 */
+.guide-stories img{width:min(210px,100%);height:auto;max-height:none;aspect-ratio:1/1;border-radius:50%;object-fit:cover;justify-self:center;margin:0 auto;box-shadow:0 0 0 2px #d9a63f88,0 0 0 8px #d9a63f14,0 22px 44px #0009}

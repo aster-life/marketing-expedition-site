@@ -11,9 +11,9 @@ export function createMistTransition(host){
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
   ctx.clearRect(0,0,w,h);
   const veil=ctx.createLinearGradient(0,0,w,h);
-  veil.addColorStop(0,`rgba(50,82,119,${density*.55})`);
-  veil.addColorStop(.5,`rgba(83,116,151,${density*.65})`);
-  veil.addColorStop(1,`rgba(28,56,85,${density*.58})`);
+  veil.addColorStop(0,`rgba(40,50,112,${density*.55})`);
+  veil.addColorStop(.5,`rgba(74,80,146,${density*.65})`);
+  veil.addColorStop(1,`rgba(24,28,80,${density*.58})`);
   ctx.fillStyle=veil;ctx.fillRect(0,0,w,h);
   for(let i=0;i<14;i++){
    const direction=i%2?1:-1;
@@ -21,9 +21,9 @@ export function createMistTransition(host){
    const y=((i*.381+.17)%1)*h-(p-.5)*h*.2;
    const r=Math.max(w,h)*(.17+(i%5)*.035)*(1+p*.5);
    const fog=ctx.createRadialGradient(x,y,0,x,y,r);
-   fog.addColorStop(0,`rgba(143,174,201,${density*(.22+(i%3)*.06)})`);
-   fog.addColorStop(.6,`rgba(99,140,179,${density*.10})`);
-   fog.addColorStop(1,'rgba(70,111,155,0)');
+   fog.addColorStop(0,`rgba(156,160,222,${density*(.22+(i%3)*.06)})`);
+   fog.addColorStop(.6,`rgba(110,112,196,${density*.10})`);
+   fog.addColorStop(1,'rgba(74,78,166,0)');
    ctx.fillStyle=fog;ctx.fillRect(x-r,y-r,r*2,r*2);
   }
  }};
