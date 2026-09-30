@@ -69,7 +69,7 @@ if (root) {
     { title: '遠征本部', subject: 'AI 團隊', image: 'guild', lead: '每一段旅程，都從一次交辦開始。', detail: '在這裡，認識團隊的角色與專長，看一個目標如何經過分工、協作與核對，成為能交付的成果。', href: 'team.html', action: '走進遠征本部' },
     { title: '星港展廳', subject: '作品與成果', image: 'harbor', lead: '想法靠岸的地方，留下了作品。', detail: '點選牆上的網站作品、桌上的提案手稿或右側診斷筆記，走近看看細節，再打開每件展品背後的問題與做法。', href: 'works.html', action: '打開作品展廳' },
     { title: '典籍山谷', subject: '實作筆記', image: 'archive', lead: '走過的路，寫成下一次出發的線索。', detail: '翻閱 AI、內容創作與工作流程的筆記。從一次清楚的交辦、一份會議紀錄，到可以自己試用的小練習。', href: 'knowledge.html', action: '翻閱實作筆記' },
-    { title: '營火之地', subject: '關於 Aster', image: 'room', lead: '停下腳步，認識點起這盞燈的人。', detail: '我是 Aster。這裡記錄我對 AI、行銷與創作的探索，以及我為什麼想建立一支能一起把事情做完的 AI 團隊。', href: 'about.html', action: '認識 Aster' }
+    { title: '營火之地', subject: '關於團隊', image: 'room', lead: '停下腳步，認識這支團隊的起點。', detail: '這裡記錄團隊怎麼看 AI、行銷與創作，以及為什麼要建立一支能一起把事情做完的 AI 團隊。', href: 'about.html', action: '認識團隊的起點' }
   ];
   let returnFocus;
   locations.forEach((button,index)=>{
@@ -80,7 +80,7 @@ if (root) {
     ['認識各角色的專長與分工','看目標如何整理成清楚的交辦','找到適合一起完成工作的隊伍'],
     ['探索網站、影片與 3D 的整合','閱讀作品的問題、做法與取捨','打開報告與交付的情境示範'],
     ['翻閱 AI 協作與創作方法','挑選交辦、會議與寫作練習','帶走能在工作中試用的範本'],
-    ['認識 Aster 的經歷與觀點','了解一人公司與 AI 團隊的起點','從共同的問題開始交流']
+    ['認識團隊的觀點與做事原則','了解一人公司與 AI 團隊的起點','從共同的問題開始交流']
   ];
   const discoveriesList=journal.querySelector('#journal-discoveries');
   const nextButton=journal.querySelector('#journal-next');

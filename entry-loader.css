@@ -71,7 +71,8 @@
   letter-spacing: .28em;
 }
 
-.entry-loader h1 {
+.entry-loader h1,
+.entry-loader__title {
   margin: 0;
   font-family: var(--serif, serif);
   font-size: clamp(1.85rem, 4vw, 3rem);
@@ -142,4 +143,26 @@
 @media (prefers-reduced-motion: reduce) {
   .entry-loader, .entry-loader__bar { transition-duration: .12s; }
   .entry-loader__crest { animation: none; }
+}
+
+/* 等待時先讀到這支團隊由誰組成。 */
+.entry-loader__roles {
+  margin: .7rem 0 0;
+  color: #d8b77e;
+  font-size: .82rem;
+  letter-spacing: .18em;
+}
+.entry-loader__title {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.entry-loader__title span {
+  display: inline-block;
+}
+.entry-loader__title {
+  color: inherit;
+  font-size: clamp(1.35rem, 6.4vw, 2.5rem);
+}
+.entry-loader__title span {
+  white-space: nowrap;
 }
