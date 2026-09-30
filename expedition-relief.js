@@ -1,4 +1,5 @@
 import * as T from './assets/vendor/three.module.min.js';
+import {webAsset} from './web-assets.js';
 import {createRegionEntrance} from './region-entrance.js?v=regions-1';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
 import {batchStaticMeshes} from './static-batch.js';
@@ -249,7 +250,7 @@ export function createRelief(host, labels) {
   const loader=new T.TextureLoader(),textureLoads=new Map();
   function texture(material,key,path,repeat,color=false){
     const id=JSON.stringify([path,repeat,color]);
-    if(!textureLoads.has(id))textureLoads.set(id,new Promise(resolve=>loader.load(path,t=>{
+    if(!textureLoads.has(id))textureLoads.set(id,new Promise(resolve=>loader.load(webAsset(path),t=>{
       if(unavailable){t.dispose();resolve(null);return;}
       t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(...repeat);if(color)t.colorSpace=T.SRGBColorSpace;textures.add(t);resolve(t);
     },undefined,()=>resolve(null))));

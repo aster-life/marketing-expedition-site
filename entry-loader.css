@@ -77,6 +77,7 @@
   font-size: clamp(1.85rem, 4vw, 3rem);
   font-weight: 400;
   letter-spacing: .08em;
+  text-wrap: balance;
 }
 
 .entry-loader__status {
@@ -85,6 +86,7 @@
   color: rgba(230, 231, 227, .68);
   font-size: .84rem;
   letter-spacing: .08em;
+  text-wrap: balance;
 }
 
 .entry-loader__meter {
@@ -129,6 +131,7 @@
   font-size: .72rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: .08em;
+  text-wrap: balance;
 }
 
 @keyframes entry-pulse {

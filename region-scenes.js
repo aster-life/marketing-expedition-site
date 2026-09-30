@@ -1,5 +1,5 @@
 import * as T from './assets/vendor/three.module.min.js';
-import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
+import {createGLTFLoader,webAsset} from './web-assets.js';
 import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createRegionEntrance} from './region-entrance.js';
 
@@ -7,7 +7,7 @@ export async function buildRegionScene(index,scene,owned){
  const root=new T.Group();scene.add(root);const jobs=[];
  const mat=(color,roughness=.8,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
  const loader=new T.TextureLoader();
- function texture(path,repeat=1,color=true){let done,fail;const p=new Promise((r,j)=>{done=r;fail=j;});jobs.push(p);const t=loader.load(path,done,undefined,()=>fail(new Error('素材載入失敗：'+path)));if(color)t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(repeat,repeat);t.anisotropy=4;owned.add(t);return t;}
+ function texture(path,repeat=1,color=true){let done,fail;const p=new Promise((r,j)=>{done=r;fail=j;});jobs.push(p);const t=loader.load(webAsset(path),done,undefined,()=>fail(new Error('素材載入失敗：'+path)));if(color)t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(repeat,repeat);t.anisotropy=4;owned.add(t);return t;}
  const stone=mat('#6b7880'),wood=mat('#69503a'),metal=mat('#af8f56',.49,.5),dark=mat('#172d33'),roof=mat('#153036'),cloth=mat('#8e7754');cloth.side=T.DoubleSide;
  const glow=new T.MeshBasicMaterial({color:'#edbd75',toneMapped:false});
  stone.map=texture('3d/interior-candidates/rustic_stone_wall_02/rustic_stone_wall_02_diff_1k.jpg',.6);
@@ -52,8 +52,8 @@ export async function buildRegionScene(index,scene,owned){
   for(const i of [11,23])leaves[i].material=new T.MeshStandardMaterial({map:panel(i===11?title:'下一步',rows,true),roughness:1,side:T.DoubleSide});return g;
  }
  function closedBook(x,y,z,width=.65,height=.13,color=dark){box(x,y,z,width,height,.62,color);box(x,y,z+.015,width-.07,height*.65,.62,mat('#ab9978'));for(const dy of [-1,1])box(x,y+dy*height*.48,z,width,.025,.66,color);}
- const gltfLoader=new GLTFLoader();const gltfs=new Map();
- function asset(id,x,z,height,rotation=0){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(`3d/hall-assets/${id}/${id}_1k.gltf`);gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,0,z);wrap.rotation.y=rotation;root.add(wrap);}));}
+ const gltfLoader=createGLTFLoader();const gltfs=new Map();
+ function asset(id,x,z,height,rotation=0){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,0,z);wrap.rotation.y=rotation;root.add(wrap);}));}
  function shelves(x,z,rotation=0){asset('wooden_bookshelf_worn',x,z,3.65,rotation);const g=new T.Group();g.position.set(x,0,z);g.rotation.y=rotation;root.add(g);const covers=[mat('#3e4245'),mat('#70443b'),mat('#5c604b')];
   for(let row=0;row<4;row++)for(let i=0;i<10;i++){const h=.38+(i%3)*.055,xx=-.78+i*.17,yy=.63+row*.78;box(xx,yy+h/2,.28,.125,h,.36,covers[(i+row)%3],g);for(const dy of [.075,h-.055])box(xx,yy+dy,.467,.12,.018,.012,metal,g);}
  }

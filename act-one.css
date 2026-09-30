@@ -20,8 +20,8 @@
 
 /* 第一幕原有捲動距離保留，再接一段完整室內旅程。 */
 .film-journey,.film-journey.entered{height:1504svh}
-.hall-copy{position:absolute;left:6vw;top:21%;max-width:350px;text-shadow:0 2px 22px #000;pointer-events:none;background:radial-gradient(ellipse at left,#07121aaa,transparent 75%);padding:20px 0}
-.hall-copy h2{font:clamp(27px,3vw,40px)/1.45 var(--serif);margin:15px 0;text-wrap:balance}
+.hall-copy{position:absolute;left:6vw;top:21%;max-width:440px;text-shadow:0 2px 22px #000;pointer-events:none;background:radial-gradient(ellipse at left,#07121aaa,transparent 75%);padding:20px 0}
+.hall-copy h2{font:clamp(27px,3vw,40px)/1.45 var(--serif);margin:15px 0;text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere}
 .hall-copy p{font-size:14px;max-width:280px;color:#d7d8d2}
 .hall-copy .text-link{pointer-events:auto;color:#efd5a6}
 .reduced .film-journey,.reduced .film-journey.entered{height:100svh}

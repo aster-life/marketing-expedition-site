@@ -1,6 +1,6 @@
 import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
-import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
+import {createGLTFLoader,webAsset} from './web-assets.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
 import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
@@ -33,7 +33,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  // 使用 loader 自身回呼等待圖片解碼，不依賴 Image 是否已同步綁定。
  function loadTexture(path,repeat=1,color=false){
   let resolve,reject;const pending=new Promise((a,b)=>{resolve=a;reject=b;});jobs.push(pending);
-  const map=texLoader.load(path,()=>resolve(),undefined,()=>reject(new Error('材質無法載入：'+path)));
+  const map=texLoader.load(webAsset(path),()=>resolve(),undefined,()=>reject(new Error('材質無法載入：'+path)));
   map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(repeat,repeat);map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());if(color)map.colorSpace=T.SRGBColorSpace;ownedTextures.add(map);return map;
  }
  const material=(color,roughness=.6,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
@@ -134,9 +134,9 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  for(const x of [-.59,.59]){const leg=box(x,-1.37,-.07,.09,1.47,.1,wood,report);leg.rotation.z=-x*.09;}
  function paperTexture(...args){const map=createHarborPaper(...args);ownedTextures.add(map);return map;}
  frame(report,1.7,2.2,paperTexture('report'));
- const loader=new GLTFLoader();
+ const loader=createGLTFLoader();
  async function asset(id,x,z,height,rotation=0){
-  const gltf=await loader.loadAsync(`3d/hall-assets/${id}/${id}_1k.gltf`);const model=gltf.scene;
+  const gltf=await loader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));const model=gltf.scene;
   const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());const ratio=height/size.y;
   model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(ratio);wrap.position.set(x,0,z);wrap.rotation.y=rotation;architecture.add(wrap);
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return wrap;

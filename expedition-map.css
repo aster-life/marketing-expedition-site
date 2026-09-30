@@ -156,7 +156,7 @@ html.reduced .journal-spread{animation:none}
 }
 /* 收藏展館作為沙盤的空間背景，延續暖燈與冷色石材。 */
 .expedition-stage{background:#09151d}
-.expedition-stage:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#071219f5 0%,#071219b0 43%,#0712198c),linear-gradient(0deg,#08121b 0%,transparent 38%,#08121b99),url('assets/world/guild.png') center 53%/cover;opacity:.65;pointer-events:none}
+.expedition-stage:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#071219f5 0%,#071219b0 43%,#0712198c),linear-gradient(0deg,#08121b 0%,transparent 38%,#08121b99),url('assets/world/guild.webp') center 53%/cover;opacity:.65;pointer-events:none}
 .expedition-chart{opacity:var(--atlas-arrival,1);translate:0 calc((1 - var(--atlas-arrival,1))*22px)}
 .relief-canvas{filter:drop-shadow(0 35px 28px #0008)}
 .has-relief .map-location{background:linear-gradient(120deg,#182a31f5,#0b1821ed);border-color:#a58b584d;box-shadow:0 7px 14px #0008,inset 0 1px #dec99518}

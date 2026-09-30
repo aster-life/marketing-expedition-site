@@ -1,11 +1,11 @@
 import * as T from './assets/vendor/three.module.min.js';
-import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
+import {createGLTFLoader,webAsset} from './web-assets.js';
 export async function loadForestAssets(onProgress=()=>{}){
- const root='./3d/forest-match/assets/',loader=new GLTFLoader();
+ const root='./3d/forest-match/assets/',loader=createGLTFLoader();
  const sources=[
-  {path:root+'tree_small_02/tree_small_02-web.glb',weight:.76,bytes:20389512,label:'正在載入森林樹冠'},
-  {path:root+'rock_moss_set_01/rock_moss_set_01_1k.gltf',weight:.14,bytes:1466380,label:'正在載入岩石地貌'},
-  {path:root+'fern_02/fern_02_1k.gltf',weight:.10,bytes:900000,label:'正在載入林下植被'}
+  {path:webAsset(root+'tree_small_02/tree_small_02-web.glb'),weight:.76,bytes:6510000,label:'正在載入森林樹冠'},
+  {path:webAsset(root+'rock_moss_set_01/rock_moss_set_01_1k.gltf'),weight:.14,bytes:1160000,label:'正在載入岩石地貌'},
+  {path:webAsset(root+'fern_02/fern_02_1k.gltf'),weight:.10,bytes:370000,label:'正在載入林下植被'}
  ];
  const portions=sources.map(()=>0);
  const report=(index,event,label)=>{

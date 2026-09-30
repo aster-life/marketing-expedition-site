@@ -103,7 +103,7 @@ if (root) {
     roomHost=document.createElement('div');roomHost.className='harbor-room-host';roomHost.dataset.ready='false';journal.append(roomHost);
     const slot={index,host:roomHost,retired:false,room:null};roomSlot=slot;
     const callbacks={index,quiet,onSelect:exhibit=>{if(roomSlot===slot)exhibitNote(exhibit);},onOverview:()=>{if(mode==='reading'&&active===index)fillNote(index);}};
-    const module=index===1?import('./harbor-room.js?v=continuous-entry-2'):import('./region-room.js?v=continuous-entry-2');
+    const module=index===1?import('./harbor-room.js?v=slim-1'):import('./region-room.js?v=slim-1');
     slot.promise=module.then(api=>index===1?api.createHarborRoom(slot.host,callbacks):api.createRegionRoom(slot.host,callbacks)).then(room=>{
       if(slot.retired){room.dispose();throw new Error('已離開此區域');}
       slot.room=room;return room;
@@ -112,7 +112,7 @@ if (root) {
   }
   function fillNote(index){
     const note=notes[index];
-    journal.querySelector('#journal-image').src=`assets/world/${note.image}.png`;
+    journal.querySelector('#journal-image').src=`assets/world/${note.image}.webp`;
     journal.querySelector('#journal-image').alt=`${note.title}的場景插畫`;
     journal.querySelector('#journal-coordinate').textContent=`地點 0${index+1} / ${note.title}`;
     journal.querySelector('#journal-kicker').textContent=`探索筆記 0${index+1} / ${note.subject}`;
@@ -209,7 +209,7 @@ if (root) {
   let worldPromise;
   function prepareWorld(){
     if(worldPromise)return worldPromise;
-    worldPromise=import('./expedition-relief.js?v=island-light-1').then(({ createRelief }) => {
+    worldPromise=import('./expedition-relief.js?v=slim-1').then(({ createRelief }) => {
       world = createRelief(terrain, locations);
       world.arrive(Math.max(0,Math.min(1,(innerHeight-root.getBoundingClientRect().top)/(innerHeight*.75))));
       if(mode==='reading'||mode==='approaching')world.focus(active);else world.select(active);

@@ -1,15 +1,15 @@
 import * as T from './assets/vendor/three.module.min.js';
-import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
+import {createGLTFLoader,webAsset} from './web-assets.js';
 
 // CC0 原始 glTF 與材質保留於資產目錄；不改写原始模型。
 export async function loadHallAssets({resolution='2k',onProgress=()=>{}}={}){
- const loader=new GLTFLoader();
+ const loader=createGLTFLoader();
  const ids=['wooden_table_02','wooden_bookshelf_worn','book_encyclopedia_set_01','treasure_chest'];
  // 逐件解析，避免多組 glTF 與圖片在同一個主執行緒尖峰完成。
  const results=[];
  for(const [index,id] of ids.entries()){
-  results.push(await loader.loadAsync(`./3d/hall-assets/${id}/${id}_${id==='treasure_chest'?'1k':resolution}.gltf`));
+  results.push(await loader.loadAsync(webAsset(`./3d/hall-assets/${id}/${id}_${id==='treasure_chest'?'1k':resolution}.gltf`)));
   onProgress((index+1)/6*.72,`正在整理${['製圖桌','典籍書架','藏書','寶庫陳設'][index]}`);
  }
  const models=Object.fromEntries(ids.map((id,i)=>[id,results[i].scene]));
@@ -38,11 +38,11 @@ export async function loadHallAssets({resolution='2k',onProgress=()=>{}}={}){
   group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return group;
  }
  const textureLoader=new T.TextureLoader();
- const woodMaps=await Promise.all(['diff','nor_gl','rough'].map(k=>textureLoader.loadAsync('./3d/hall-materials/wood_planks/wood_planks_'+k+'_1k.jpg')));
+ const woodMaps=await Promise.all(['diff','nor_gl','rough'].map(k=>textureLoader.loadAsync(webAsset('./3d/hall-materials/wood_planks/wood_planks_'+k+'_1k.jpg'))));
  woodMaps.forEach(t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;});woodMaps[0].colorSpace=T.SRGBColorSpace;
  const interiorMaps={};
  await Promise.all(['monastery_stone_floor','rustic_stone_wall_02'].map(async id=>{
-  const maps=await Promise.all(['diff','nor_gl','rough'].map(k=>textureLoader.loadAsync(`./3d/interior-candidates/${id}/${id}_${k}_1k.jpg`)));
+  const maps=await Promise.all(['diff','nor_gl','rough'].map(k=>textureLoader.loadAsync(webAsset(`./3d/interior-candidates/${id}/${id}_${k}_1k.jpg`))));
   maps.forEach(t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;});maps[0].colorSpace=T.SRGBColorSpace;interiorMaps[id]=maps;
  }));
  onProgress(1,'遠征本部資產已就緒');

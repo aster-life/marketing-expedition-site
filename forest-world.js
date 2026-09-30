@@ -1,10 +1,10 @@
-import {GLTFLoader} from './assets/vendor/GLTFLoader.js';
+import {createGLTFLoader,webAsset} from './web-assets.js';
 import {createAtlasGallery} from './atlas-gallery.js?v=textile-1';
 import * as T from './assets/vendor/three.module.min.js';
-import {loadForestAssets} from './forest-assets.js?v=visibility-4';
+import {loadForestAssets} from './forest-assets.js?v=slim-1';
 import {createExpeditionHall} from './expedition-hall.js?v=performance-2';
 import {hallCamera} from './hall-camera.js?v=1';
-import {loadHallAssets} from './hall-assets.js?v=performance-4';
+import {loadHallAssets} from './hall-assets.js?v=slim-1';
 import {createInteriorReflections} from './interior-reflections.js?v=2';
 
 // 真實空間：石徑、岩台、樹木、拱橋與城堡各自具有完整幾何。
@@ -191,7 +191,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
    report('interior',.9,'正在建立遠征本部');
    host.dataset.assetMetrics=JSON.stringify(hallProps.metrics);host.dataset.interiorReady='true';delete host.dataset.interiorLoading;
    try{
-    const doorAsset=await new GLTFLoader().loadAsync(`./3d/hall-assets/large_castle_door/large_castle_door_${resolution}.gltf`);
+    const doorAsset=await createGLTFLoader().loadAsync(webAsset(`./3d/hall-assets/large_castle_door/large_castle_door_${resolution}.gltf`));
     entryDoors=doorAsset.scene;entryDoors.scale.setScalar(4.2);entryDoors.position.set(14.185,15.6,-169);scene.add(entryDoors);
     doorPivots=['large_castle_door_left','large_castle_door_right'].map(name=>entryDoors.getObjectByName(name)).filter(Boolean);
     doorPivots.forEach(o=>o.rotation.set(0,0,0));
@@ -274,7 +274,8 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
    camera.position.lerpVectors(originalPosition,camera.position,weight);
    camera.quaternion.slerpQuaternions(originalRotation,camera.quaternion.clone(),weight);
    camera.fov=T.MathUtils.lerp(camera.fov,filmPose.fov,weight);
-   const fitW=Math.min(w,h*16/9),fitH=fitW*9/16;
+   // 3:2 以上的橫向螢幕以 16:9 填滿（左右最多各裁約 5.6%），避免上下留邊；更窄的裝置維持完整 16:9 並保留雙角色全身。
+   const cover=innerWidth/innerHeight>=1.5,fitW=cover?Math.max(w,h*16/9):Math.min(w,h*16/9),fitH=fitW*9/16;
    viewport.w=T.MathUtils.lerp(w,fitW,framing);viewport.h=T.MathUtils.lerp(h,fitH,framing);
    viewport.x=(w-viewport.w)/2;viewport.y=(h-viewport.h)/2;
    camera.aspect=viewport.w/viewport.h;camera.updateProjectionMatrix();
@@ -290,7 +291,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
   detailTrees.userData.updateVisibility(camera,renderer.shadowMap.enabled);
   renderer.setViewport(0,0,w,h);renderer.setScissorTest(false);renderer.clear();
   renderer.setViewport(viewport.x,viewport.y,viewport.w,viewport.h);
-  renderer.setScissor(viewport.x,viewport.y,viewport.w,viewport.h);renderer.setScissorTest(true);
+  renderer.setScissor(Math.max(0,viewport.x),Math.max(0,viewport.y),Math.min(w,viewport.w),Math.min(h,viewport.h));renderer.setScissorTest(true);
   const renderStarted=performance.now();renderer.render(scene,camera);renderer.setScissorTest(false);
   host.dataset.renderMs=(performance.now()-renderStarted).toFixed(1);host.dataset.calls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles);host.dataset.pixelRatio=String(renderer.getPixelRatio());
   host.dataset.act=actThree>0?'three':actTwo>0?'two':'one';host.dataset.galleryProgress=actThree.toFixed(4);host.dataset.progress=actTwo.toFixed(4);host.dataset.door=opened.toFixed(3);host.dataset.camera=camera.position.toArray().map(v=>v.toFixed(3)).join(',');
