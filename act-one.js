@@ -7,13 +7,13 @@ let target=0,frame=0,manual=false,lastReduced=reduced(),world=null,worldFailed=f
 const curtain=$('.film-curtain'),mist=createMistTransition(curtain);
 const galleryInteraction=createGalleryInteraction($('.film-stage'),schedule);
 const hallCopy=document.createElement('div');hallCopy.className='hall-copy';hallCopy.hidden=true;
-hallCopy.innerHTML='<span class="eyebrow">第二幕 / THE EXPEDITION HOUSE</span><h2></h2><p></p><a class="text-link" href="team.html" hidden>認識遠征隊 <span>↗</span></a>';
+hallCopy.innerHTML='<span class="eyebrow">第二幕 / THE EXPEDITION HOUSE</span><h2></h2><p></p><a class="text-link" href="team.html" hidden>認識 AI 團隊 <span>↗</span></a>';
 $('.film-stage').append(hallCopy);
 const galleryCopy=document.createElement('div');galleryCopy.className='hall-copy gallery-copy';galleryCopy.hidden=true;
-galleryCopy.innerHTML='<span class="eyebrow">第三幕 / THE ATLAS GALLERY</span><h2></h2><p></p><a class="text-link" href="works.html">翻閱成果示範 <span>↗</span></a>';
+galleryCopy.innerHTML='<span class="eyebrow">第三幕 / THE HARBOR GALLERY</span><h2></h2><p></p><a class="text-link" href="works.html">翻閱成果示範 <span>↗</span></a>';
 $('.film-stage').append(galleryCopy);
 const galleryBeats=[
- [0,.33,'想法，在這裡留下形狀。','走進成果星圖館，看見一份交付如何幫助下一步。','works.html'],
+ [0,.33,'想法，在這裡留下形狀。','走進星港展廳，看見一份交付如何幫助下一步。','works.html'],
  [.33,.55,'先看清楚，再開始。','網站診斷示範：從入口問題，走到可核對的改善建議。','works.html#report-diagnosis'],
  [.55,.74,'讓內容有自己的目的。','內容提案示範：把讀者的困擾，整理成能採取行動的內容。','works.html#report-content'],
  [.74,.93,'把重要的決定，說清楚。','決策摘要示範：首選、代價與追蹤方式，一起攤開。','works.html#report-decision'],
@@ -32,7 +32,7 @@ function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝
 function ensureWorld(){
  if(world||worldFailed||worldPromise)return worldPromise;
  host.dataset.loading='true';
- worldPromise=import('./forest-world.js?v=cover-1').then(async({createForest})=>{
+ worldPromise=import('./forest-world.js?v=names-1').then(async({createForest})=>{
   world=await createForest(host,fallback,{onProgress:({stage,value,label})=>{
    const range=stage==='interior'?[68,88]:[30,68];
    loadingProgress(range[0]+(range[1]-range[0])*value,label);
@@ -98,7 +98,7 @@ async function warmWorld(preparedWorld){
  preparedWorld.render(0,0,0,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  host.dataset.warmed='true';
- loadingProgress(92,'正在預熱成果星圖館');
+ loadingProgress(92,'正在預熱星港展廳');
  // 只走會切換主要可見物件的代表畫面；避免為相近鏡位反覆送出數百萬個三角形。
  preparedWorld.render(1,1,.45,null);
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -125,7 +125,7 @@ async function warmWorld(preparedWorld){
 async function prepareExperience(){
  loadingProgress(10,'準備第一道光');
  const openingReady=primeOpeningTail().then(()=>loadingProgress(22,'開場影像已就緒'));
- const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(28,'星圖館影像已就緒'));
+ const galleryReady=galleryInteraction.prepare().then(()=>loadingProgress(28,'星港展廳影像已就緒'));
  const preparedWorld=await ensureWorld();
  loadingProgress(68,'正在建立遠征場景');
  await Promise.allSettled([openingReady,galleryReady,preparedWorld?.prepareInterior?.()]);

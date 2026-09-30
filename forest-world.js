@@ -198,7 +198,7 @@ const particles=new T.BufferGeometry(),pts=[];for(let i=0;i<250;i++)pts.push((ra
     entryDoors.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material.color.set('#695444');for(const k of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[k])o.material[k].anisotropy=constrained?2:8;}});
     host.dataset.doorReady='true';
     report('interior',1,'遠征本部已就緒');
-   }catch(error){host.dataset.doorFailed='true';console.warn('星圖館門扇暫時無法載入。',error);}
+   }catch(error){host.dataset.doorFailed='true';console.warn('星港展廳門扇暫時無法載入。',error);}
    return {hall,gallery,entryDoors};
   })().catch(error=>{delete host.dataset.interiorLoading;host.dataset.interiorFailed='true';console.warn('室內資產暫時無法載入。',error);return null;});
   return interiorPromise;

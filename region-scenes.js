@@ -108,7 +108,7 @@ export async function buildRegionScene(index,scene,owned){
   for(const x of [-2,2]){const seat=cyl(x,.5,2.4,.24,1.6,wood);seat.rotation.z=Math.PI/2;for(const dx of [-.5,.5])cyl(x+dx,.21,2.4,.15,.42,wood);}
   // 閱讀物件移到帳篷前緣，近景視線不再穿過布頂。
   desk(-2.8,-.6);book(-2.8,1.37,-.6,-.12,'探索留下來',[['觀察','先看見真實的問題'],['嘗試','留下選擇與修正'],['分享','讓下一步更清楚']]);
-  asset('treasure_chest',3,-.2,.86);board(3,1.95,-.6,1.62,1.9,'開始同行',[['你的目標','說明想完成什麼'],['目前卡點','提供可用的背景'],['下一步','一起整理合作方向']],-.2);
+  asset('treasure_chest',3,-.2,.86);board(3,1.95,-.6,1.62,1.9,'整理我的需求',[['你的目標','說明想完成什麼'],['目前卡點','提供可用的背景'],['下一步','一起整理合作方向']],-.2);
   for(const x of [-4.2,4.2]){cyl(x,.9,3.8,.045,1.8,wood);lamp(x,2,3.8);}
   const rug=box(0,-.015,-3.1,7,.03,4.6,dark);for(const x of [-3.3,3.3])box(x,.005,-3.1,.025,.012,4.25,metal);
   views=[{position:[2.9,2.8,5.1],target:[0,.7,1.2]},{position:[-2.25,3.05,2.5],target:[-2.8,1.4,-.6]},{position:[3.2,2.5,3.5],target:[3,1.7,-.6]}];

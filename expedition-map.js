@@ -67,8 +67,8 @@ if (root) {
   locations.forEach((link, index) => link.addEventListener('focus', () => {if(mode==='exploring')show(index);}));
   const notes = [
     { title: '遠征本部', subject: 'AI 團隊', image: 'guild', lead: '每一段旅程，都從一次交辦開始。', detail: '在這裡，認識團隊的角色與專長，看一個目標如何經過分工、協作與核對，成為能交付的成果。', href: 'team.html', action: '走進遠征本部' },
-    { title: '星港展廳', subject: '作品與成果', image: 'harbor', lead: '想法靠岸的地方，留下了作品。', detail: '點選牆上的網站作品、桌上的提案手稿或右側診斷筆記，走近看看細節，再打開每件展品背後的問題與做法。', href: 'works.html', action: '打開作品展廳' },
-    { title: '典籍山谷', subject: '實作筆記', image: 'archive', lead: '走過的路，寫成下一次出發的線索。', detail: '翻閱 AI、內容創作與工作流程的筆記。從一次清楚的交辦、一份會議紀錄，到可以自己試用的小練習。', href: 'knowledge.html', action: '翻閱實作筆記' },
+    { title: '星港展廳', subject: '作品成果', image: 'harbor', lead: '想法靠岸的地方，留下了作品。', detail: '點選牆上的網站作品、桌上的提案手稿或右側診斷筆記，走近看看細節，再打開每件展品背後的問題與做法。', href: 'works.html', action: '走進星港展廳' },
+    { title: '典籍山谷', subject: '知識典藏', image: 'archive', lead: '走過的路，寫成下一次出發的線索。', detail: '翻閱 AI、內容創作與工作流程的筆記。從一次清楚的交辦、一份會議紀錄，到可以自己試用的小練習。', href: 'knowledge.html', action: '翻閱實作筆記' },
     { title: '營火之地', subject: '關於團隊', image: 'room', lead: '停下腳步，認識這支團隊的起點。', detail: '這裡記錄團隊怎麼看 AI、行銷與創作，以及為什麼要建立一支能一起把事情做完的 AI 團隊。', href: 'about.html', action: '認識團隊的起點' }
   ];
   let returnFocus;
@@ -103,7 +103,7 @@ if (root) {
     roomHost=document.createElement('div');roomHost.className='harbor-room-host';roomHost.dataset.ready='false';journal.append(roomHost);
     const slot={index,host:roomHost,retired:false,room:null};roomSlot=slot;
     const callbacks={index,quiet,onSelect:exhibit=>{if(roomSlot===slot)exhibitNote(exhibit);},onOverview:()=>{if(mode==='reading'&&active===index)fillNote(index);}};
-    const module=index===1?import('./harbor-room.js?v=slim-1'):import('./region-room.js?v=slim-1');
+    const module=index===1?import('./harbor-room.js?v=slim-1'):import('./region-room.js?v=names-1');
     slot.promise=module.then(api=>index===1?api.createHarborRoom(slot.host,callbacks):api.createRegionRoom(slot.host,callbacks)).then(room=>{
       if(slot.retired){room.dispose();throw new Error('已離開此區域');}
       slot.room=room;return room;

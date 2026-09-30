@@ -1,7 +1,7 @@
 import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
-import {buildRegionScene} from './region-scenes.js?v=slim-1';
+import {buildRegionScene} from './region-scenes.js?v=names-1';
 import {regionContent} from './region-content.js';
 import {prewarmRoom} from './room-prewarm.js';
 
