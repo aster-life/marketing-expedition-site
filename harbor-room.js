@@ -6,11 +6,14 @@ import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
 import {createHarborPaper} from './harbor-paper.js';
 import {prewarmRoom} from './room-prewarm.js';
+import {makeProp} from './room-props.js?v=props-2';
+import './room-props-3.js?v=props-2';
+import {createPropController} from './room-prop-controller.js?v=props-2';
 
 export const harborExhibits=[
- {title:'一段連續的遠征',subject:'01 / 網站實作',lead:'從一束光，到可以探索的世界。',detail:'你正在瀏覽的行銷遠征，是影片、3D 空間與內容導覽的整合實作。沿著作品閱讀它的問題、設計取捨與仍在調整的地方。',discoveries:['影片與立體場景如何銜接','鏡頭、角色比例與載入的取捨','從沉浸開場走向清楚的內容入口'],href:'works.html#site-case',action:'閱讀網站作品',label:'網站作品'},
- {title:'把問題攤在桌上',subject:'02 / 內容提案・教學示範',lead:'先看清楚問題，再決定寫什麼。',detail:'這份虛構情境提案，示範如何幫第一次購買手作商品的人理解客製流程。從讀者的困擾出發，整理主軸、交付內容與待確認的事實。',discoveries:['誰會閱讀，卡在哪一步','一個問題如何成為內容主軸','哪些交期與費用仍需品牌確認'],href:'works.html#report-content',action:'翻閱內容提案',label:'提案手稿'},
- {title:'找到下一步的入口',subject:'03 / 網站診斷・教學示範',lead:'讓第一次來的人，知道可以往哪裡走。',detail:'以虛構的手作品牌首頁為例，示範怎麼區分發現、建議與核對方法。這是教學示範，並非真實客戶的分析或成效。',discoveries:['首屏是否說清楚提供什麼','入口與品牌故事如何排序','用實際訪客的理解核對改動'],href:'works.html#report-diagnosis',action:'打開診斷示範',label:'診斷筆記'}
+ {title:'一段連續的遠征',subject:'01 / 網站實作',lead:'從一束光，到可以探索的世界。',detail:'你正在瀏覽的行銷遠征，是影片、3D 空間與內容導覽的整合實作。沿著作品閱讀它的問題、設計取捨與仍在調整的地方。',discoveries:['影片與立體場景如何銜接','鏡頭、角色比例與載入的取捨','從沉浸開場走向清楚的內容入口'],href:'works.html#site-case',action:'閱讀網站作品',label:'網站作品',artifact:'site'},
+ {title:'把問題攤在桌上',subject:'02 / 內容提案・教學示範',lead:'先看清楚問題，再決定寫什麼。',detail:'這份虛構情境提案，示範如何幫第一次購買手作商品的人理解客製流程。從讀者的困擾出發，整理主軸、交付內容與待確認的事實。',discoveries:['誰會閱讀，卡在哪一步','一個問題如何成為內容主軸','哪些交期與費用仍需品牌確認'],href:'works.html#report-content',action:'翻閱內容提案',label:'提案手稿',artifact:'proposal'},
+ {title:'找到下一步的入口',subject:'03 / 網站診斷・教學示範',lead:'讓第一次來的人，知道可以往哪裡走。',detail:'以虛構的手作品牌首頁為例，示範怎麼區分發現、建議與核對方法。這是教學示範，並非真實客戶的分析或成效。',discoveries:['首屏是否說清楚提供什麼','入口與品牌故事如何排序','用實際訪客的理解核對改動'],href:'works.html#report-diagnosis',action:'打開診斷示範',label:'診斷筆記',artifact:'diagnosis'}
 ];
 
 // 只在星港打開時建立；靜止時停止繪圖，重複幾何依材質合併。
@@ -142,11 +145,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return wrap;
  }
  jobs.push(asset('wooden_table_02',-.2,.2,1.32).then(table=>{table.scale.x*=1.55;table.scale.z*=1.4;}));jobs.push(asset('wooden_bookshelf_worn',-5.1,-1.9,3.15,Math.PI/2));
- const book=createGalleryArtifact(1,brass);book.scale.setScalar(.62);book.position.set(-.72,1.34,.22);book.rotation.y=-.19;architecture.add(book);
- // 近看能閱讀的紙面；保留曲面與頁緣，移除原展示道具的粗線占位。
- const leaves=book.children.filter(o=>o.geometry?.type==='PlaneGeometry');
- for(const child of [...book.children])if(child.geometry?.type==='BoxGeometry'&&child.material.color?.getHexString()==='65513b'){book.remove(child);child.geometry.dispose();}
- for(const [i,title,lines] of [[11,'從問題出發',['誰正在閱讀？','第一次購買','手作商品的人。','他們擔心什麼？','客製前該準備什麼？']],[23,'讓下一步清楚',['內容主軸','從想法，到確認稿。','','先核對，再交付','交期與費用待確認。']]])if(leaves[i]){leaves[i].material=new T.MeshStandardMaterial({color:'#ffffff',map:paperTexture('book',title,lines),roughness:1,side:T.DoubleSide});}
+ // 桌上原本的展示書改成「提案手稿」近景物件（room-props-3.js），點選時放大鏡會移到紙上。
  const scroll=createGalleryArtifact(0,brass);scroll.scale.setScalar(.52);scroll.position.set(.55,1.34,.12);scroll.rotation.y=.15;architecture.add(scroll);
  for(const child of [...scroll.children]){
   if(child.geometry?.type==='BoxGeometry'&&child.material.color?.getHexString()==='65513b'){scroll.remove(child);child.geometry.dispose();}
@@ -171,6 +170,10 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   {position:[3.1,2.55,4.1],target:[4.55,2.15,-.65]}
  ];
  const anchors=[new T.Vector3(-2.65,1.98,-3.28),new T.Vector3(.3,1.54,1.03),new T.Vector3(4.55,.7,-.3)];
+ // 近景物件：畫框滑入網站畫面、放大鏡移到提案上、診斷板釘卡拉線；控制邏輯與其他房間共用。
+ const propAt={site:{at:[-2.65,3.04,-3.54]},proposal:{at:[-.42,1.325,.3],rotation:-.12},diagnosis:{at:[4.5215,2.1,-0.5861],rotation:-.42}};
+ const props={},propAniso=renderer.capabilities.getMaxAnisotropy();
+ harborExhibits.forEach((e,i)=>{const p=propAt[e.artifact];const prop=p&&makeProp(e.artifact,{...p,owned:ownedTextures,anisotropy:propAniso});if(prop){scene.add(prop.group);props[i]=prop;}});
  const buttons=harborExhibits.map((exhibit,i)=>{const b=document.createElement('button');b.type='button';b.className='harbor-hotspot';b.setAttribute('aria-label','走近'+exhibit.label);b.setAttribute('aria-pressed','false');b.innerHTML=`<b>0${i+1}</b><span>${exhibit.label}</span>`;b.addEventListener('click',()=>select(i));host.append(b);return b;});
  function project(){
   const w=host.clientWidth,h=host.clientHeight;
@@ -195,12 +198,15 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   });
  }
  function overviewView(){const narrow=host.clientWidth/host.clientHeight<1;return {position:[2.2+Math.sin(orbitOffset)*5,narrow?4.2:3.6,narrow?14:10.4],target:[.25,2,-.65]};}
- async function overview(){if(!active||busy)return;selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
+ const propControl=createPropController({host,camera,props,exhibits:harborExhibits,move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
+ async function overview(){if(!active||busy)return;propControl.close();selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
  async function select(index){
   if(!active||busy)return;selection=index;buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));onSelect?.(harborExhibits[index]);
   const v=views[index],target=new T.Vector3(...v.target),distance=new T.Vector3(...v.position).sub(target);
   // 手機窄畫幅拉回一點，保留畫框與桌緣，不把作品兩側裁掉。
   if(index!==2)distance.multiplyScalar(T.MathUtils.clamp(1.12/(host.clientWidth/host.clientHeight),1,1.45));
+  if(propControl.has(index)){await propControl.open(index);return;}
+  propControl.close();
   await move(target.add(distance).toArray(),v.target);
  }
  toolbar.addEventListener('click',event=>{const exhibit=event.target.closest('[data-room-exhibit]')?.dataset.roomExhibit;if(exhibit!==undefined){select(Number(exhibit));return;}const view=event.target.closest('[data-room-view]')?.dataset.roomView;if(!view||busy)return;if(view==='left'||view==='right')orbitOffset=T.MathUtils.clamp(orbitOffset+(view==='left'?-.2:.2),-.65,.35);else orbitOffset=0;overview();});
@@ -210,7 +216,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  canvas.addEventListener('pointerdown',event=>{if(!active||busy)return;pointer={x:event.clientX,y:event.clientY};});
  canvas.addEventListener('pointerup',event=>{if(!pointer||busy)return;const start=pointer;pointer=null;const dx=event.clientX-start.x,dy=event.clientY-start.y;
   if(Math.hypot(dx,dy)>12){orbitOffset=T.MathUtils.clamp(orbitOffset-dx/host.clientWidth*.7,-.65,.35);overview();return;}
-  const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new T.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);const hit=raycaster.intersectObjects(hitTargets)[0];if(hit)select(hit.object.userData.exhibit);
+  const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new T.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);if(propControl.click(raycaster))return;const hit=raycaster.intersectObjects(hitTargets)[0];if(hit)select(hit.object.userData.exhibit);
  });canvas.addEventListener('pointercancel',()=>pointer=null);
  function resize(){if(!active)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
  const observer=new ResizeObserver(resize);observer.observe(host);

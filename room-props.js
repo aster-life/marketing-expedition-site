@@ -1,6 +1,6 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {webAsset} from './web-assets.js';
-import {createBook} from './room-book.js?v=props-1';
+import {createBook} from './room-book.js?v=props-2';
 
 // 遠征本部三個近景物件，各用不同的「打開方式」：書翻開、立牌近看、告示板翻面。
 // 每個物件回傳 {group, setOpen(t), frames, whole}；frames 是放大閱讀時鏡頭要對準的區塊（世界座標）。
@@ -110,3 +110,8 @@ export function flipBoardProp({at,front,owned,anisotropy}){
   whole:{c,w:W+.3,h:H+.3,n,k:1.04},
   frames:[{c:v3(at[0],at[1]+.62,at[2]),w:W+.2,h:1.6,n,label:'上半'},{c:v3(at[0],at[1]-.62,at[2]),w:W+.2,h:1.6,n,label:'下半'}]};
 }
+
+// 依展品的 artifact 名稱建立近景物件；沒有位置資料就不建立（維持原本的鏡頭近看）。
+const MAKERS={brief:bookProp,roster:rosterProp,review:flipBoardProp};
+export function registerProp(key,maker){MAKERS[key]=maker;}
+export function makeProp(key,options){const make=MAKERS[key];if(!make||!options.at)return null;return make(options);}

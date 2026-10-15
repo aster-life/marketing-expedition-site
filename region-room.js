@@ -1,10 +1,11 @@
 import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
-import {buildRegionScene} from './region-scenes.js?v=props-1';
-import {regionContent} from './region-content.js?v=props-1';
-import {artifactText} from './room-artifact.js?v=props-1';
-import {bookProp,rosterProp,flipBoardProp} from './room-props.js?v=props-1';
+import {buildRegionScene} from './region-scenes.js?v=props-2';
+import {regionContent} from './region-content.js?v=props-2';
+import {makeProp} from './room-props.js?v=props-2';
+import './room-props-2.js?v=props-2';
+import {createPropController} from './room-prop-controller.js?v=props-2';
 import {prewarmRoom} from './room-prewarm.js';
 
 export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=>false}={}){
@@ -48,47 +49,18 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
   });
  }
  function overviewView(){const narrow=host.clientWidth/host.clientHeight<1,p=overviewBase.position;return {position:[p[0]+Math.sin(orbitOffset)*5,p[1]+(narrow?.6:0),p[2]+(narrow?4:0)],target:overviewBase.target};}
-  // 近景物件：點選時鏡頭靠近，物件本身打開（書翻開、立牌致意、告示板翻面）；可再放大到某一區塊細讀。
+  // 近景物件：點選時鏡頭靠近，物件本身打開；控制邏輯與星港展廳共用。
  const props={},anisotropy=renderer.capabilities.getMaxAnisotropy();
- if(built.propAt){
-  const makers={brief:bookProp,roster:rosterProp,review:flipBoardProp};
-  exhibits.forEach((e,i)=>{const make=makers[e.artifact];if(!make||!built.propAt[e.artifact])return;const prop=make({at:built.propAt[e.artifact],front:built.propTex?.[e.artifact],owned:ownedTextures,anisotropy});prop.open=0;scene.add(prop.group);props[i]=prop;});
- }
- let zoom=-1,propTween=0,propSr=null;
- const nav=document.createElement('div');nav.className='room-prop-nav';nav.hidden=true;nav.setAttribute('role','group');nav.setAttribute('aria-label','近看');host.append(nav);
- nav.innerHTML='<button type="button" data-prop="prev" aria-label="上一個區塊">←</button><button type="button" data-prop="zoom"></button><button type="button" data-prop="next" aria-label="下一個區塊">→</button>';
- const [navPrev,navZoom,navNext]=nav.querySelectorAll('button');
- const narrow=()=>host.clientWidth/host.clientHeight<1;
- function propView(f,k=1.1){
-  const aspect=host.clientWidth/host.clientHeight,tan=Math.tan(T.MathUtils.degToRad(camera.fov/2))*2,d=Math.max(f.w/(tan*aspect),f.h/tan)*k;
-  const p=f.c.clone().addScaledVector(f.n,d);if(f.x)p.x+=f.x;return {position:p.toArray(),target:f.c.toArray()};
- }
- function setNav(){
-  const prop=props[selection];if(!prop){nav.hidden=true;return;}nav.hidden=false;
-  const n=prop.frames.length;navPrev.hidden=navNext.hidden=zoom<0;navPrev.disabled=zoom<=0;navNext.disabled=zoom>=n-1;
-  navZoom.textContent=zoom<0?'放大細看':`${prop.frames[zoom].label}　${zoom+1} / ${n}　· 看全部`;
- }
- function animateProp(prop,to,duration){
-  cancelAnimationFrame(propTween);const from=prop.open,started=performance.now();
-  return new Promise(resolve=>{const frame=now=>{const t=quiet()?1:Math.min(1,(now-started)/duration);prop.open=from+(to-from)*t;prop.setOpen(prop.open);draw();if(t<1&&active)propTween=requestAnimationFrame(frame);else{prop.open=to;prop.setOpen(to);draw();resolve();}};propTween=requestAnimationFrame(frame);});
- }
- async function focusProp(){
-  const prop=props[selection];if(!prop)return;setNav();
-  const f=zoom<0?prop.whole:prop.frames[zoom],v=propView(f,zoom<0?(f.k||1.1):1.08);
-  await move(v.position,v.target,850);
-  if(props[selection]===prop&&prop.open<1)await animateProp(prop,1,prop.openDuration);
- }
- function closeProps(except){cancelAnimationFrame(propTween);if(propSr){propSr.remove();propSr=null;}Object.entries(props).forEach(([i,p])=>{if(Number(i)!==except&&p.open>0){p.open=0;p.setOpen(0);}});zoom=-1;nav.hidden=true;draw();}
- nav.addEventListener('click',event=>{const b=event.target.closest('[data-prop]');if(!b||busy||!props[selection])return;const n=props[selection].frames.length;
-  if(b.dataset.prop==='zoom')zoom=zoom<0?0:-1;else zoom=T.MathUtils.clamp(zoom+(b.dataset.prop==='next'?1:-1),0,n-1);focusProp();});
-  async function overview(){if(!active||busy)return;closeProps();selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
+ exhibits.forEach((e,i)=>{const prop=makeProp(e.artifact,{at:built.propAt?.[e.artifact],front:built.propTex?.[e.artifact],owned:ownedTextures,anisotropy});if(prop){scene.add(prop.group);props[i]=prop;}});
+ const propControl=createPropController({host,camera,props,exhibits,move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
+ async function overview(){if(!active||busy)return;propControl.close();selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
  async function select(index){
   if(!active||busy)return;selection=index;buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));onSelect?.(exhibits[index]);
   const v=views[index],target=new T.Vector3(...v.target),distance=new T.Vector3(...v.position).sub(target);
   // 手機窄畫幅拉回一點，保留畫框與桌緣，不把作品兩側裁掉。
   distance.multiplyScalar(T.MathUtils.clamp(1.12/(host.clientWidth/host.clientHeight),1,1.45));
-  if(props[index]){closeProps(index);zoom=narrow()?0:-1;propSr=artifactText(exhibits[index].artifact);if(propSr)host.append(propSr);await focusProp();return;}
-  closeProps();
+  if(propControl.has(index)){await propControl.open(index);return;}
+  propControl.close();
   await move(target.add(distance).toArray(),v.target);
  }
  toolbar.addEventListener('click',event=>{const exhibit=event.target.closest('[data-room-exhibit]')?.dataset.roomExhibit;if(exhibit!==undefined){select(Number(exhibit));return;}const view=event.target.closest('[data-room-view]')?.dataset.roomView;if(!view||busy)return;if(view==='left'||view==='right')orbitOffset=T.MathUtils.clamp(orbitOffset+(view==='left'?-.2:.2),-.65,.35);else orbitOffset=0;overview();});
@@ -98,8 +70,7 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
  canvas.addEventListener('pointerdown',event=>{if(!active||busy)return;pointer={x:event.clientX,y:event.clientY};});
  canvas.addEventListener('pointerup',event=>{if(!pointer||busy)return;const start=pointer;pointer=null;const dx=event.clientX-start.x,dy=event.clientY-start.y;
   if(Math.hypot(dx,dy)>12){orbitOffset=T.MathUtils.clamp(orbitOffset-dx/host.clientWidth*.7,-.65,.35);overview();return;}
-  const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new T.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);const prop=props[selection];
-  if(prop){const h=raycaster.intersectObject(prop.group,true)[0];if(h){let best=0,bd=Infinity;prop.frames.forEach((f,i)=>{const d=f.c.distanceTo(h.point);if(d<bd){bd=d;best=i;}});if(zoom!==best){zoom=best;focusProp();}return;}}
+  const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new T.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);if(propControl.click(raycaster))return;
   const hit=raycaster.intersectObjects(hitTargets)[0];if(hit)select(hit.object.userData.exhibit);
  });canvas.addEventListener('pointercancel',()=>pointer=null);
  function resize(){if(!active)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}

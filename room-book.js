@@ -1,5 +1,5 @@
 import * as T from './assets/vendor/three.module.min.js';
-import {artifacts} from './room-artifact.js?v=book-1';
+import {artifacts} from './room-artifact.js?v=props-2';
 
 // 協作桌上那本書：點選後在場景裡翻開，內容印在書頁上，不另外疊網頁視窗。
 // 書平放在桌面，書脊沿 z 軸、位於群組原點；鏡頭從 +z 那一側往下看。

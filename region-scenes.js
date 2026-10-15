@@ -88,13 +88,14 @@ export async function buildRegionScene(index,scene,owned){
   anchors=[[0,1.2,2.1],[-3.1,1.1,-3.4],[3.15,1.1,-3.4]];overview={position:[2.7,3.8,9.6],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
  }else if(index===2){
   for(const x of [-3.9,0,3.9])shelves(x,-3.5);
-  desk(-2,.7);book(-2,1.37,.7,-.15,'清楚交辦',[['目標','你想完成什麼'],['背景','誰會使用這份成果'],['交付','限制與核對方式']]);
+  desk(-2,.7); // 桌上的交辦卷軸由 room-props-2.js 建立
   closedBook(-1.25,1.52,.05,.55,.2);
-  desk(2.4,.6);book(2.3,1.37,.6,.12,'會後行動',[['決定','這次確認了什麼'],['待辦','由誰接手'],['核對','哪些事情還不確定']]);
+  desk(2.4,.6); // 桌上的會議便條卡由 room-props-2.js 建立
   for(let i=0;i<3;i++)closedBook(3.2,1.5+i*.14,0,.55,.13);
   board(0,4.4,-3.7,2.35,1.28,'方法的索引',[['協作 · 創作 · 工作流程','從眼前的問題開始']]);
   // 有階梯厚度與金屬端點的閱讀梯。
   for(const x of [.85,1.36]){const rail=box(x,1.6,-2.3,.07,3.2,.09,wood);rail.rotation.x=-.16;}for(let i=0;i<8;i++)box(1.105,.22+i*.37,-2.08-i*.06,.54,.055,.15,wood);
+  propAt={scroll:[-2,1.355,.72],shelf:[0,0,-3.5],cards:[2.35,1.355,.62]};
   views=[{position:[-1.3,3.7,3.5],target:[-2,1.4,.7]},{position:[.5,3.3,2],target:[0,2,-3.5]},{position:[2.8,3.7,3.4],target:[2.3,1.4,.6]}];
   anchors=[[-2,1.2,1.9],[0,1,-2.8],[2.4,1.2,1.8]];overview={position:[2.6,3.8,9.5],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
  }else{
@@ -107,10 +108,11 @@ export async function buildRegionScene(index,scene,owned){
   const firelight=new T.PointLight('#ff9c43',12,9,2);firelight.position.set(0,1.4,1.2);scene.add(firelight);
   for(const x of [-2,2]){const seat=cyl(x,.5,2.4,.24,1.6,wood);seat.rotation.z=Math.PI/2;for(const dx of [-.5,.5])cyl(x+dx,.21,2.4,.15,.42,wood);}
   // 閱讀物件移到帳篷前緣，近景視線不再穿過布頂。
-  desk(-2.8,-.6);book(-2.8,1.37,-.6,-.12,'探索留下來',[['觀察','先看見真實的問題'],['嘗試','留下選擇與修正'],['分享','讓下一步更清楚']]);
-  asset('treasure_chest',3,-.2,.86);board(3,1.95,-.6,1.62,1.9,'整理我的需求',[['你的目標','說明想完成什麼'],['目前卡點','提供可用的背景'],['下一步','一起整理合作方向']],-.2);
+  desk(-2.8,-.6);closedBook(-2.6,1.43,-.55,.5,.12); // 桌後的照片繩由 room-props-2.js 建立
+  asset('treasure_chest',3,-.2,.86); // 寶箱上的邀請信由 room-props-2.js 建立
   for(const x of [-4.2,4.2]){cyl(x,.9,3.8,.045,1.8,wood);lamp(x,2,3.8);}
   const rug=box(0,-.015,-3.1,7,.03,4.6,dark);for(const x of [-3.3,3.3])box(x,.005,-3.1,.025,.012,4.25,metal);
+  propAt={plaques:[0,0,1.2],photos:[-2.8,1.355,-.6],letter:[3,.86,-.2]};
   views=[{position:[2.9,2.8,5.1],target:[0,.7,1.2]},{position:[-2.25,3.05,2.5],target:[-2.8,1.4,-.6]},{position:[3.2,2.5,3.5],target:[3,1.7,-.6]}];
   anchors=[[0,.45,2.5],[-2.8,1,.5],[3,.5,.8]];overview={position:[3.8,3.8,10.5],target:[0,1.4,-.5]};entry=[[5,7,24],[0,2.6,12],[0,2.4,7.5]];
  }
