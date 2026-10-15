@@ -65,3 +65,18 @@ export function createBookCollector(owned){
   }
  };
 }
+
+// 單本書（近景展品用，例如方法書架前面那六本）：和書架上的書同一個造型——圓弧書脊、封板、內縮米色書頁。
+// spineMap：書脊圖（寬對應書脊寬、高對應書高）。回傳 Group，尺寸 w（厚）× h（高）× d（深），書脊朝 +z，中心在原點。
+export function makeBook({w,h,d,spineMap,color='#5b2b26',design=null,owned}){
+ // design：用書架上的八種書脊之一（皮面、起筋、燙金、書名籤）。
+ if(!spineMap&&design!=null){const [base,gold,style]=DESIGNS[design%DESIGNS.length];spineMap=new T.CanvasTexture(spineCanvas(base,gold,style,design*131+7));spineMap.colorSpace=T.SRGBColorSpace;spineMap.anisotropy=4;owned?.add(spineMap);}
+ // 每次各自建立（房間關閉時會釋放幾何與材質，不能跨房間共用）。
+ const pageTex=new T.CanvasTexture(pagesCanvas());pageTex.colorSpace=T.SRGBColorSpace;owned?.add(pageTex);
+ const pageGeo=new T.BoxGeometry(.82,.94,.88);pageGeo.translate(0,0,-.05);
+ const g=new T.Group();g.scale.set(w,h,d);
+ const cover=new T.Mesh(bookGeometry(),new T.MeshStandardMaterial({map:spineMap||null,color:spineMap?'#ffffff':color,roughness:.58,metalness:.05}));
+ const pages=new T.Mesh(pageGeo,new T.MeshStandardMaterial({map:pageTex,roughness:.92}));
+ for(const m of [cover,pages]){m.castShadow=m.receiveShadow=true;g.add(m);}
+ return g;
+}

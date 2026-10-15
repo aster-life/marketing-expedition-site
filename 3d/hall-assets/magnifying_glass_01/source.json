@@ -1,0 +1,37 @@
+{
+  "source": "https://polyhaven.com/a/magnifying_glass_01",
+  "license": "CC0",
+  "author": "Nazar Borodavka",
+  "files": {
+    "magnifying_glass_01_1k.gltf": {
+      "size": 4929,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/magnifying_glass_01/magnifying_glass_01_1k.gltf",
+      "md5": "2ff0fc8378d69d10f6221c12fbb78237"
+    },
+    "textures/magnifying_glass_01_arm_1k.jpg": {
+      "size": 114589,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/magnifying_glass_01/magnifying_glass_01_arm_1k.jpg",
+      "md5": "9470e410a7c6f15fe8af987a945fa66f"
+    },
+    "textures/magnifying_glass_01_nor_gl_1k.jpg": {
+      "size": 21380,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/magnifying_glass_01/magnifying_glass_01_nor_gl_1k.jpg",
+      "md5": "1f24457927a169fc6c196e2d0dcca73c"
+    },
+    "textures/magnifying_glass_01_diff_1k.jpg": {
+      "size": 55904,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/magnifying_glass_01/magnifying_glass_01_diff_1k.jpg",
+      "md5": "7d1288b4ddb69d748011798c77115dd8"
+    },
+    "textures/magnifying_glass_01_rough_1k.jpg": {
+      "size": 88074,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/magnifying_glass_01/magnifying_glass_01_rough_1k.jpg",
+      "md5": "5d830df4581a1773072dc9add32a524b"
+    },
+    "magnifying_glass_01.bin": {
+      "size": 182032,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/magnifying_glass_01/magnifying_glass_01.bin",
+      "md5": "26b09b8afbfef0965f85b08483afabef"
+    }
+  }
+}

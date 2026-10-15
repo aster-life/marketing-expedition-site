@@ -1,6 +1,7 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {webAsset} from './web-assets.js';
-import {createBook} from './room-book.js?v=props-2';
+import {createBook} from './room-book.js?v=paper-1';
+import {finishPaper} from './room-paper.js?v=paper-2';
 
 // 遠征本部三個近景物件，各用不同的「打開方式」：書翻開、立牌近看、告示板翻面。
 // 每個物件回傳 {group, setOpen(t), frames, whole}；frames 是放大閱讀時鏡頭要對準的區塊（世界座標）。
@@ -54,7 +55,7 @@ export function rosterProp({at,owned,anisotropy}){
   loader.load(webAsset(`assets/char-${id}.webp`),t=>{t.colorSpace=T.SRGBColorSpace;t.anisotropy=anisotropy;owned?.add(t);const r=t.image.height/t.image.width;fig.scale.y=r*.5/.76;fig.position.y=top+.05+.38*fig.scale.y;mat.map=t;mat.needsUpdate=true;});
   box(.3,.03,.18,brass,x,top+.065,-.06); // 立牌底座
   const p=new T.Mesh(new T.PlaneGeometry(gap-.06,(gap-.06)*420/640),new T.MeshStandardMaterial({map:plate(name,back,owned,anisotropy),emissive:'#ffffff',emissiveMap:null,emissiveIntensity:0,roughness:.6,metalness:.1}));
-  p.material.emissiveMap=p.material.map;p.material.emissiveIntensity=.35;p.position.set(x,top*.62,.285);group.add(p);
+  p.material.emissiveMap=p.material.map;p.material.emissiveIntensity=.35;p.userData.keepShape=true;p.position.set(x,top*.62,.285);group.add(p); // 銅名牌貼在架面上，不捲曲
   frames.push({c:v3(0,0,0),w:gap+.16,h:1.6,n:v3(.18,.3,1).normalize(),label:name});
  });
  group.updateMatrixWorld(true);frames.forEach((f,i)=>{const x=-W/2+gap*(i+.5);f.c=v3(at[0]+x,at[1]+top+.12,at[2]+.12);});
@@ -100,9 +101,10 @@ export function flipBoardProp({at,front,owned,anisotropy}){
  const back=new T.Mesh(new T.BoxGeometry(W+.22,H+.22,.14),wood);back.castShadow=back.receiveShadow=true;pivot.add(back);
  for(const dx of [-1,1]){const o=new T.Mesh(new T.BoxGeometry(.07,H+.22,.18),metal);o.position.x=dx*(W/2+.08);pivot.add(o);}
  for(const dy of [-1,1]){const o=new T.Mesh(new T.BoxGeometry(W+.22,.07,.18),metal);o.position.y=dy*(H/2+.08);pivot.add(o);}
- const faceA=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshBasicMaterial({map:front}));faceA.position.z=.076;pivot.add(faceA);
+ // 正面原本不受光（MeshBasic），近看像貼圖；改成受光，另留自發光讓房間全景仍讀得到。
+ const faceA=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:front,emissive:'#ffffff',emissiveMap:front,emissiveIntensity:1.6,roughness:.85}));faceA.userData.keepShape=true;faceA.position.z=.076;pivot.add(faceA);
  const rep=texture(reportCanvas(),owned,anisotropy);
- const faceB=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:rep,emissive:'#ffffff',emissiveMap:rep,emissiveIntensity:.12,roughness:.9}));faceB.rotation.y=Math.PI;faceB.position.z=-.076;pivot.add(faceB);
+ const faceB=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:rep,emissive:'#ffffff',emissiveMap:rep,emissiveIntensity:.12,roughness:.9}));faceB.userData.keepShape=true;faceB.rotation.y=Math.PI;faceB.position.z=-.076;pivot.add(faceB);
  // 翻面：先往前拉離牆面，再繞垂直軸轉半圈，最後貼回原位。
  function setOpen(t){const e=t*t*(3-2*t);pivot.rotation.y=e*Math.PI;pivot.position.z=Math.sin(e*Math.PI)*.95;}
  const n=v3(0,.04,1).normalize(),c=v3(...at);
@@ -114,4 +116,4 @@ export function flipBoardProp({at,front,owned,anisotropy}){
 // 依展品的 artifact 名稱建立近景物件；沒有位置資料就不建立（維持原本的鏡頭近看）。
 const MAKERS={brief:bookProp,roster:rosterProp,review:flipBoardProp};
 export function registerProp(key,maker){MAKERS[key]=maker;}
-export function makeProp(key,options){const make=MAKERS[key];if(!make||!options.at)return null;return make(options);}
+export function makeProp(key,options){const make=MAKERS[key];if(!make||!options.at)return null;const prop=make(options);if(prop)finishPaper(prop.group,{owned:options.owned});return prop;}

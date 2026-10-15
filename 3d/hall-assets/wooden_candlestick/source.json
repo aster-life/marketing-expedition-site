@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/wooden_candlestick",
+  "license": "CC0",
+  "author": "Josh Dean",
+  "files": {
+    "wooden_candlestick_1k.gltf": {
+      "size": 2799,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_candlestick/wooden_candlestick_1k.gltf",
+      "md5": "26894e96c7c914a995c3a5151c875a4e"
+    },
+    "textures/wooden_candlestick_diff_1k.jpg": {
+      "size": 768160,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_diff_1k.jpg",
+      "md5": "8255433d6733f67ccb22261a762387b7"
+    },
+    "textures/wooden_candlestick_nor_gl_1k.jpg": {
+      "size": 530930,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_nor_gl_1k.jpg",
+      "md5": "a38b0c3b142db55c9bc827f22d890b6a"
+    },
+    "wooden_candlestick.bin": {
+      "size": 6177600,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_candlestick/wooden_candlestick.bin",
+      "md5": "7558341c1d272937b6ca9e18ccee8ce2"
+    },
+    "textures/wooden_candlestick_arm_1k.jpg": {
+      "size": 949583,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_candlestick/wooden_candlestick_arm_1k.jpg",
+      "md5": "5415bd35901d9f9fd088501c6dfcdfc6"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/binder_notebook",
+  "license": "CC0",
+  "author": "DaDrood",
+  "files": {
+    "binder_notebook_1k.gltf": {
+      "size": 4309,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/binder_notebook/binder_notebook_1k.gltf",
+      "md5": "8d05e6a6436c12169debc073692b7f5e"
+    },
+    "textures/binder_notebook_nor_gl_1k.jpg": {
+      "size": 319694,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/binder_notebook/binder_notebook_nor_gl_1k.jpg",
+      "md5": "51af6519e740f1e53d33b8eb09def5dd"
+    },
+    "textures/binder_notebook_diff_1k.jpg": {
+      "size": 533256,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/binder_notebook/binder_notebook_diff_1k.jpg",
+      "md5": "0c6bbb11b58934e7ed6b6a0729e20e8b"
+    },
+    "textures/binder_notebook_arm_1k.jpg": {
+      "size": 507028,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/binder_notebook/binder_notebook_arm_1k.jpg",
+      "md5": "825aa742d0d2083656d8ebe636cde087"
+    },
+    "binder_notebook.bin": {
+      "size": 525488,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/binder_notebook/binder_notebook.bin",
+      "md5": "bade6e7ed1349d598b27018c61cf674d"
+    }
+  }
+}

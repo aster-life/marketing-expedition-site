@@ -1,6 +1,6 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {webAsset} from './web-assets.js';
-import {registerProp} from './room-props.js?v=props-2';
+import {registerProp} from './room-props.js?v=paper-4';
 
 // 星港展廳的近景物件：畫框裡依序滑入網站實際畫面、放大鏡移到提案手稿上、診斷板釘上卡片並拉起金線。
 // 網站畫面是這個網站自己的截圖；提案與診斷沿用作品頁的教學示範，紙上標明「教學示範」。
@@ -29,7 +29,7 @@ function siteProp({at,rotation=0,owned,anisotropy}){
   a.strokeStyle='#8c724766';a.lineWidth=2;a.beginPath();a.moveTo(40,800);a.lineTo(680,800);a.stroke();a.fillStyle='#7d725c';a.font=`28px ${SANS}`;a.fillText('你現在看的這個網站',40,852);
   const map=tex(c,owned,anisotropy);
   loader.load(webAsset(img),it=>{a.drawImage(it.image,28,28,664,415);map.needsUpdate=true;it.dispose();});
-  const m=mesh(new T.PlaneGeometry(cw,ch),paperMat(map,.22),g,(i-1)*(cw+.08),0,.06);m.castShadow=false;cards.push(m);
+  const m=mesh(new T.PlaneGeometry(cw,ch),paperMat(map,.22),g,(i-1)*(cw+.08),0,.06);m.castShadow=false;m.userData.keepShape=true;cards.push(m); // 裱在畫框裡，不捲曲
  });
  function setOpen(v){back.material.opacity=ease(clamp01(v*3));back.visible=v>.001;cards.forEach((m,i)=>{const k=ease(clamp01(v*1.6-i*.25));m.position.y=-(1-k)*1.6;m.position.z=.06+(1-k)*.4;m.rotation.x=(1-k)*.5;m.visible=k>.01;});}
  const n=worldDir(g,0,.04,1);
@@ -68,7 +68,7 @@ function diagnosisProp({at,rotation=0,owned,anisotropy}){
  const slots=[[-.4,.55],[.4,.2],[-.4,-.2],[.4,-.6]],cards=[],pins=[];
  DIAG.forEach(([h,t],i)=>{const [c,a]=canvas(640,440);a.fillStyle=i===3?'#f3dcc2':'#f2eadb';a.fillRect(0,0,640,440);a.fillStyle=i===3?'#a2402f':'#7a5a2a';a.fillRect(0,0,640,18);
   a.fillStyle=i===3?'#a2402f':'#6e4f22';a.font=`600 52px ${SANS}`;a.fillText(`0${i+1}  ${h}`,34,100);a.fillStyle='#1f2a2e';a.font=`40px ${SANS}`;wrap(a,t,34,180,572,58);
-  const m=mesh(new T.PlaneGeometry(.74,.51),paperMat(tex(c,owned,anisotropy),.16),g,slots[i][0],slots[i][1],.05);m.castShadow=false;cards.push(m);
+  const m=mesh(new T.PlaneGeometry(.74,.51),paperMat(tex(c,owned,anisotropy),.16),g,slots[i][0],slots[i][1],.05);m.castShadow=false;m.userData.keepShape=true;cards.push(m); // 釘在軟木板上，不捲曲
   pins.push(mesh(new T.SphereGeometry(.028,12,8),new T.MeshStandardMaterial({color:i===3?'#a2402f':'#c9a25c',metalness:.5,roughness:.4}),g,slots[i][0],slots[i][1]+.2,.08));});
  // 金線：相鄰卡片的圖釘之間，逐段拉出
  const threads=[];for(let i=0;i<3;i++){const a=v3(slots[i][0],slots[i][1]+.2,.085),b=v3(slots[i+1][0],slots[i+1][1]+.2,.085),len=a.distanceTo(b);

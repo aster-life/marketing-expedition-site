@@ -1,11 +1,11 @@
 import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
-import {buildRegionScene} from './region-scenes.js?v=light-1';
+import {buildRegionScene} from './region-scenes.js?v=paper-7';
 import {regionContent} from './region-content.js?v=props-2';
-import {makeProp} from './room-props.js?v=props-2';
-import './room-props-2.js?v=props-2';
-import {createPropController} from './room-prop-controller.js?v=props-2';
+import {makeProp} from './room-props.js?v=paper-4';
+import './room-props-2.js?v=paper-7';
+import {createPropController} from './room-prop-controller.js?v=paper-3';
 import {prewarmRoom} from './room-prewarm.js';
 
 export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=>false}={}){
@@ -56,7 +56,7 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
   // 近景物件：點選時鏡頭靠近，物件本身打開；控制邏輯與星港展廳共用。
  const props={},anisotropy=renderer.capabilities.getMaxAnisotropy();
  exhibits.forEach((e,i)=>{const prop=makeProp(e.artifact,{at:built.propAt?.[e.artifact],front:built.propTex?.[e.artifact],owned:ownedTextures,anisotropy});if(prop){scene.add(prop.group);props[i]=prop;}});
- const propControl=createPropController({host,camera,props,exhibits,move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
+ const propControl=createPropController({host,scene,camera,props,exhibits,refreshShadows:()=>{renderer.shadowMap.needsUpdate=true;},move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
  async function overview(){if(!active||busy)return;propControl.close();selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
  async function select(index){
   if(!active||busy)return;selection=index;buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));onSelect?.(exhibits[index]);

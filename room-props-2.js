@@ -1,6 +1,7 @@
 import * as T from './assets/vendor/three.module.min.js';
 import {webAsset} from './web-assets.js';
-import {registerProp} from './room-props.js?v=props-2';
+import {registerProp} from './room-props.js?v=paper-4';
+import {makeBook} from './room-books.js?v=paper-7';
 
 // 典籍山谷與營火之地的近景物件。每一件用不同的「打開方式」：卷軸展開、書抽出掛牌、卡片分類、
 // 木牌升起、照片垂掛、信從信封升起。內容取自網站上既有的文章、示範與說明，不另外編造成果。
@@ -8,7 +9,9 @@ const SANS='"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif',SERIF=
 const v3=(x,y,z)=>new T.Vector3(x,y,z),ease=t=>t*t*(3-2*t),clamp01=t=>Math.min(1,Math.max(0,t));
 function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return [c,c.getContext('2d')];}
 function tex(c,owned,anisotropy){const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=anisotropy;owned?.add(t);return t;}
-function wrap(a,text,x,y,maxW,lh){let line='';const out=[];for(const ch of String(text)){if(a.measureText(line+ch).width>maxW&&line){out.push(line);line=ch;}else line+=ch;}if(line)out.push(line);out.forEach((l,i)=>a.fillText(l,x,y+i*lh));return y+out.length*lh;}
+// 換行：標點不放在行首（超出一點也併在上一行）。
+const NO_START='，。、；：！？」』）〕》｜,.;:!?)';
+function wrap(a,text,x,y,maxW,lh){let line='';const out=[];for(const ch of String(text)){if(a.measureText(line+ch).width>maxW&&line&&!NO_START.includes(ch)){out.push(line);line=ch;}else line+=ch;}if(line)out.push(line);out.forEach((l,i)=>a.fillText(l,x,y+i*lh));return y+out.length*lh;}
 function parchment(a,w,h,seed=771){const g=a.createLinearGradient(0,0,w,h);g.addColorStop(0,'#efe3c6');g.addColorStop(.7,'#e1cfa8');g.addColorStop(1,'#d2bd92');a.fillStyle=g;a.fillRect(0,0,w,h);let s=seed;for(let i=0;i<w*h/90;i++){s=(Math.imul(s,1664525)+1013904223)>>>0;const x=s%w;s=(Math.imul(s,1664525)+1013904223)>>>0;a.fillStyle=i%2?'#ffffff0e':'#6b52300c';a.fillRect(x,s%h,2,2);}}
 // 書頁、紙張受場景燈光影響，再加一點自發光，確保暗處仍讀得清楚。
 function paperMat(t,glow=.32){return new T.MeshStandardMaterial({map:t,emissive:'#ffffff',emissiveMap:t,emissiveIntensity:glow,roughness:.92,side:T.DoubleSide});}
@@ -23,15 +26,18 @@ function scrollProp({at,owned,anisotropy}){
  const box=[['目標','讓第一次聽到我們的人，理解產品適合什麼情境。'],['素材','可用產品照片與三則客人回饋；價格還沒確認，先標「未定」。'],['交付','三篇 IG 貼文草稿，每篇附一張建議圖片。'],['驗收','沒聽過我們的人讀完，說得出產品適合誰。']];
  box.forEach(([h,t],i)=>{const x=70+(i%2)*740,y=220+Math.floor(i/2)*360;a.strokeStyle='#8c7247aa';a.lineWidth=3;a.strokeRect(x,y,700,320);
   a.fillStyle='#7a5a2a';a.beginPath();a.arc(x+52,y+58,26,0,Math.PI*2);a.fill();a.fillStyle='#f3e6c8';a.font='600 30px Georgia';a.textAlign='center';a.fillText(String(i+1),x+52,y+69);a.textAlign='left';
-  a.fillStyle='#6e4f22';a.font=`600 46px ${SANS}`;a.fillText(h,x+98,y+74);a.fillStyle='#2a2a24';a.font=`40px ${SANS}`;wrap(a,t,x+40,y+150,620,58);});
- a.fillStyle='#5b5240';a.font=`32px ${SANS}`;a.fillText('不知道的地方，直接寫「未定」；收到結果時，先看有沒有回答最初的問題。',70,988);
+  a.fillStyle='#6e4f22';a.font=`600 50px ${SANS}`;a.fillText(h,x+98,y+76);a.fillStyle='#2a2a24';a.font=`46px ${SANS}`;wrap(a,t,x+40,y+148,630,62);});
+ a.fillStyle='#5b5240';a.font=`36px ${SANS}`;a.fillText('不知道的地方，直接寫「未定」；收到結果時，先看有沒有回答最初的問題。',70,990);
  const t=tex(c,owned,anisotropy),sheet=mesh(new T.PlaneGeometry(W,D),paperMat(t,.16),g,0,.012,0);sheet.rotation.x=-Math.PI/2;
  const rollers=[-1,1].map(s=>{const r=mesh(new T.CylinderGeometry(.045,.045,D+.08,18),wood(),g,0,.045,0);r.rotation.x=Math.PI/2;
   for(const dz of [-1,1])mesh(new T.CylinderGeometry(.055,.055,.03,18),brass(),r,0,dz*(D/2+.05),0);return {r,s};});
  function setOpen(v){const e=ease(v);sheet.scale.x=Math.max(.02,e);t.repeat.x=Math.max(.02,e);t.offset.x=(1-Math.max(.02,e))/2;rollers.forEach(({r,s})=>{r.position.x=s*(.035+(W/2)*e);r.rotation.y=s*e*7;});}
- const n=v3(.06,.86,.5).normalize(),y=at[1]+.02;
- return {group:g,setOpen,openDuration:1200,whole:{c:v3(at[0],y,at[2]),w:W+.22,h:D+.12,n,k:1.12},
-  frames:[{c:v3(at[0]-W/4,y,at[2]),w:W/2+.1,h:D+.08,n,label:'目標・素材'},{c:v3(at[0]+W/4,y,at[2]),w:W/2+.1,h:D+.08,n,label:'交付・驗收'}]};
+ // 鏡頭更接近正上方、距離更近：舊版斜角大，桌機上內文只有約 15px，要放大才讀得到。
+ const n=v3(.05,.93,.36).normalize(),y=at[1]+.02;
+ return {group:g,setOpen,openDuration:1200,whole:{c:v3(at[0],y,at[2]),w:W+.26,h:D+.14,n,k:1.04},
+  // 放大細看一次一格（手機預設就從這裡開始），比半張卷軸大、字更好讀。
+  // 四格在紙上的中心：上排約 z −0.10、下排約 z +0.17（紙面上緣朝 −z）。
+  frames:[['目標',-1,-.1],['素材',1,-.1],['交付',-1,.17],['驗收',1,.17]].map(([label,sx,z])=>({c:v3(at[0]+sx*W/4,y,at[2]+z),w:W/2+.04,h:D/2+.02,n,label}))};
 }
 
 // ── 典籍山谷 02：方法書架 ── 六本書從架前的展示檯往前滑出，上方升起寫著篇名的掛牌。
@@ -48,9 +54,14 @@ function shelfProp({at,owned,anisotropy}){
  const books=[],tags=[],frames=[];
  SHELF.forEach(([cat,title,line,color],i)=>{
   const x=-W/2+gap*(i+.5);
-  const [sc,sa]=canvas(160,560);sa.fillStyle=color;sa.fillRect(0,0,160,560);sa.fillStyle='#d9b770';sa.fillRect(0,40,160,6);sa.fillRect(0,514,160,6);sa.save();sa.translate(96,90);sa.rotate(Math.PI/2);sa.font=`600 40px ${SANS}`;sa.fillStyle='#f0dcb0';sa.fillText(cat,0,0);sa.restore();
-  const cover=new T.MeshStandardMaterial({color,roughness:.6}),spine=new T.MeshStandardMaterial({map:tex(sc,owned,anisotropy),roughness:.6});
-  const book=mesh(new T.BoxGeometry(.17,.56,.36),[cover,cover,cover,cover,spine,cover],g,x,ledgeY+.06+.28,z);books.push({book,z});
+  // 書脊：皮面顆粒、圓弧受光、起筋與燙金線，分類名直書；書本用和書架上同一個造型（room-books.js）。
+  const [sc,sa]=canvas(160,560);sa.fillStyle=color;sa.fillRect(0,0,160,560);let sd=31+i*17;const rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+  for(let k=0;k<1400;k++){sa.fillStyle=rr()<.5?'rgba(0,0,0,.14)':'rgba(255,255,255,.06)';sa.fillRect(rr()*160,rr()*560,1+rr()*2,1+rr()*2);}
+  const sh=sa.createLinearGradient(0,0,160,0);sh.addColorStop(0,'rgba(0,0,0,.4)');sh.addColorStop(.5,'rgba(255,255,255,.1)');sh.addColorStop(1,'rgba(0,0,0,.4)');sa.fillStyle=sh;sa.fillRect(0,0,160,560);
+  for(const y of [52,82,478,508]){sa.fillStyle='rgba(0,0,0,.45)';sa.fillRect(0,y,160,12);sa.fillStyle='rgba(255,255,255,.14)';sa.fillRect(0,y-2,160,2);sa.fillStyle='#d9b770';sa.fillRect(12,y+4,136,2);}
+  sa.fillStyle='#d9b770';sa.fillRect(0,14,160,4);sa.fillRect(0,542,160,4);
+  sa.save();sa.translate(98,120);sa.rotate(Math.PI/2);sa.font=`600 46px ${SANS}`;sa.fillStyle='#f0dcb0';sa.fillText(cat,0,0);sa.restore();
+  const book=makeBook({w:.17,h:.56,d:.36,spineMap:tex(sc,owned,anisotropy),owned});book.position.set(x,ledgeY+.06+.28,z);g.add(book);books.push({book,z});
   const [tc,ta]=canvas(600,760);parchment(ta,600,760,300+i);ta.strokeStyle='#8c7247aa';ta.lineWidth=4;ta.strokeRect(14,14,572,732);
   ta.fillStyle='#7a5a2a';ta.font='34px Georgia';ta.fillText('0'+(i+1),40,78);ta.font=`32px ${SANS}`;ta.fillText(cat,110,76);
   ta.fillStyle='#1f2a2e';ta.font=`600 46px ${SERIF}`;const y2=wrap(ta,title,40,170,520,64);ta.fillStyle='#4a4232';ta.font=`36px ${SANS}`;wrap(ta,line,40,y2+40,520,52);
@@ -58,7 +69,8 @@ function shelfProp({at,owned,anisotropy}){
   const tag=mesh(new T.PlaneGeometry(gap-.05,(gap-.05)*760/600),paperMat(tex(tc,owned,anisotropy),.3),g,x,ledgeY+.95,z+.1);tag.castShadow=false;tags.push(tag);
   const string=mesh(new T.CylinderGeometry(.004,.004,.32,6),brass(),tag,0,(gap-.05)*760/600/2+.16,0);string.castShadow=false;
  });
- for(let i=0;i<3;i++){const x=-W/2+gap*(i*2+1);frames.push({c:v3(at[0]+x,at[1]+ledgeY+.7,at[2]+z),w:gap*2+.1,h:1.25,n:v3(.1,.12,1).normalize(),label:`第 ${i*2+1}–${i*2+2} 本`});}
+ // 放大細看對準掛牌（內容在牌上）；舊版框住牌和書整排，牌比書靠前，透視放大後會跑出框、在手機上壓到房間標題。
+ for(let i=0;i<3;i++){const x=-W/2+gap*(i*2+1);frames.push({c:v3(at[0]+x,at[1]+ledgeY+1.0,at[2]+z+.1),w:gap*2+.1,h:.8,n:v3(.1,.12,1).normalize(),label:`第 ${i*2+1}–${i*2+2} 本`});}
  function setOpen(v){books.forEach(({book,z:bz},i)=>{const k=ease(clamp01(v*1.5-i*.08));book.position.z=bz+.16*k;book.rotation.x=.12*k;});
   tags.forEach((tag,i)=>{const k=ease(clamp01(v*1.6-.3-i*.1));tag.scale.setScalar(Math.max(.001,k));tag.position.y=1.2+.95-(1-k)*.4;tag.rotation.z=Math.sin(k*Math.PI)*.08*(i%2?1:-1);});}
  return {group:g,setOpen,openDuration:1600,whole:{c:v3(at[0],at[1]+ledgeY+.62,at[2]+z),w:W+.3,h:1.6,n:v3(.08,.14,1).normalize(),k:1.05},frames};
@@ -70,14 +82,14 @@ const COLS=[['已決定','#7a5a2a'],['行動｜誰｜何時','#2f4c5e'],['待確
 function cardsProp({at,owned,anisotropy}){
  const g=new T.Group();g.position.set(...at);const CW=.36,CH=.22,colX=[-.46,0,.46],cards=[],frames=[];
  const card=(text,color,head)=>{const [c,a]=canvas(720,440);a.fillStyle=head?color:'#f1e7cf';a.fillRect(0,0,720,440);if(!head){a.fillStyle=color;a.fillRect(0,0,720,22);}
-  a.fillStyle=head?'#f3e6c8':'#14181a';a.font=head?`600 66px ${SANS}`:`600 50px ${SANS}`;if(head){a.textAlign='center';a.fillText(text,360,250);a.textAlign='left';}else wrap(a,text,44,130,632,70);return tex(c,owned,anisotropy);};
+  a.fillStyle=head?'#f3e6c8':'#14181a';a.font=head?`600 70px ${SANS}`:`600 62px ${SANS}`;if(head){a.textAlign='center';a.fillText(text,360,250);a.textAlign='left';}else wrap(a,text,44,140,632,84);return tex(c,owned,anisotropy);};
  COLS.forEach(([h,color],i)=>{const m=mesh(new T.PlaneGeometry(CW,CH*.62),paperMat(card(h,color,true),.25),g,colX[i],.004,-.3);m.rotation.x=-Math.PI/2;m.userData.target=m.position.clone();cards.push({m,from:v3(.62,.02+i*.004,.22),to:m.position.clone(),i:i});});
  const rows=[0,0,0];
  CARDS.forEach(([col,text],k)=>{const m=mesh(new T.PlaneGeometry(CW,CH),paperMat(card(text,COLS[col][1],false),.1),g,0,0,0);m.rotation.x=-Math.PI/2;const to=v3(colX[col],.006+rows[col]*.001,-.12+rows[col]*.25);rows[col]++;cards.push({m,from:v3(.62,.03+(k+3)*.004,.22),to,i:k+3});});
  cards.forEach(({m,from})=>m.position.copy(from));
  COLS.forEach(([h],i)=>frames.push({c:v3(at[0]+colX[i],at[1]+.02,at[2]+.1),w:CW+.18,h:.82,n:v3(.1,.9,.45).normalize(),label:h.split('｜')[0]}));
  function setOpen(v){cards.forEach(({m,from,to,i})=>{const k=ease(clamp01(v*1.8-i*.09));m.position.lerpVectors(from,to,k);m.position.y+=Math.sin(k*Math.PI)*.18;m.rotation.z=(1-k)*.35*(i%2?1:-1);});}
- return {group:g,setOpen,openDuration:1700,whole:{c:v3(at[0],at[1]+.02,at[2]+.05),w:1.5,h:.95,n:v3(.12,.88,.48).normalize(),k:1.12},frames};
+ return {group:g,setOpen,openDuration:1700,whole:{c:v3(at[0],at[1]+.02,at[2]+.06),w:1.46,h:.95,n:v3(.08,.95,.3).normalize(),k:1.06},frames};
 }
 
 // ── 營火之地 01：營火故事 ── 營火旁升起三塊木牌，刻著團隊做事的三個原則。
@@ -133,17 +145,30 @@ function letterProp({at,owned,anisotropy}){
   a.strokeStyle='#8c724777';a.beginPath();a.moveTo(70,y+118);a.lineTo(850,y+118);a.stroke();});
  a.fillStyle='#5b5240';a.font=`30px ${SANS}`;wrap(a,'需求單目前只會下載到你的裝置，不會送出或寄信。',70,1080,780,42);
  a.save();a.translate(760,170);a.fillStyle='#8f2d22';a.beginPath();a.arc(0,0,48,0,Math.PI*2);a.fill();a.fillStyle='#e8c99a';a.font='44px Georgia';a.textAlign='center';a.fillText('✧',0,15);a.restore();
- const env=new T.MeshStandardMaterial({color:'#d8c49c',roughness:.85});
- mesh(new T.BoxGeometry(.56,.02,.38),env,g,0,.01,0);
- const flapPivot=new T.Group();flapPivot.position.set(0,.022,-.19);g.add(flapPivot);
- const flap=mesh(new T.ConeGeometry(.28,.2,4,1),env,flapPivot,0,0,.1);flap.scale.set(1,.06,1);flap.rotation.set(0,Math.PI/4,0);
- const seal=mesh(new T.CylinderGeometry(.045,.045,.012,20),new T.MeshStandardMaterial({color:'#8f2d22',roughness:.5}),g,0,.03,.02);
+ // 信封：紙面有四道摺痕與邊緣陰影；三角封口有厚度、以後緣為軸掀開；封蠟黏在封口尖端，跟著掀起；
+ // 掀開後看得到後緣較暗的開口，信從那裡升起。（舊版是方塊加四角錐，封蠟打開就直接消失。）
+ const EW=.56,ED=.38,[ec,ea]=canvas(560,380);
+ const eg=ea.createLinearGradient(0,0,560,380);eg.addColorStop(0,'#e8d8b4');eg.addColorStop(1,'#d6c29a');ea.fillStyle=eg;ea.fillRect(0,0,560,380);
+ let es=907;const er=()=>{es=(es*16807)%2147483647;return es/2147483647;};for(let k=0;k<2600;k++){ea.fillStyle=er()<.5?'rgba(90,64,30,.07)':'rgba(255,255,255,.08)';ea.fillRect(er()*560,er()*380,1+er()*2,1);}
+ for(const [x0,y0] of [[0,380],[560,380],[0,0],[560,0]]){ea.strokeStyle='rgba(120,92,52,.35)';ea.lineWidth=2;ea.beginPath();ea.moveTo(x0,y0);ea.lineTo(280,200);ea.stroke();ea.strokeStyle='rgba(255,250,235,.35)';ea.lineWidth=1;ea.beginPath();ea.moveTo(x0+(x0?-2:2),y0);ea.lineTo(280,203);ea.stroke();}
+ const ev=ea.createRadialGradient(280,190,120,280,190,360);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(70,48,20,.22)');ea.fillStyle=ev;ea.fillRect(0,0,560,380);
+ const envTop=new T.MeshStandardMaterial({map:tex(ec,owned,anisotropy),roughness:.88}),envEdge=new T.MeshStandardMaterial({color:'#cdb88e',roughness:.9});
+ mesh(new T.BoxGeometry(EW,.02,ED),[envEdge,envEdge,envTop,envEdge,envEdge,envEdge],g,0,.01,0);
+ mesh(new T.PlaneGeometry(EW-.06,.035),new T.MeshStandardMaterial({color:'#5a4630',roughness:1}),g,0,.0205,-ED/2+.03).rotation.x=-Math.PI/2; // 掀開後露出的開口
+ const flapPivot=new T.Group();flapPivot.position.set(0,.021,-ED/2);g.add(flapPivot);
+ const fs=new T.Shape();fs.moveTo(-EW/2,0);fs.lineTo(EW/2,0);fs.lineTo(.03,-.225);fs.quadraticCurveTo(0,-.24,-.03,-.225);fs.closePath();
+ const flap=mesh(new T.ExtrudeGeometry(fs,{depth:.003,bevelEnabled:false,curveSegments:6}),new T.MeshStandardMaterial({color:'#e2d1ab',roughness:.88}),flapPivot,0,0,0);flap.rotation.x=-Math.PI/2;
+ const wax=new T.MeshStandardMaterial({color:'#8f2d22',roughness:.42});
+ const seal=mesh(new T.LatheGeometry([[0,.009],[.022,.009],[.034,.007],[.041,.004],[.043,.001],[.04,0]].map(([x,y])=>new T.Vector2(x,y)),24),wax,flapPivot,0,.003,.2);
+ const sealRing=mesh(new T.TorusGeometry(.021,.0025,6,28),wax,seal,0,.009,0);sealRing.rotation.x=Math.PI/2;
  const letter=new T.Group();g.add(letter);const sheet=mesh(new T.PlaneGeometry(LW,LH),paperMat(tex(c,owned,anisotropy),.3),letter,0,0,0);sheet.castShadow=false;
  const glow=new T.PointLight('#ffd391',0,3,2);glow.position.set(0,1.2,.6);g.add(glow);
  const up=1.05,face=-.2;
- function setOpen(v){const f=ease(clamp01(v*2.5)),r=ease(clamp01(v*1.4-.3));flapPivot.rotation.x=-f*2.6;seal.visible=f<.3;
-  letter.position.set(r*.35,.05+r*up+(LH/2)*r,r*.95);letter.rotation.set(-Math.PI/2*(1-r),face*r,0);letter.scale.setScalar(.36+.64*r);glow.intensity=r*2.4;}
- const cy=at[1]+.05+up+LH/2,n=v3(.08,.12,1).normalize();
+ function setOpen(v){const f=ease(clamp01(v*2.5)),r=ease(clamp01(v*1.4-.3));flapPivot.rotation.x=-f*2.6;
+  // 闔上時信收在信封裡（看不到）；封口掀到一半才開始升起。舊版闔上時信平躺在信封上面。
+  letter.visible=r>.001;letter.position.set(r*.35,.012+r*(.038+up+LH/2),r*.95);letter.rotation.set(-Math.PI/2*(1-r),face*r,0);letter.scale.setScalar(.36+.64*r);glow.intensity=r*2.4;}
+ // 鏡頭正對信紙（信紙轉了 face 角度）；舊版鏡頭從右側斜看，手機上信會偏右、右緣被切。
+ const cy=at[1]+.05+up+LH/2,n=v3(Math.sin(face),.12,Math.cos(face)).normalize();
  return {group:g,setOpen,openDuration:1500,whole:{c:v3(at[0]+.35,cy-.1,at[2]+.95),w:LW+.5,h:LH+.75,n,k:1.06},
   frames:[{c:v3(at[0]+.35,cy+.28,at[2]+.95),w:LW+.12,h:.7,n,label:'上半'},{c:v3(at[0]+.35,cy-.3,at[2]+.95),w:LW+.12,h:.7,n,label:'下半'}]};
 }

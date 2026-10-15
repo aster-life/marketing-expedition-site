@@ -4,7 +4,7 @@ import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createRegionEntrance} from './region-entrance.js';
 import {createCampfire} from './room-fire.js?v=light-1';
 import {applyRoomEnvironment,addHalos,createContactShadows} from './room-light.js?v=light-1';
-import {createBookCollector} from './room-books.js?v=light-1';
+import {createBookCollector,makeBook} from './room-books.js?v=paper-7';
 
 export async function buildRegionScene(index,scene,owned,renderer){
  const root=new T.Group();scene.add(root);const jobs=[];
@@ -55,11 +55,10 @@ export async function buildRegionScene(index,scene,owned,renderer){
   const leaves=g.children.filter(c=>c.geometry?.type==='PlaneGeometry');
   for(const i of [11,23])leaves[i].material=new T.MeshStandardMaterial({map:panel(i===11?title:'下一步',rows,true),roughness:1,side:T.DoubleSide});return g;
  }
- function closedBook(x,y,z,width=.65,height=.13,color=dark){box(x,y,z,width,height,.62,color);box(x,y,z+.015,width-.07,height*.65,.62,mat('#ab9978'));for(const dy of [-1,1])box(x,y+dy*height*.48,z,width,.025,.66,color);}
  const gltfLoader=createGLTFLoader();const gltfs=new Map();
- function asset(id,x,z,height,rotation=0,shadow=1.25,y=0){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,y,z);wrap.rotation.y=rotation;root.add(wrap);
+ function asset(id,x,z,height,rotation=0,shadow=1.25,y=0,onLoad=null){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,y,z);wrap.rotation.y=rotation;root.add(wrap);onLoad?.(wrap,model);
   // 接觸陰影：依模型實際底面大小鋪一圈柔和暗影
-  if(shadow){const k=height/size.y;contact(root,x,z,size.x*k*shadow,size.z*k*shadow,{rotation,y:index===3?.006:.016});}}));}
+  if(shadow){const k=height/size.y;contact(root,x,z,size.x*k*shadow,size.z*k*shadow,{rotation,y:y>0?y+.004:index===3?.006:.016});}}));}
  function shelves(x,z,rotation=0){asset('wooden_bookshelf_worn',x,z,3.65,rotation,1.05);const g=new T.Group();g.position.set(x,0,z);g.rotation.y=rotation;g.updateMatrix();const gm=g.matrix;
   // 書：圓弧書脊、封板與內縮書頁（room-books.js）；寬高厚不一，每排留空隙，偶爾斜靠或橫疊。
   let seed=Math.round(Math.abs(x*97+z*31))+7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
@@ -73,7 +72,17 @@ export async function buildRegionScene(index,scene,owned,renderer){
     books.addBook(gm,xx+w/2,yy+h/2,.3,w,h,d);
     xx+=w+.004;}}
  }
- function desk(x,z){asset('wooden_table_02',x,z,1.35);lamp(x-1,1.96,z-.32);cyl(x+.9,1.46,z-.3,.085,.2,dark);const pen=cyl(x+.7,1.4,z+.3,.012,.55);pen.rotation.z=1.5;}
+ // 桌上的油燈（Poly Haven vintage_oil_lamp）：燈芯位置點亮暖光並加光暈；取代原本圓柱拼的桌燈。
+ function oilLamp(x,y,z,h=.72){
+  const light=new T.PointLight('#ffba69',2.2,4,2);scene.add(light);
+  asset('vintage_oil_lamp',x,z,h,0,.55,y,(wrap,model)=>{
+   model.traverse(o=>{if(o.isMesh&&/flame/.test(o.material.name)){o.material=o.material.clone();o.material.emissive=new T.Color('#ffd28a');o.material.emissiveMap=o.material.map;o.material.emissiveIntensity=2.2;o.castShadow=false;}
+    if(o.isMesh&&/glass/.test(o.material.name))o.castShadow=false;});
+   const f=new T.Vector3(x,y+h*.62,z);light.position.copy(f);halos.push(f.toArray());});
+ }
+ // 平放的書（和書架上的書同一個造型），直接放在桌面上；舊版用方塊拼、還浮在桌面上方 2–9 公分。
+ function flatBook(x,y,z,{w=.1,h=.48,d=.36,rot=0,design=0}={}){const b=makeBook({w,h,d,design,owned});b.rotation.set(0,rot,Math.PI/2);b.position.set(x,y+w/2,z);root.add(b);return b;}
+ function desk(x,z){asset('wooden_table_02',x,z,1.35);oilLamp(x-.78,1.35,z-.38);cyl(x+.9,1.46,z-.3,.085,.2,dark);const pen=cyl(x+.7,1.4,z+.3,.012,.55);pen.rotation.z=1.5;}
  if(index===3){
   // 帳篷帆布：織紋、縫線與下緣的水漬，取代單色布面。
   const c=document.createElement('canvas');c.width=c.height=512;const a=c.getContext('2d');a.fillStyle='#8f7752';a.fillRect(0,0,512,512);
@@ -110,18 +119,19 @@ export async function buildRegionScene(index,scene,owned,renderer){
   for(const x of [-2.8,2.8])asset('WoodenChair_01',x,.9,1.75,x<0?Math.PI/2:-Math.PI/2); // 寫實木椅，面向圓桌
   // 名冊架與可翻面的告示板改由 room-props.js 建立（需要個別動畫，不能併入靜態批次）。
   propTex={review:panel('交付前核對',[['目標','是否回答原本的問題'],['依據','來源與待確認事項'],['決定','由你核定下一步']])};
-  shelves(-5,-2.3,Math.PI/2);lamp(1.25,2.08,.75);propAt={brief:[-1.2,1.462,1.35],roster:[-2.85,0,-3.3],review:[3.15,2.65,-3.65]};
+  shelves(-5,-2.3,Math.PI/2);oilLamp(1.25,1.448,.75);propAt={brief:[-1.2,1.462,1.35],roster:[-2.85,0,-3.3],review:[3.15,2.65,-3.65]};
   views=[{position:[2.6,4.2,4.6],target:[0,1.6,.6]},{position:[-2.8,2.8,.8],target:[-3.1,2.65,-3.65]},{position:[2.85,2.8,.8],target:[3.15,2.65,-3.65]}];
   anchors=[[0,1.2,2.1],[-3.1,1.1,-3.4],[3.15,1.1,-3.4]];overview={position:[2.7,3.8,9.6],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
  }else if(index===2){
   for(const x of [-3.9,0,3.9])shelves(x,-3.5);
   desk(-2,.7); // 桌上的交辦卷軸由 room-props-2.js 建立
-  closedBook(-1.25,1.52,.05,.55,.2);
+  asset('binder_notebook',-1.95,.21,.03,0,.9,1.35); // 皮面活頁筆記本＋闔上的筆記本（Poly Haven）
+  asset('wooden_candlestick',-2.82,.95,.36,0,.6,1.35);
   desk(2.4,.6); // 桌上的會議便條卡由 room-props-2.js 建立
-  for(let i=0;i<3;i++)closedBook(3.2,1.5+i*.14,0,.55,.13);
+  [0,4,6].forEach((k,i)=>flatBook(3.16,1.35+i*.104,.28,{w:.1,h:.46,d:.32,rot:Math.PI/2+(i-1)*.12,design:k}));
   board(0,4.4,-3.7,2.35,1.28,'方法的索引',[['協作 · 創作 · 工作流程','從眼前的問題開始']]);
-  // 有階梯厚度與金屬端點的閱讀梯。
-  for(const x of [.85,1.36]){const rail=box(x,1.6,-2.3,.07,3.2,.09,wood);rail.rotation.x=-.16;}for(let i=0;i<8;i++)box(1.105,.22+i*.37,-2.08-i*.06,.54,.055,.15,wood);
+  // 有階梯厚度與金屬端點的閱讀梯，靠在右側書架上。原本立在中間書架右前方，會擋住「方法書架」第 5–6 本的掛牌。
+  const lx=3.9;for(const x of [lx-.255,lx+.255]){const rail=box(x,1.6,-2.3,.07,3.2,.09,wood);rail.rotation.x=-.16;}for(let i=0;i<8;i++)box(lx,.22+i*.37,-2.08-i*.06,.54,.055,.15,wood);
   propAt={scroll:[-2,1.355,.72],shelf:[0,0,-3.5],cards:[2.35,1.355,.62]};
   views=[{position:[-1.3,3.7,3.5],target:[-2,1.4,.7]},{position:[.5,3.3,2],target:[0,2,-3.5]},{position:[2.8,3.7,3.4],target:[2.3,1.4,.6]}];
   anchors=[[-2,1.2,1.9],[0,1,-2.8],[2.4,1.2,1.8]];overview={position:[2.6,3.8,9.5],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
@@ -136,7 +146,8 @@ export async function buildRegionScene(index,scene,owned,renderer){
   // 火邊的座位：兩張露營折凳（寫實模型）；原本的樹樁貼圖滿是落葉碎石，縮小後看起來像石頭。
   asset('folding_wooden_stool',-2,2.4,.5,.5);asset('folding_wooden_stool',2,2.4,.5,-.7);
   // 閱讀物件移到帳篷前緣，近景視線不再穿過布頂。
-  desk(-2.8,-.6);closedBook(-2.6,1.43,-.55,.5,.12); // 桌後的照片繩由 room-props-2.js 建立
+  desk(-2.8,-.6);flatBook(-2.6,1.35,-.55,{w:.1,h:.46,d:.34,rot:.2,design:1});asset('wooden_candlestick',-2.25,-1.0,.36,0,.6,1.35); // 燭台放右後方，避開筆和墨水瓶 // 桌後的照片繩由 room-props-2.js 建立
+  asset('wooden_bucket_01',-2.75,2.95,.4,.5,1.1,-.03); // 營地的木水桶（Poly Haven）
   asset('treasure_chest',3,-.2,.86);contact(root,0,1.2,2.6,2.6,{y:.006}); // 火坑周圍燒黑的地面 // 寶箱上的邀請信由 room-props-2.js 建立
   // 營地兩側的木提燈（寫實模型）掛在木樁的橫臂上，燈芯另外點亮。
   for(const x of [-4.2,4.2]){cyl(x,1.05,3.8,.05,2.1,wood);const arm=box(x-Math.sign(x)*.17,2.08,3.8,.4,.05,.05,wood);

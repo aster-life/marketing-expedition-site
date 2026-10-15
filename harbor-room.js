@@ -6,11 +6,11 @@ import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createHarborFacade} from './harbor-facade.js?v=polish-1';
 import {createHarborPaper} from './harbor-paper.js';
 import {prewarmRoom} from './room-prewarm.js';
-import {makeProp} from './room-props.js?v=props-2';
-import './room-props-3.js?v=props-2';
-import {createPropController} from './room-prop-controller.js?v=props-2';
+import {makeProp} from './room-props.js?v=paper-4';
+import './room-props-3.js?v=paper-6';
+import {createPropController} from './room-prop-controller.js?v=paper-3';
 import {applyRoomEnvironment,addHalos,createContactShadows} from './room-light.js?v=light-1';
-import {createBookCollector} from './room-books.js?v=light-1';
+import {createBookCollector} from './room-books.js?v=paper-7';
 
 export const harborExhibits=[
  {title:'一段連續的遠征',subject:'01 / 網站實作',lead:'從一束光，到可以探索的世界。',detail:'你正在瀏覽的行銷遠征，是影片、3D 空間與內容導覽的整合實作。沿著作品閱讀它的問題、設計取捨與仍在調整的地方。',discoveries:['影片與立體場景如何銜接','鏡頭、角色比例與載入的取捨','從沉浸開場走向清楚的內容入口'],href:'works.html#site-case',action:'閱讀網站作品',label:'網站作品',artifact:'site'},
@@ -158,7 +158,12 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
 
  cyl(1.05,1.44,-.28,.11,.21,material('#151d26',.26));cyl(1.05,1.56,-.28,.084,.028,brass);
  const pen=cyl(.78,1.4,.58,.012,.54,brass);pen.rotation.z=1.48;pen.rotation.y=.35;
- lamp(-1.32,2,.1,1.2);
+ // 書桌上的古董油燈與黃銅航海羅盤（Poly Haven）；油燈取代原本圓柱拼的桌燈，燈芯點亮暖光並加光暈。
+ const deskTop=1.335,deskLight=new T.PointLight('#ffc583',1.2,4.5,2);scene.add(deskLight);
+ jobs.push(asset('vintage_oil_lamp',-1.32,.1,.72).then(wrap=>{wrap.position.y=deskTop;
+  wrap.traverse(o=>{if(!o.isMesh)return;if(/flame/.test(o.material.name)){o.material=o.material.clone();o.material.emissive=new T.Color('#ffd28a');o.material.emissiveMap=o.material.map;o.material.emissiveIntensity=2.2;o.castShadow=false;}if(/glass/.test(o.material.name))o.castShadow=false;});
+  deskLight.position.set(-1.32,deskTop+.72*.62,.1);halos.push(deskLight.position.toArray());}));
+ jobs.push(asset('seadogs_compass',1.05,.25,.15,-.6).then(wrap=>{wrap.position.y=deskTop;}));
  const pages=[material('#4a302b'),material('#34434a'),material('#62513b')];
  // 少量有書脊與壓金的書冊，不以高面數重複模型填滿房間。
  // 層板頂面：書架縮放到 3.15 後約在 0.60／1.03／1.47 公尺（以射線量自模型）。
@@ -202,7 +207,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   });
  }
  function overviewView(){const narrow=host.clientWidth/host.clientHeight<1;return {position:[2.2+Math.sin(orbitOffset)*5,narrow?4.2:3.6,narrow?14:10.4],target:[.25,2,-.65]};}
- const propControl=createPropController({host,camera,props,exhibits:harborExhibits,move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
+ const propControl=createPropController({host,scene,camera,props,exhibits:harborExhibits,refreshShadows:()=>{renderer.shadowMap.needsUpdate=true;},move:(p,t,d)=>move(p,t,d),draw:()=>draw(),quiet,state:{get selection(){return selection;},get active(){return active;},get busy(){return busy;}}});
  async function overview(){if(!active||busy)return;propControl.close();selection=-1;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));onOverview?.();const v=overviewView();await move(v.position,v.target);}
  async function select(index){
   if(!active||busy)return;selection=index;buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));onSelect?.(harborExhibits[index]);
