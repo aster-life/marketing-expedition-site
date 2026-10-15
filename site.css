@@ -23,3 +23,22 @@ html.reduced{scroll-behavior:auto}.reduced .scene-art{transform:none!important}.
 
 /* 嚮導貓：沿用開場影片的長相，半身圓形裁切、細金邊、不加卡片框（隊員才用卡片）。 */
 .guide-stories img{width:min(210px,100%);height:auto;max-height:none;aspect-ratio:1/1;border-radius:50%;object-fit:cover;justify-self:center;margin:0 auto;box-shadow:0 0 0 2px #d9a63f88,0 0 0 8px #d9a63f14,0 22px 44px #0009}
+
+/* 內頁「文字＋步驟／配圖」版型（inner-1）：取代只有一兩行字的三欄大數字，配圖用網站房間裡的實物 */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(40px,6vw,96px);align-items:center}
+.split.reverse>figure{order:-1}
+.split figure{margin:0}
+.split figure img{width:100%;height:auto;border:1px solid var(--line);border-radius:2px;box-shadow:0 28px 60px #0009}
+.split figcaption{margin-top:14px;font-size:14px;line-height:1.7;color:#99a7af}
+.flow{list-style:none;counter-reset:flow;margin:34px 0;padding:0;position:relative}
+.flow:before{content:"";position:absolute;left:15px;top:16px;bottom:30px;width:1px;background:linear-gradient(var(--gold),#c8af7922)}
+.flow li{counter-increment:flow;position:relative;padding:0 0 26px 58px}
+.flow li:last-child{padding-bottom:0}
+.flow li:before{content:counter(flow,decimal-leading-zero);position:absolute;left:0;top:0;width:31px;height:31px;border:1px solid var(--gold);border-radius:50%;background:#0d1922;color:var(--gold);font:13px/29px Georgia,serif;text-align:center}
+.flow b{display:block;font:500 20px/1.5 var(--serif);color:var(--text);margin-bottom:4px}
+.flow p{margin:0;font-size:16px}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.shots img:first-child{grid-column:1/-1}
+.shots figcaption{grid-column:1/-1;margin-top:0}
+@media(max-width:950px){.split{grid-template-columns:1fr;gap:36px}.split.reverse>figure{order:0}}
+@media(max-width:600px){.flow li{padding-left:50px}.flow b{font-size:18px}.flow p{font-size:15px}}
