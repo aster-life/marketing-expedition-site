@@ -9,6 +9,8 @@ import {prewarmRoom} from './room-prewarm.js';
 import {makeProp} from './room-props.js?v=props-2';
 import './room-props-3.js?v=props-2';
 import {createPropController} from './room-prop-controller.js?v=props-2';
+import {applyRoomEnvironment,addHalos,createContactShadows} from './room-light.js?v=light-1';
+import {createBookCollector} from './room-books.js?v=light-1';
 
 export const harborExhibits=[
  {title:'一段連續的遠征',subject:'01 / 網站實作',lead:'從一束光，到可以探索的世界。',detail:'你正在瀏覽的行銷遠征，是影片、3D 空間與內容導覽的整合實作。沿著作品閱讀它的問題、設計取捨與仍在調整的地方。',discoveries:['影片與立體場景如何銜接','鏡頭、角色比例與載入的取捨','從沉浸開場走向清楚的內容入口'],href:'works.html#site-case',action:'閱讀網站作品',label:'網站作品',artifact:'site'},
@@ -27,6 +29,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  const camera=new T.PerspectiveCamera(49,1,.1,85);const look=new T.Vector3();
  let active=false,busy=false,raf=0,finishMotion=null,selection=-1,orbitOffset=0,disposed=false;
  const jobs=[],ownedTextures=new Set();const architecture=new T.Group();scene.add(architecture);
+ const halos=[],books=createBookCollector(ownedTextures),contact=createContactShadows(ownedTextures);let environment=null;
  const status=document.createElement('p');status.className='harbor-room-status';status.setAttribute('role','status');status.textContent='正在點亮星港展廳…';host.append(status);
  const heading=document.createElement('div');heading.className='harbor-room-heading';heading.innerHTML='<small>02 / THE HARBOR GALLERY</small>想法靠岸，留下作品。';host.append(heading);
  const toolbar=document.createElement('div');toolbar.className='harbor-room-tools';toolbar.setAttribute('role','group');toolbar.setAttribute('aria-label','星港展廳視角');
@@ -107,7 +110,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   cyl(x,y,z,.16,.38,entryGlow);for(const dy of [-.23,.23])cyl(x,y+dy,z,.24,.035,darkBrass);
   mesh(new T.CylinderGeometry(.10,.29,.17,32),brass,x,y+.34,z);torus(x,y+.49,z,.085,.015,brass);
   for(const dx of [-.2,.2])for(const dz of [-.14,.14])box(x+dx,y,z+dz,.016,.43,.016,brass);
-  const light=new T.PointLight('#ffc583',intensity,4.5,2);light.position.set(x,y,z+.2);scene.add(light);
+  const light=new T.PointLight('#ffc583',intensity,4.5,2);light.position.set(x,y,z+.2);scene.add(light);halos.push([x,y,z]);
  }
  lamp(-4.75,3,-3.2);lamp(.3,3,-3.2);lamp(5.15,2.2,1.05);
  for(const x of [-4.75,.3]){box(x,2.39,-3.56,.055,.055,.76,brass);box(x,2.62,-3.9,.19,.56,.055,darkBrass);}
@@ -144,6 +147,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(ratio);wrap.position.set(x,0,z);wrap.rotation.y=rotation;architecture.add(wrap);
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return wrap;
  }
+ contact(architecture,-.2,.2,4.4,2.6,{y:.03});contact(architecture,-5.1,-1.9,1.3,3.6,{y:.03,rotation:0});contact(architecture,5.15,1.05,1,1,{y:.03});contact(architecture,4.55,-.65,2,.9,{y:.03,rotation:-.42});
  jobs.push(asset('wooden_table_02',-.2,.2,1.32).then(table=>{table.scale.x*=1.55;table.scale.z*=1.4;}));jobs.push(asset('wooden_bookshelf_worn',-5.1,-1.9,3.15,Math.PI/2));
  // 桌上原本的展示書改成「提案手稿」近景物件（room-props-3.js），點選時放大鏡會移到紙上。
  const scroll=createGalleryArtifact(0,brass);scroll.scale.setScalar(.52);scroll.position.set(.55,1.34,.12);scroll.rotation.y=.15;architecture.add(scroll);
@@ -157,10 +161,10 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  lamp(-1.32,2,.1,1.2);
  const pages=[material('#4a302b'),material('#34434a'),material('#62513b')];
  // 少量有書脊與壓金的書冊，不以高面數重複模型填滿房間。
+ // 層板頂面：書架縮放到 3.15 後約在 0.60／1.03／1.47 公尺（以射線量自模型）。
  for(let row=0;row<3;row++)for(let i=0;i<8;i++){
-  const h=.32+(i%3)*.06,z=-2.62+i*.18,y=.7+row*.81;
-  box(-4.81,y+h/2,z,.42,h,.12,pages[(i+row)%3]);
-  for(const dy of [.07,h-.055])box(-4.59,y+dy,z,.012,.014,.118,brass);
+  const h=.26+(i%3)*.05,z=-2.62+i*.18,y=[.6,1.026,1.468][row];
+  books.addBook(null,-4.81,y+h/2,z,.12,h,.42,{rotY:Math.PI/2}); // 圓弧書脊與書頁（room-books.js）
  }
  // 堆疊書頁與封皮可以在低角度下看見厚度。
  for(let i=0;i<3;i++){box(-2.1,.13+i*.16,-2.8,.7,.11,.48,paper);for(const dy of [-.067,.067])box(-2.1,.13+i*.16+dy,-2.8,.74,.022,.51,pages[i]);}
@@ -221,7 +225,7 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
  function resize(){if(!active)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
  const observer=new ResizeObserver(resize);observer.observe(host);
  const visible=()=>{if(!document.hidden)draw();};document.addEventListener('visibilitychange',visible);
- function dispose(){disposed=true;active=false;cancelMotion();observer.disconnect();document.removeEventListener('visibilitychange',visible);const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m));});geometries.forEach(g=>g.dispose());materials.forEach(m=>{Object.values(m).forEach(v=>{if(v?.isTexture&&!v.isDataTexture)ownedTextures.add(v);});m.dispose();});ownedTextures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();host.replaceChildren();}
+ function dispose(){disposed=true;active=false;cancelMotion();observer.disconnect();document.removeEventListener('visibilitychange',visible);const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m));});geometries.forEach(g=>g.dispose());materials.forEach(m=>{Object.values(m).forEach(v=>{if(v?.isTexture&&!v.isDataTexture)ownedTextures.add(v);});m.dispose();});ownedTextures.forEach(t=>t.dispose());environment?.dispose();renderer.dispose();renderer.forceContextLoss();host.replaceChildren();}
  try{
   const loaded=await Promise.allSettled(jobs);
   const failed=loaded.find(result=>result.status==='rejected');if(failed)throw failed.reason;
@@ -230,6 +234,8 @@ export async function createHarborRoom(host,{onSelect,onOverview,quiet=()=>false
   architecture.traverse(o=>{if(!o.isMesh||Array.isArray(o.material))return;let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);for(const name of Object.keys(g.attributes))if(!['position','normal','uv'].includes(name))g.deleteAttribute(name);if(!g.attributes.uv)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));const list=groups.get(o.material)||[];list.push(g);groups.set(o.material,list);old.add(o.geometry);});
   scene.remove(architecture);
   for(const [mat,geometries] of groups){const combined=mergeGeometries(geometries);if(!combined)throw new Error('展廳幾何無法合併');const item=new T.Mesh(combined,mat);item.castShadow=!mat.isMeshBasicMaterial;item.receiveShadow=true;scene.add(item);geometries.forEach(g=>g.dispose());}old.forEach(g=>g.dispose());
+  // 光線與環境：反光環境、燈火光暈、書本實例化（共用 room-light.js / room-books.js）。
+  environment=applyRoomEnvironment(renderer,scene,{intensity:.6});addHalos(scene,halos,{size:2.4,opacity:.85});books.build(scene);
   camera.position.set(7.6,10,40);camera.lookAt(0,3,15.5);
   await prewarmRoom(renderer,scene,camera,host);
   renderer.shadowMap.needsUpdate=true;status.hidden=true;host.dataset.ready='true';

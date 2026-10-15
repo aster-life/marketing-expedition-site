@@ -32,7 +32,7 @@
 .expedition-paths{background:linear-gradient(#101c25,#09121b 260px);border-top:1px solid #b3915540}
 
 /* 第三幕互動約保留兩個螢幕的捲動距離。 */
-.film-journey,.film-journey.entered{height:1686svh}
+.film-journey,.film-journey.entered{height:1244svh}
 .reduced .film-journey,.reduced .film-journey.entered{height:100svh}
 .film-stage #gallery-film{z-index:2;object-fit:cover;background:transparent;pointer-events:none}
 .film-bottom,.film-progress,#film-status{z-index:3}
@@ -81,3 +81,16 @@
 
 /* 開場文字只用美鈴左邊的空間：依影片 cover 後的實際位置，推算她耳朵左緣（約畫面寬 31.5%），字級跟著欄寬縮放。 */
 @media(min-width:701px){.film-intro{--frame:max(100vw,177.78svh);--face:calc(var(--frame)*.315 - (var(--frame) - 100vw)/2);--col:clamp(260px,calc(var(--face) - 6vw - 1.5vw),44vw);max-width:var(--col)}.film-intro{top:17%}.film-intro h1{font-size:clamp(28px,min(calc(var(--col)/5.5),8svh),64px);line-height:1.28}.film-intro__tail{display:block}.film-intro p{font-size:clamp(15px,calc(var(--col)/27),16px);max-width:none}}
+
+/* 首頁章節進度（B 方案）：右側直排，目前章節亮金色；點選直接跳段。 */
+.journey-chapters{position:fixed;z-index:30;right:18px;top:50%;transform:translate(14px,-50%);display:flex;flex-direction:column;gap:4px;padding:8px 6px 8px 14px;border-radius:24px;background:#09121b9e;backdrop-filter:blur(8px);border:1px solid #dbb57826;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s}
+.journey-chapters.is-visible{opacity:1;pointer-events:auto;transform:translate(0,-50%)}
+.journey-chapters a{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-height:36px;padding:4px 6px;color:#c9c3b4;font-size:13px;letter-spacing:.08em;text-shadow:0 1px 6px #000c}
+.journey-chapters i{order:2;display:grid;place-items:center;width:26px;height:26px;border:1px solid #dbb57880;border-radius:50%;font:12px/1 Georgia,serif;font-style:normal;background:#09121bb3;color:#dbb578}
+.journey-chapters span{opacity:.75}
+.journey-chapters a.is-past i{background:#dbb57833}
+.journey-chapters a[aria-current] i{background:#dbb578;color:#0b141c;border-color:#dbb578}
+.journey-chapters a[aria-current] span{opacity:1;color:#f0dcb0}
+.journey-chapters a:hover span{opacity:1}
+.journey-chapters a:focus-visible{outline:2px solid #dbb578;outline-offset:2px}
+@media(max-width:700px){.journey-chapters{right:8px}.journey-chapters span{display:none}.journey-chapters a{min-height:34px}}

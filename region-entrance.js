@@ -1,7 +1,7 @@
 import * as T from './assets/vendor/three.module.min.js';
 
 // 沙盤與近景共用輪廓；近景從正面開口進入，門柱留在原地。
-export function createRegionEntrance(index,{stone,wood,metal,roof,glow,cloth}){
+export function createRegionEntrance(index,{stone,wood,metal,roof,glow,cloth},{detail=false}={}){
  const g=new T.Group();
  const add=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o;};
  const box=(x,y,z,w,h,d,m)=>add(new T.BoxGeometry(w,h,d),m,x,y,z);
@@ -33,8 +33,16 @@ export function createRegionEntrance(index,{stone,wood,metal,roof,glow,cloth}){
   for(let i=0;i<3;i++)box(0,-.05-i*.12,1.5+i*.36,10.5+i*.35,.17,.5,stone);
  }else{
   // 麻布頂有多段褶線；入口兩側敞開，不讓整張布擋住鏡頭。
-  const plane=new T.PlaneGeometry(6,8,18,20),a=plane.attributes.position;
-  for(let i=0;i<a.count;i++)a.setZ(i,Math.sin(a.getX(i)*8)*.025);
+  // 近景版：布面在屋脊與屋簷之間下垂，四角有被拉緊的斜向皺褶；沙盤縮圖維持原本的低面數。
+  const plane=detail?new T.PlaneGeometry(6,8,36,44):new T.PlaneGeometry(6,8,18,20),a=plane.attributes.position;
+  for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i);let z=Math.sin(x*8)*.025;
+   if(detail){const u=(x+3)/6,v=(y+4)/8;
+    // 兩端開口幾乎不下垂，近景鏡頭（同行邀請、旅人筆記）才不會被布緣擋住。
+    z-=.16*Math.sin(Math.PI*u)*(.08+.92*Math.pow(Math.sin(Math.PI*v),1.5));
+    const corner=Math.max(0,1-Math.min(Math.hypot(u,v),Math.hypot(1-u,v),Math.hypot(u,1-v),Math.hypot(1-u,1-v))*2.2);
+    z+=corner*.035*Math.sin((x*1.3+y*(u<.5?1:-1))*7);
+    z+=.012*Math.sin(y*11+x*2)*Math.sin(Math.PI*u);}
+   a.setZ(i,z);}
   plane.computeVertexNormals();
   for(const side of [-1,1]){
    const panel=add(plane.clone(),cloth,side*2.25,3.3,-2);panel.rotation.set(-Math.PI/2,side*.65,0);

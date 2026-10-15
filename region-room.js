@@ -1,7 +1,7 @@
 import {createCameraJourney} from './camera-journey.js';
 import * as T from './assets/vendor/three.module.min.js';
 import {mergeGeometries} from './assets/vendor/BufferGeometryUtils.js';
-import {buildRegionScene} from './region-scenes.js?v=props-2';
+import {buildRegionScene} from './region-scenes.js?v=light-1';
 import {regionContent} from './region-content.js?v=props-2';
 import {makeProp} from './room-props.js?v=props-2';
 import './room-props-2.js?v=props-2';
@@ -23,8 +23,12 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
  toolbar.innerHTML='<button type="button" data-room-view="left" aria-label="向左環看空間">↶</button><button type="button" data-room-view="overview">空間全景</button><button type="button" data-room-view="right" aria-label="向右環看空間">↷</button>'+exhibits.map((e,i)=>`<button type="button" data-room-exhibit="${i}" aria-label="查看${e.label}">${e.label}</button>`).join('');host.append(toolbar);
  const controls=[...toolbar.querySelectorAll('button')];
  let built;
- try{built=await buildRegionScene(index,scene,ownedTextures);}catch(error){scene.traverse(o=>{o.geometry?.dispose();const mats=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];mats.forEach(m=>{Object.values(m).forEach(t=>{if(t?.isTexture&&!t.isDataTexture)ownedTextures.add(t);});m.dispose();});});ownedTextures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();host.replaceChildren();throw error;}
+ try{built=await buildRegionScene(index,scene,ownedTextures,renderer);}catch(error){scene.traverse(o=>{o.geometry?.dispose();const mats=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];mats.forEach(m=>{Object.values(m).forEach(t=>{if(t?.isTexture&&!t.isDataTexture)ownedTextures.add(t);});m.dispose();});});ownedTextures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();host.replaceChildren();throw error;}
  const {root:architecture,views,anchors,overview:overviewBase,entry}=built;
+ // 有會動的物件（營火）時，房間開著就以約 30fps 持續重繪；離開或分頁隱藏即停止。
+ let tickRaf=0,lastTick=0;
+ function tickLoop(now){tickRaf=0;if(!active||disposed||!built.tick)return;if(!document.hidden&&now-lastTick>=33){lastTick=now;built.tick(now/1000);if(!busy)draw();}tickRaf=requestAnimationFrame(tickLoop);}
+ function startTick(){if(built.tick&&!tickRaf)tickRaf=requestAnimationFrame(tickLoop);}
  const buttons=exhibits.map((exhibit,i)=>{const b=document.createElement('button');b.type='button';b.className='harbor-hotspot';b.setAttribute('aria-label','走近'+exhibit.label);b.setAttribute('aria-pressed','false');b.innerHTML=`<b>0${i+1}</b><span>${exhibit.label}</span>`;b.addEventListener('click',()=>select(i));host.append(b);return b;});
  function project(){
   const w=host.clientWidth,h=host.clientHeight;
@@ -76,7 +80,7 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
  function resize(){if(!active)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
  const observer=new ResizeObserver(resize);observer.observe(host);
  const visible=()=>{if(!document.hidden)draw();};document.addEventListener('visibilitychange',visible);
- function dispose(){disposed=true;active=false;cancelMotion();observer.disconnect();document.removeEventListener('visibilitychange',visible);const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m));});geometries.forEach(g=>g.dispose());materials.forEach(m=>{Object.values(m).forEach(v=>{if(v?.isTexture&&!v.isDataTexture)ownedTextures.add(v);});m.dispose();});ownedTextures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();host.replaceChildren();}
+ function dispose(){disposed=true;active=false;cancelMotion();observer.disconnect();document.removeEventListener('visibilitychange',visible);const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m));});geometries.forEach(g=>g.dispose());materials.forEach(m=>{Object.values(m).forEach(v=>{if(v?.isTexture&&!v.isDataTexture)ownedTextures.add(v);});m.dispose();});ownedTextures.forEach(t=>t.dispose());built.dispose?.();renderer.dispose();renderer.forceContextLoss();host.replaceChildren();}
  try{
 
   // 合併靜態材質批次；近景仍保留實際幾何、法線與紙頁層次。
@@ -90,7 +94,7 @@ export async function createRegionRoom(host,{index,onSelect,onOverview,quiet=()=
  }catch(error){dispose();throw error;}
  return {
   async enter(){
-   active=true;selection=-1;orbitOffset=0;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));host.dataset.entryPhase='exterior';
+   active=true;startTick();selection=-1;orbitOffset=0;buttons.forEach(b=>b.setAttribute('aria-pressed','false'));host.dataset.entryPhase='exterior';
    const narrow=host.clientWidth/host.clientHeight<1;
    camera.position.set(entry[0][0],entry[0][1],entry[0][2]+(narrow?8:0));look.set(0,2.6,index===3?0:15);camera.lookAt(look);resize();
    // 共用連續取景，保留各地點的入口與室內終點。

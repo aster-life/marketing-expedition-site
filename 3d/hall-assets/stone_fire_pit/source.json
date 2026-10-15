@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/stone_fire_pit",
+  "license": "CC0",
+  "author": "Sebastian Platen",
+  "files": {
+    "stone_fire_pit_1k.gltf": {
+      "size": 2792,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/stone_fire_pit/stone_fire_pit_1k.gltf",
+      "md5": "f3a23e45ee66802ccc7a5462a9371ae3"
+    },
+    "stone_fire_pit.bin": {
+      "size": 96220,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/stone_fire_pit/stone_fire_pit.bin",
+      "md5": "1652ba5fb374b6c15cddb64445a0bb5b"
+    },
+    "textures/stone_fire_pit_diff_1k.jpg": {
+      "size": 785670,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_diff_1k.jpg",
+      "md5": "a7ec1828062280c20e265d2c99497d1d"
+    },
+    "textures/stone_fire_pit_nor_gl_1k.jpg": {
+      "size": 969822,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_nor_gl_1k.jpg",
+      "md5": "75923471613207e5c9f309a1df752753"
+    },
+    "textures/stone_fire_pit_arm_1k.jpg": {
+      "size": 681441,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_arm_1k.jpg",
+      "md5": "506392ebeef9bb696f907a972fc185c6"
+    }
+  }
+}

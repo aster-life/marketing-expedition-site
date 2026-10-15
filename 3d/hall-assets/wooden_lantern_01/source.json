@@ -1,0 +1,47 @@
+{
+  "source": "https://polyhaven.com/a/wooden_lantern_01",
+  "license": "CC0",
+  "author": "James Ray Cock",
+  "files": {
+    "wooden_lantern_01_1k.gltf": {
+      "size": 9540,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_lantern_01/wooden_lantern_01_1k.gltf",
+      "md5": "e31edca6461023e076183cb74721b0b9"
+    },
+    "textures/wooden_lantern_01_nor_gl_1k.jpg": {
+      "size": 747945,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_nor_gl_1k.jpg",
+      "md5": "9db1fa975880b3cf6da5e6c30853e0cf"
+    },
+    "textures/wooden_lantern_01_diff_1k.jpg": {
+      "size": 712250,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_diff_1k.jpg",
+      "md5": "8f9f537ab312b1ec85acb1f5aaf7ad17"
+    },
+    "textures/wooden_lantern_01_glass_nor_gl_1k.jpg": {
+      "size": 216436,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_nor_gl_1k.jpg",
+      "md5": "38549e36957f90dc61587010c3a8ff3a"
+    },
+    "textures/wooden_lantern_01_glass_arm_1k.jpg": {
+      "size": 561615,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_arm_1k.jpg",
+      "md5": "890c1dd6ad9c37521f9f0a0d9d08fba2"
+    },
+    "textures/wooden_lantern_01_arm_1k.jpg": {
+      "size": 842111,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_arm_1k.jpg",
+      "md5": "87b5bdc9f3d5853caef38a00589541ae"
+    },
+    "textures/wooden_lantern_01_glass_diff_1k.jpg": {
+      "size": 410747,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_diff_1k.jpg",
+      "md5": "c1e45d48f344f86726d02c81679af6a4"
+    },
+    "wooden_lantern_01.bin": {
+      "size": 268136,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_lantern_01/wooden_lantern_01.bin",
+      "md5": "3784667126369ce5c21db3c7436409cb"
+    }
+  }
+}

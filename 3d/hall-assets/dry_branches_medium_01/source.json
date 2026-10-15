@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/dry_branches_medium_01",
+  "license": "CC0",
+  "author": "Rico Cilliers",
+  "files": {
+    "dry_branches_medium_01_1k.gltf": {
+      "size": 5844,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dry_branches_medium_01/dry_branches_medium_01_1k.gltf",
+      "md5": "bd6d60dff97c59a80d770f94f23b566b"
+    },
+    "textures/dry_branches_medium_01_arm_1k.jpg": {
+      "size": 831180,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_arm_1k.jpg",
+      "md5": "a0c5fface8ffdf81a806fcd5cf05788f"
+    },
+    "textures/dry_branches_medium_01_diff_1k.jpg": {
+      "size": 778799,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_diff_1k.jpg",
+      "md5": "2b01d9d1613c88496250f64828566f7c"
+    },
+    "textures/dry_branches_medium_01_nor_gl_1k.jpg": {
+      "size": 1170647,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_nor_gl_1k.jpg",
+      "md5": "d374fbbd8c4829310104cce0de7cd826"
+    },
+    "dry_branches_medium_01.bin": {
+      "size": 465172,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dry_branches_medium_01/dry_branches_medium_01.bin",
+      "md5": "10de852c8bf38e3f3ca5fb1d6c8de9d0"
+    }
+  }
+}

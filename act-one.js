@@ -19,13 +19,13 @@ const galleryBeats=[
  [.74,.93,'把重要的決定，說清楚。','決策摘要示範：首選、代價與追蹤方式，一起攤開。','works.html#report-decision'],
  [.93,1.01,'帶走方法，繼續遠征。','以上為虛構情境的交付示範，並非客戶實績。','knowledge.html']
 ];
+// 首頁縮短（2026-10-15，B 方案修正版）：保留「開場 → 森林 → 遠征本部 → 星港展廳」四段。
+// 本部捲動距離減半、六段文字濃縮成三段；星港展廳保留原本畫面與文字，捲動距離縮短約三成。
+const HALL_SPAN=.5,GALLERY_START=.95+HALL_SPAN,GALLERY_SPAN=.75,JOURNEY_END=GALLERY_START+GALLERY_SPAN;
 const hallBeats=[
- [.19,.31,'你做決策，','讓專業一起前進。'],
- [.36,.49,'遠征，在此集結。','這裡，是想法開始協作的地方。'],
- [.51,.61,'先釐清問題。','秘書整理交辦與待決事項，讓目標有清楚的起點。'],
- [.63,.73,'讓專業接力。','搜尋、內容與廣告，沿著同一個目標形成方案。'],
- [.76,.88,'讓成果指引下一步。','核對成效，回看方案。重要的決定，始終留在你手上。'],
- [.93,1.01,'光，指向下一站。','帶著清楚的方向，看看想法留下的成果。']
+ [.17,.4,'遠征，在此集結。','你做決策，專業接力，把想法做成成果。'],
+ [.47,.7,'先釐清，再接力。','秘書整理交辦與待決事項，搜尋、內容與廣告沿著同一個目標形成方案。'],
+ [.77,1.01,'重要的決定，留在你手上。','核對成效，回看方案。穿過側廊，去看想法留下的成果。']
 ];
 function fallback(){worldFailed=true;host.hidden=true;status.textContent='此裝置無法顯示立體空間；保留影片終點，可繼續探索內容。';schedule();}
 // 載入幕先建立大型 3D 場景；捲動只控制已準備完成的鏡頭。
@@ -44,7 +44,7 @@ function ensureWorld(){
 // 捲動位置是唯一時間來源；停止捲動後不繼續播放。
 function seek(){if(reduced()||!Number.isFinite(video.duration)||video.seeking)return;const time=Math.min(target*video.duration,Math.max(0,video.duration-.04));if(Math.abs(video.currentTime-time)>.025)video.currentTime=time;}
 // 地圖與筆記佔滿畫面時，前面三幕停止送出繪圖與影片 seek；返回可見區仍由原捲動位置還原。
-function draw(){frame=0;const rect=journey.getBoundingClientRect();document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);if(document.hidden||document.body.classList.contains('journal-open')||rect.bottom<=0||rect.top>=innerHeight){video.pause();galleryInteraction.video.pause();return;}const travel=Math.max(0,-rect.top/Math.max(1,innerHeight*5.2)),p=clamp(travel),actTwo=clamp(travel-.95),galleryProgress=clamp((travel-1.95)/1.1);if(!reduced()&&Date.now()>skipUntil&&((p>.07&&travel<1.95)||location.hash==='#gallery-transition'))ensureWorld();const galleryState=galleryInteraction.render(galleryProgress,!reduced()&&!!world),actThree=galleryState.scene;const stage=journey.querySelector('.film-stage'),expand=reduced()?0:(galleryState.pose?.passage??0),fullHeight=stage.clientWidth*9/16,stageHeight=innerHeight+(innerWidth/innerHeight>=1.5?Math.max(0,fullHeight-innerHeight):fullHeight-innerHeight)*expand;stage.style.height=stageHeight+'px';stage.style.top=(-Math.max(0,stageHeight-innerHeight)*clamp((galleryProgress-.78)/.16))+'px';document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);play.hidden=!reduced();sound.hidden=!reduced();host.hidden=true;hallCopy.hidden=true;galleryCopy.hidden=true;
+function draw(){frame=0;const rect=journey.getBoundingClientRect();document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);chapterNav.classList.toggle('is-visible',rect.top<innerHeight*.5&&rect.bottom>innerHeight*.6&&!reduced());if(rect.bottom<=0)setChapter(JOURNEY_END);if(document.hidden||document.body.classList.contains('journal-open')||rect.bottom<=0||rect.top>=innerHeight){video.pause();galleryInteraction.video.pause();return;}const travel=Math.max(0,-rect.top/Math.max(1,innerHeight*5.2)),p=clamp(travel),actTwo=clamp((travel-.95)/HALL_SPAN),galleryProgress=clamp((travel-GALLERY_START)/GALLERY_SPAN);if(!reduced()&&Date.now()>skipUntil&&(p>.07&&travel<JOURNEY_END))ensureWorld();const galleryState=galleryInteraction.render(galleryProgress,!reduced()&&!!world),actThree=galleryState.scene;const stage=journey.querySelector('.film-stage'),expand=reduced()?0:(galleryState.pose?.passage??0),fullHeight=stage.clientWidth*9/16,stageHeight=innerHeight+(innerWidth/innerHeight>=1.5?Math.max(0,fullHeight-innerHeight):fullHeight-innerHeight)*expand;stage.style.height=stageHeight+'px';stage.style.top=(-Math.max(0,stageHeight-innerHeight)*clamp((galleryProgress-.78)/.16))+'px';document.body.classList.toggle('past-entry',rect.bottom<innerHeight*.4);play.hidden=!reduced();sound.hidden=!reduced();host.hidden=true;hallCopy.hidden=true;galleryCopy.hidden=true;
  if(reduced()){video.hidden=false;video.style.opacity='1';curtain.style.opacity='0';intro.hidden=manual;ending.hidden=true;$('#film-cue').textContent='已減少動態，可自行播放或直接探索。';return;}
  video.pause();video.muted=true;target=clamp(p/.43);seek();intro.hidden=target>.13;intro.style.opacity=String(1-clamp(target/.13));
  const atEnd=Number.isFinite(video.duration)&&video.currentTime>=video.duration-.12;
@@ -56,12 +56,23 @@ function draw(){frame=0;const rect=journey.getBoundingClientRect();document.body
  if(inWorld)world.render(clamp((p-.467)/.483),actTwo,actThree,galleryState.pose);
  const textProgress=clamp((p-.86)/.04)*(1-clamp((travel-.92)/.03));ending.hidden=!(inWorld&&p>.86&&travel<.95);ending.style.opacity=String(textProgress);ending.style.visibility='visible';
  const beat=hallBeats.find(b=>actTwo>=b[0]&&actTwo<=b[1]);
- if(inWorld&&beat&&actThree===0){hallCopy.hidden=false;hallCopy.querySelector('h2').textContent=beat[2];hallCopy.querySelector('p').textContent=beat[3];hallCopy.querySelector('a').hidden=actTwo<.76||actTwo>.88;hallCopy.style.opacity=String(Math.min(clamp((actTwo-beat[0])/.015),clamp((beat[1]-actTwo)/.015)));}
+ if(inWorld&&beat&&actThree===0){hallCopy.hidden=false;hallCopy.querySelector('h2').textContent=beat[2];hallCopy.querySelector('p').textContent=beat[3];hallCopy.querySelector('a').hidden=actTwo<.47;hallCopy.style.opacity=String(Math.min(clamp((actTwo-beat[0])/.015),clamp((beat[1]-actTwo)/.015)));}
  if(inWorld&&actThree>0&&(galleryProgress<.16||galleryProgress>.96)){const g=galleryBeats.find(b=>actThree>=b[0]&&actThree<=b[1]);if(g){galleryCopy.hidden=false;galleryCopy.querySelector('h2').textContent=g[2];galleryCopy.querySelector('p').textContent=g[3];galleryCopy.querySelector('a').href=g[4];galleryCopy.querySelector('a').firstChild.textContent=actThree>.93?'翻開知識典藏 ':'翻閱成果示範 ';}}
- journey.style.setProperty('--film-progress',String(clamp(travel/3.05)));
+ journey.style.setProperty('--film-progress',String(clamp(travel/JOURNEY_END)));setChapter(travel);
  $('#film-cue').textContent=galleryProgress>=.55&&galleryProgress<.92?'循著星光，發現新的可能。':actThree>0?'沿著光，走進下一個空間。':actTwo>0?(actTwo<.3?'沿著最後石階，走入遠征本部。':actTwo<.88?'向下捲動 · 讓本部逐步亮起':'穿過側廊，繼續探索隊伍、成果與方法。'):inWorld?(p<.7?'沿著石階，走向森林深處。':'抬頭，看見瀑布之上的城邦。'):'向下捲動前進 · 向上捲動回看';}
 
 function schedule(){if(!frame)frame=requestAnimationFrame(draw);}
+// 章節進度：讓訪客知道走到哪、離地圖還多遠；點選直接跳到該段開頭。
+// 第二欄是點選後跳去的位置：森林跳過水霧交接、本部直接落在第一段文字、星港落在展廳入口。
+const CHAPTERS=[['開場',0],['森林',.5],['遠征本部',.95+HALL_SPAN*.24],['星港展廳',GALLERY_START+GALLERY_SPAN*.1],['地圖',null]];
+const chapterNav=document.createElement('nav');chapterNav.className='journey-chapters';chapterNav.setAttribute('aria-label','首頁章節');
+chapterNav.innerHTML=CHAPTERS.map(([name],i)=>`<a href="#${i===4?'explore':'atlas'}" data-chapter="${i}"><i>${i+1}</i><span>${name}</span></a>`).join('');
+document.body.append(chapterNav);
+chapterNav.addEventListener('click',event=>{const a=event.target.closest('[data-chapter]');if(!a)return;event.preventDefault();const [,at]=CHAPTERS[a.dataset.chapter];
+ const top=at===null?$('#explore').getBoundingClientRect().top+scrollY:journey.getBoundingClientRect().top+scrollY+at*innerHeight*5.2+(at?2:0);
+ if(at===null)skipUntil=Date.now()+2000;scrollTo({top,behavior:'instant'});schedule();});
+let chapterNow=-1;
+function setChapter(travel){const i=travel>=JOURNEY_END-.02?4:travel>=GALLERY_START?3:travel>=.95?2:travel>=.445?1:0;if(i===chapterNow)return;chapterNow=i;chapterNav.querySelectorAll('a').forEach((a,k)=>{a.toggleAttribute('aria-current',k===i);a.classList.toggle('is-past',k<i);});}
 video.addEventListener('seeked',schedule);video.addEventListener('loadeddata',schedule);video.addEventListener('loadedmetadata',schedule);video.addEventListener('error',()=>{status.textContent='影片載入失敗，仍可直接探索網站內容。';});
 play.addEventListener('click',async()=>{if(!reduced())return;if(!video.paused){video.pause();manual=false;play.textContent='繼續播放';return;}try{if(video.ended)video.currentTime=0;await video.play();manual=true;intro.hidden=true;play.textContent='暫停播放';}catch{status.textContent='影片暫時無法播放，可直接探索下方內容。';}});
 sound.addEventListener('click',()=>{if(!reduced())return;video.muted=!video.muted;sound.setAttribute('aria-pressed',String(!video.muted));sound.textContent=video.muted?'音效 OFF':'音效 ON';});
@@ -136,5 +147,3 @@ async function prepareExperience(){
 }
 prepareExperience().catch(error=>{console.warn('部分遠征內容仍在背景準備。',error);dispatchEvent(new CustomEvent('expedition:act-ready'));});
 
-// 審閱接點：定位在揭開石柱之前，不直接跳過入場。
-if(location.hash==='#gallery-transition')requestAnimationFrame(()=>{scrollTo(0,innerHeight*5.2*(1.95+.53*1.1));schedule();});

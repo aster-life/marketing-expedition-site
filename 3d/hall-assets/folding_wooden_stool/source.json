@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/folding_wooden_stool",
+  "license": "CC0",
+  "author": "Ulan Cabanilla",
+  "files": {
+    "folding_wooden_stool_1k.gltf": {
+      "size": 2842,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/folding_wooden_stool/folding_wooden_stool_1k.gltf",
+      "md5": "a19174156f8a643c4f2cb14345beb204"
+    },
+    "textures/folding_wooden_stool_nor_gl_1k.jpg": {
+      "size": 726559,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_nor_gl_1k.jpg",
+      "md5": "599b7f28e1f37de954e103deb03bca88"
+    },
+    "folding_wooden_stool.bin": {
+      "size": 193016,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/folding_wooden_stool/folding_wooden_stool.bin",
+      "md5": "d80f2c158986ebd3f343e19156d691fb"
+    },
+    "textures/folding_wooden_stool_diff_1k.jpg": {
+      "size": 661939,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_diff_1k.jpg",
+      "md5": "d3810ba0c43af48a0fb0039a52f28ca8"
+    },
+    "textures/folding_wooden_stool_arm_1k.jpg": {
+      "size": 683576,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_arm_1k.jpg",
+      "md5": "2251302db3afb4b81293e593f1feb4ae"
+    }
+  }
+}

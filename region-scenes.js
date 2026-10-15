@@ -2,9 +2,13 @@ import * as T from './assets/vendor/three.module.min.js';
 import {createGLTFLoader,webAsset} from './web-assets.js';
 import {createGalleryArtifact} from './gallery-artifacts.js';
 import {createRegionEntrance} from './region-entrance.js';
+import {createCampfire} from './room-fire.js?v=light-1';
+import {applyRoomEnvironment,addHalos,createContactShadows} from './room-light.js?v=light-1';
+import {createBookCollector} from './room-books.js?v=light-1';
 
-export async function buildRegionScene(index,scene,owned){
+export async function buildRegionScene(index,scene,owned,renderer){
  const root=new T.Group();scene.add(root);const jobs=[];
+ const halos=[],books=createBookCollector(owned),contact=createContactShadows(owned);
  const mat=(color,roughness=.8,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
  const loader=new T.TextureLoader();
  function texture(path,repeat=1,color=true){let done,fail;const p=new Promise((r,j)=>{done=r;fail=j;});jobs.push(p);const t=loader.load(webAsset(path),done,undefined,()=>fail(new Error('素材載入失敗：'+path)));if(color)t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(repeat,repeat);t.anisotropy=4;owned.add(t);return t;}
@@ -28,7 +32,7 @@ export async function buildRegionScene(index,scene,owned){
   for(const dy of [-.22,.22])cyl(x,y+dy,z,.23,.045,metal);
   mesh(new T.CylinderGeometry(.06,.27,.18,20),metal,x,y+.32,z);ring(x,y+.46,z,.07,.012);
   for(const dx of [-.18,.18])for(const dz of [-.12,.12])box(x+dx,y,z+dz,.017,.43,.017,metal);
-  const light=new T.PointLight('#ffba69',2.2,4,2);light.position.set(x,y+.06,z);scene.add(light);
+  const light=new T.PointLight('#ffba69',2.2,4,2);light.position.set(x,y+.06,z);scene.add(light);halos.push([x,y,z]);
  }
  function panel(title,rows,light=false){
   const c=document.createElement('canvas');c.width=900;c.height=1120;const a=c.getContext('2d');
@@ -53,12 +57,35 @@ export async function buildRegionScene(index,scene,owned){
  }
  function closedBook(x,y,z,width=.65,height=.13,color=dark){box(x,y,z,width,height,.62,color);box(x,y,z+.015,width-.07,height*.65,.62,mat('#ab9978'));for(const dy of [-1,1])box(x,y+dy*height*.48,z,width,.025,.66,color);}
  const gltfLoader=createGLTFLoader();const gltfs=new Map();
- function asset(id,x,z,height,rotation=0){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,0,z);wrap.rotation.y=rotation;root.add(wrap);}));}
- function shelves(x,z,rotation=0){asset('wooden_bookshelf_worn',x,z,3.65,rotation);const g=new T.Group();g.position.set(x,0,z);g.rotation.y=rotation;root.add(g);const covers=[mat('#3e4245'),mat('#70443b'),mat('#5c604b')];
-  for(let row=0;row<4;row++)for(let i=0;i<10;i++){const h=.38+(i%3)*.055,xx=-.78+i*.17,yy=.63+row*.78;box(xx,yy+h/2,.28,.125,h,.36,covers[(i+row)%3],g);for(const dy of [.075,h-.055])box(xx,yy+dy,.467,.12,.018,.012,metal,g);}
+ function asset(id,x,z,height,rotation=0,shadow=1.25,y=0){let source=gltfs.get(id);if(!source){source=gltfLoader.loadAsync(webAsset(`3d/hall-assets/${id}/${id}_1k.gltf`));gltfs.set(id,source);}jobs.push(source.then(gltf=>{const model=gltf.scene.clone(true),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());model.position.set(-center.x,-bounds.min.y,-center.z);const wrap=new T.Group();wrap.add(model);wrap.scale.setScalar(height/size.y);wrap.position.set(x,y,z);wrap.rotation.y=rotation;root.add(wrap);
+  // 接觸陰影：依模型實際底面大小鋪一圈柔和暗影
+  if(shadow){const k=height/size.y;contact(root,x,z,size.x*k*shadow,size.z*k*shadow,{rotation,y:index===3?.006:.016});}}));}
+ function shelves(x,z,rotation=0){asset('wooden_bookshelf_worn',x,z,3.65,rotation,1.05);const g=new T.Group();g.position.set(x,0,z);g.rotation.y=rotation;g.updateMatrix();const gm=g.matrix;
+  // 書：圓弧書脊、封板與內縮書頁（room-books.js）；寬高厚不一，每排留空隙，偶爾斜靠或橫疊。
+  let seed=Math.round(Math.abs(x*97+z*31))+7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  // 層板頂面高度（以射線量自 wooden_bookshelf_worn，高 3.65 時）；書高不超過上一層板的淨空。
+  const boards=[.19,.693,1.188,1.699,2.258,2.942];
+  for(let row=0;row<5;row++){let xx=-.82;const yy=boards[row]+.002,room=boards[row+1]-boards[row]-.07;const lean=rnd()<.6?Math.floor(rnd()*6):-1;
+   while(xx<.8){const w=.06+rnd()*.07,h=Math.min(room,.28+rnd()*.17),d=.26+rnd()*.12;
+    if(rnd()<.1){xx+=.05+rnd()*.08;continue;}
+    if(row===(Math.floor(seed%5))&&xx>.45&&rnd()<.5){for(let k=0;k<3;k++){const hw=.3+rnd()*.06,th=.05;books.addBook(gm,xx+hw/2,yy+th/2+.005+k*(th+.004),.28,th,hw,.25,{rotZ:Math.PI/2});}break;}
+    if(lean===0&&xx>.3){books.addBook(gm,xx+w/2+.05+h/2*Math.sin(.22),yy+h/2*Math.cos(.22)+w/2*Math.sin(.22),.3,w,h,d,{rotZ:-.22});xx+=w+.08;break;}
+    books.addBook(gm,xx+w/2,yy+h/2,.3,w,h,d);
+    xx+=w+.004;}}
  }
  function desk(x,z){asset('wooden_table_02',x,z,1.35);lamp(x-1,1.96,z-.32);cyl(x+.9,1.46,z-.3,.085,.2,dark);const pen=cyl(x+.7,1.4,z+.3,.012,.55);pen.rotation.z=1.5;}
- const entrance=createRegionEntrance(index,{stone,wood,metal,roof,glow,cloth});entrance.position.z=index===3?-3:15;root.add(entrance);
+ if(index===3){
+  // 帳篷帆布：織紋、縫線與下緣的水漬，取代單色布面。
+  const c=document.createElement('canvas');c.width=c.height=512;const a=c.getContext('2d');a.fillStyle='#8f7752';a.fillRect(0,0,512,512);
+  let s=41;const r=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+  for(let y=0;y<512;y+=3){a.fillStyle=`rgba(255,240,210,${.03+r()*.05})`;a.fillRect(0,y,512,1);}
+  for(let x=0;x<512;x+=3){a.fillStyle=`rgba(40,28,14,${.04+r()*.06})`;a.fillRect(x,0,1,512);}
+  for(let i=0;i<26;i++){const x=r()*512,y=r()*512,rr=20+r()*70,g=a.createRadialGradient(x,y,0,x,y,rr);g.addColorStop(0,`rgba(60,40,20,${.08+r()*.1})`);g.addColorStop(1,'rgba(60,40,20,0)');a.fillStyle=g;a.fillRect(x-rr,y-rr,rr*2,rr*2);}
+  const stain=a.createLinearGradient(0,380,0,512);stain.addColorStop(0,'rgba(50,34,18,0)');stain.addColorStop(1,'rgba(50,34,18,.35)');a.fillStyle=stain;a.fillRect(0,380,512,132);
+  for(const x of [0,256]){a.fillStyle='rgba(45,30,15,.45)';a.fillRect(x,0,5,512);a.fillStyle='rgba(255,235,200,.12)';a.fillRect(x+6,0,1,512);a.setLineDash([5,5]);a.strokeStyle='rgba(230,210,170,.35)';a.lineWidth=1;a.beginPath();a.moveTo(x+10,0);a.lineTo(x+10,512);a.stroke();a.setLineDash([]);}
+  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(1.5,2);t.anisotropy=4;owned.add(t);cloth.map=t;cloth.color.set('#e4d6bb');cloth.bumpScale=.012;
+ }
+ const entrance=createRegionEntrance(index,{stone,wood,metal,roof,glow,cloth},{detail:true});entrance.position.z=index===3?-3:15;root.add(entrance);
  const floor=box(0,-.13,index===3?0:3,14,.2,index===3?18:24,index===3?stone:wood);
  const backdrop=new T.MeshBasicMaterial({map:texture(`assets/world/${index===0?'guild':index===2?'archive':'room'}.png`),color:index===3?'#637b98':'#7b8d99'});mesh(new T.PlaneGeometry(40,23),backdrop,0,9,-12);
  if(index!==3){
@@ -74,13 +101,13 @@ export async function buildRegionScene(index,scene,owned){
   for(const y of [.12,1.08])box(0,y,-4.04,12,.07,.1,wood);
   box(0,.001,0,7,.012,6,dark);for(const x of [-3.35,3.35])box(x,.013,0,.026,.008,5.7,metal);for(const z of [-2.85,2.85])box(0,.013,z,6.7,.008,.026,metal);
  }
- let views,anchors,overview,entry,propAt=null,propTex=null;
+ let views,anchors,overview,entry,propAt=null,propTex=null,campfire=null;const lanterns=[];
  if(index===0){
-  cyl(0,.65,.6,.9,1.25,wood);cyl(0,1.3,.6,2,.16,wood);cyl(0,1.4,.6,1.92,.045,metal);cyl(0,1.435,.6,1.86,.025,dark);
+  contact(root,0,.6,4.6,4.6);cyl(0,.65,.6,.9,1.25,wood);cyl(0,1.3,.6,2,.16,wood);cyl(0,1.4,.6,1.92,.045,metal);cyl(0,1.435,.6,1.86,.025,dark);
   for(const r of [.55,1.15,1.65])ring(0,1.458,.6,r,.015).rotation.x=-Math.PI/2;
   for(let i=0;i<12;i++){const a=i*Math.PI/6,o=box(Math.sin(a)*1.75,1.46,.6+Math.cos(a)*1.75,.022,.015,.1,metal);o.rotation.y=a;}
   const globe=createGalleryArtifact(2,metal);globe.position.set(0,1.45,.6);globe.scale.setScalar(.53);root.add(globe);
-  for(const x of [-2.8,2.8]){box(x,.75,.9,.85,.13,.85,wood);for(const dx of [-.33,.33])for(const dz of [-.33,.33])box(x+dx,.36,.9+dz,.06,.7,.06,wood);box(x,1.3,.54,.83,1.1,.09,wood);box(x,1.3,.60,.6,.7,.035,dark);}
+  for(const x of [-2.8,2.8])asset('WoodenChair_01',x,.9,1.75,x<0?Math.PI/2:-Math.PI/2); // 寫實木椅，面向圓桌
   // 名冊架與可翻面的告示板改由 room-props.js 建立（需要個別動畫，不能併入靜態批次）。
   propTex={review:panel('交付前核對',[['目標','是否回答原本的問題'],['依據','來源與待確認事項'],['決定','由你核定下一步']])};
   shelves(-5,-2.3,Math.PI/2);lamp(1.25,2.08,.75);propAt={brief:[-1.2,1.462,1.35],roster:[-2.85,0,-3.3],review:[3.15,2.65,-3.65]};
@@ -100,17 +127,21 @@ export async function buildRegionScene(index,scene,owned){
   anchors=[[-2,1.2,1.9],[0,1,-2.8],[2.4,1.2,1.8]];overview={position:[2.6,3.8,9.5],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
  }else{
   // 營地保留夜景與天然不規則輪廓，細節集中在可走近的器物。
-  for(let i=0;i<22;i++){const a=i*2.399,r=8+(i%4)*.9,o=mesh(new T.DodecahedronGeometry(.65+(i%3)*.23,1),stone,Math.sin(a)*r,.2,Math.cos(a)*r);o.scale.set(1.5,.7,1.2);o.rotation.y=a;}
-  for(let i=0;i<11;i++){const a=i*Math.PI*2/11,o=mesh(new T.DodecahedronGeometry(.26,1),stone,Math.sin(a)*1.03,.15,Math.cos(a)*1.03+1.2);o.scale.y=.6;}
-  for(let i=0;i<5;i++){const a=i*Math.PI/5,log=cyl(Math.sin(a)*.2,.25,1.2+Math.cos(a)*.2,.13,1.3,wood);log.rotation.set(Math.PI/2,0,a);}
-  const amber=new T.MeshBasicMaterial({color:'#e29c46'}),core=new T.MeshBasicMaterial({color:'#ffe0a1'});
-  for(let i=0;i<5;i++){const profile=[[.23,0],[.3,.2],[.18,.48],[.13,.7],[0,1.05]].map(([r,y])=>new T.Vector2(r,y)),f=mesh(new T.LatheGeometry(profile,16),i===2?core:amber,(i-2)*.15,.32,1.2+(i%2)*.2);f.scale.setScalar(.7+(i%3)*.13);f.rotation.z=(i-2)*.14;}
+  // 營地外圍：長青苔的石堆（寫實模型），取代低面數多面體
+  for(const [a,r,hh] of [[.7,8.6,1.5],[2.2,9.2,1.9],[3.6,8.4,1.4],[5.1,9,1.7]])asset('rock_moss_set_02',Math.sin(a)*r,Math.cos(a)*r,hh,a);
+  // 石砌火坑與乾柴（寫實模型），火焰改成會動的火舌與火星
+  asset('stone_fire_pit',0,1.2,.42);asset('dry_branches_medium_01',0,1.2,.38,.6);
   const firelight=new T.PointLight('#ff9c43',12,9,2);firelight.position.set(0,1.4,1.2);scene.add(firelight);
-  for(const x of [-2,2]){const seat=cyl(x,.5,2.4,.24,1.6,wood);seat.rotation.z=Math.PI/2;for(const dx of [-.5,.5])cyl(x+dx,.21,2.4,.15,.42,wood);}
+  campfire=createCampfire({at:[0,.18,1.2],scale:.85,light:firelight});scene.add(campfire.group);
+  // 火邊的座位：兩張露營折凳（寫實模型）；原本的樹樁貼圖滿是落葉碎石，縮小後看起來像石頭。
+  asset('folding_wooden_stool',-2,2.4,.5,.5);asset('folding_wooden_stool',2,2.4,.5,-.7);
   // 閱讀物件移到帳篷前緣，近景視線不再穿過布頂。
   desk(-2.8,-.6);closedBook(-2.6,1.43,-.55,.5,.12); // 桌後的照片繩由 room-props-2.js 建立
-  asset('treasure_chest',3,-.2,.86); // 寶箱上的邀請信由 room-props-2.js 建立
-  for(const x of [-4.2,4.2]){cyl(x,.9,3.8,.045,1.8,wood);lamp(x,2,3.8);}
+  asset('treasure_chest',3,-.2,.86);contact(root,0,1.2,2.6,2.6,{y:.006}); // 火坑周圍燒黑的地面 // 寶箱上的邀請信由 room-props-2.js 建立
+  // 營地兩側的木提燈（寫實模型）掛在木樁的橫臂上，燈芯另外點亮。
+  for(const x of [-4.2,4.2]){cyl(x,1.05,3.8,.05,2.1,wood);const arm=box(x-Math.sign(x)*.17,2.08,3.8,.4,.05,.05,wood);
+   const lx=x-Math.sign(x)*.32;cyl(lx,2,3.8,.006,.12,metal);asset('wooden_lantern_01',lx,3.8,.42,0,0,1.52);lanterns.push([lx,1.71,3.8]);
+   const glowLight=new T.PointLight('#ffb35c',2.4,4.5,2);glowLight.position.set(lx,1.71,3.8);scene.add(glowLight);mesh(new T.SphereGeometry(.035,10,8),glow,lx,1.7,3.8,scene).castShadow=false;}
   const rug=box(0,-.015,-3.1,7,.03,4.6,dark);for(const x of [-3.3,3.3])box(x,.005,-3.1,.025,.012,4.25,metal);
   propAt={plaques:[0,0,1.2],photos:[-2.8,1.355,-.6],letter:[3,.86,-.2]};
   views=[{position:[2.9,2.8,5.1],target:[0,.7,1.2]},{position:[-2.25,3.05,2.5],target:[-2.8,1.4,-.6]},{position:[3.2,2.5,3.5],target:[3,1.7,-.6]}];
@@ -122,5 +153,11 @@ export async function buildRegionScene(index,scene,owned){
  const key=new T.DirectionalLight('#e7d5b8',index===3?1.7:2.5);key.position.set(-3,9,6);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:.1,far:35});key.shadow.normalBias=.025;key.shadow.bias=-.0003;scene.add(key);
  const moon=new T.PointLight('#86bce9',13,15,2);moon.position.set(2,4,-3);scene.add(moon);
  const results=await Promise.allSettled(jobs),failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;
- return {root,views,anchors:anchors.map(a=>new T.Vector3(...a)),overview,entry,propAt,propTex};
+ // 光線與環境：反光環境、燈火光暈、書本實例化。營地是夜景，環境較暗、火光暈較大。
+ const environment=renderer?applyRoomEnvironment(renderer,scene,index===3?{night:true,intensity:.45}:{intensity:.6}):null;
+ addHalos(scene,halos,{size:2.4,opacity:.85});
+ if(lanterns.length)addHalos(scene,lanterns,{size:2.2,opacity:.9});
+ if(campfire)addHalos(scene,[[0,.75,1.2]],{color:'#ff9a45',size:6,opacity:.5,push:1});
+ books.build(scene);
+ return {root,views,anchors:anchors.map(a=>new T.Vector3(...a)),overview,entry,propAt,propTex,tick:campfire?campfire.tick:null,dispose(){environment?.dispose();}};
 }
