@@ -67,7 +67,7 @@
 .entry-loader__eyebrow {
   margin: 0 0 1rem;
   color: #caa461;
-  font-size: .68rem;
+  font-size: .8rem;
   letter-spacing: .28em;
 }
 
@@ -85,7 +85,7 @@
   min-height: 1.5em;
   margin: .9rem 0 2rem;
   color: rgba(230, 231, 227, .68);
-  font-size: .84rem;
+  font-size: .92rem;
   letter-spacing: .08em;
   text-wrap: balance;
 }
@@ -129,7 +129,7 @@
 .entry-loader__value {
   min-width: 3ch;
   color: #d6b26d;
-  font-size: .72rem;
+  font-size: .82rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: .08em;
   text-wrap: balance;

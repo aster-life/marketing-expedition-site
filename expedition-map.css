@@ -1,9 +1,9 @@
 .expedition-map{position:relative;background:#0b1920;scroll-margin-top:-110px}
 .expedition-stage{position:relative;min-height:850px;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 74% 45%,#25404544,transparent 65%),#0b1920}
 .expedition-heading{position:relative;z-index:2;padding:70px 0 0 6vw;width:34%;pointer-events:none}
-.expedition-heading .eyebrow{font-size:10px;letter-spacing:.25em;color:#bfa578}
+.expedition-heading .eyebrow{font-size:12px;letter-spacing:.25em;color:#bfa578}
 .expedition-heading h2{font-size:clamp(38px,4.2vw,67px);line-height:1.35;margin:20px 0}
-.expedition-heading p{font-size:14px;color:#a6b3b5;line-height:1.9;margin:0}
+.expedition-heading p{font-size:16px;color:#a6b3b5;line-height:1.9;margin:0}
 .expedition-chart{position:absolute;inset:0 -2% 0 24%;display:flex;align-items:center;mask-image:linear-gradient(90deg,transparent,#000 9%,#000 98%,transparent)}
 .expedition-terrain{position:relative;width:100%;aspect-ratio:1100/740;transform:translate(var(--map-x,0),var(--map-y,0));transition:transform 1.2s cubic-bezier(.2,.65,.2,1)}
 .is-relief-loading .map-location{opacity:0;pointer-events:none}
@@ -14,24 +14,24 @@
 .map-route{fill:none;stroke:#edd096;stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.2s;filter:drop-shadow(0 0 5px #dda25477)}
 .map-route.is-travelled{stroke-dashoffset:0}
 .map-location{position:absolute;left:var(--x);top:var(--y);transform:translateX(-50%);min-width:128px;min-height:64px;text-align:center;color:#a9b6b2;text-decoration:none;padding:5px 10px 8px;transition:color .5s,background .5s;line-height:1.45;border-radius:3px;background:#10232acf}
-.location-number{position:absolute;top:9px;left:-8px;font:10px Georgia,serif;color:#c4ac80}
+.location-number{position:absolute;top:9px;left:-8px;font:12px Georgia,serif;color:#c4ac80}
 .location-name{display:block;font:20px/1.45 var(--serif);letter-spacing:.08em}
-.map-location small{display:block;font-size:11px;letter-spacing:.12em;margin-top:4px}
+.map-location small{display:block;font-size:13px;letter-spacing:.12em;margin-top:4px}
 .map-location.is-active,.map-location:hover,.map-location:focus-visible{color:#ffe3a9;background:#243531ee;text-shadow:0 0 24px #e7ae5366}
 .map-location.is-active:after{content:"";position:absolute;left:25%;right:25%;bottom:0;height:1px;background:#e2c089;box-shadow:0 0 14px #e2c089}
 .expedition-stories{position:relative;z-index:2;margin:50px 0 150px 6vw;width:25%;max-width:345px}
-.expedition-story .eyebrow{font-size:10px;letter-spacing:.17em;color:#c2a478}
+.expedition-story .eyebrow{font-size:12px;letter-spacing:.17em;color:#c2a478}
 .expedition-story h3{font:400 clamp(21px,2vw,30px)/1.6 var(--serif);margin:14px 0}
-.expedition-story p{font-size:14px;color:#abb7b8;line-height:1.9;margin:0 0 23px}
-.expedition-enter{display:flex;justify-content:space-between;align-items:center;min-height:48px;border-top:1px solid #c6a46a55;border-bottom:1px solid #c6a46a55;padding:10px 0;text-decoration:none;color:#e7c58b;font-size:14px}
+.expedition-story p{font-size:16px;color:#abb7b8;line-height:1.9;margin:0 0 23px}
+.expedition-enter{display:flex;justify-content:space-between;align-items:center;min-height:48px;border-top:1px solid #c6a46a55;border-bottom:1px solid #c6a46a55;padding:10px 0;text-decoration:none;color:#e7c58b;font-size:16px}
 .expedition-enter span{font-size:23px;transition:transform .3s}
 .expedition-enter:hover span{transform:translate(3px,-3px)}
 .expedition-stops{position:absolute;bottom:70px;left:6vw;right:6vw;z-index:2;display:flex;gap:0;border-bottom:1px solid #d4b57930}
-.expedition-stops button{flex:1;min-height:54px;border:0;border-bottom:1px solid transparent;background:none;color:#859593;font:14px/1.5 var(--serif);text-align:left;cursor:pointer;padding:12px 16px 12px 0;transition:color .4s,border-color .4s}
-.expedition-stops button span{font:11px Georgia,serif;margin-right:18px;opacity:.7}
+.expedition-stops button{flex:1;min-height:54px;border:0;border-bottom:1px solid transparent;background:none;color:#859593;font:16px/1.5 var(--serif);text-align:left;cursor:pointer;padding:12px 16px 12px 0;transition:color .4s,border-color .4s}
+.expedition-stops button span{font:13px Georgia,serif;margin-right:18px;opacity:.7}
 .expedition-stops button[aria-pressed="true"]{color:#e9cd97;border-color:#e9cd97}
 .expedition-stops button:hover{color:#fff0ce}
-.expedition-scroll{position:absolute;bottom:27px;left:6vw;right:6vw;z-index:2;display:flex;gap:28px;align-items:center;color:#8f9e9e;font-size:11px;letter-spacing:.12em}
+.expedition-scroll{position:absolute;bottom:27px;left:6vw;right:6vw;z-index:2;display:flex;gap:28px;align-items:center;color:#8f9e9e;font-size:13px;letter-spacing:.12em}
 .expedition-count{margin-left:auto;font-family:Georgia,serif;color:#cfb482}
 .expedition-map.is-enhanced{height:300svh}
 .is-enhanced .expedition-stage{position:sticky;top:0;height:100svh;min-height:660px}
@@ -45,46 +45,46 @@
  .expedition-terrain{width:min(100%,1420px);transform-origin:50% 47%;transform:translate(var(--map-x,0),calc(var(--map-y,0%) - 4.5%)) scale(.975)}
  .has-relief .map-location[data-region="1"],.has-relief .map-location[data-region="3"]{margin-top:-12px}
 }
-@media(min-width:1000px) and (max-height:760px){.expedition-heading{padding-top:35px}.expedition-heading h2{font-size:42px;margin:12px 0}.is-enhanced .expedition-stories{top:43%}.expedition-story h3{font-size:22px;margin:10px 0}.expedition-story p{font-size:13px;margin-bottom:14px}.expedition-stops{bottom:55px}.expedition-scroll{bottom:18px}}
+@media(min-width:1000px) and (max-height:760px){.expedition-heading{padding-top:35px}.expedition-heading h2{font-size:42px;margin:12px 0}.is-enhanced .expedition-stories{top:43%}.expedition-story h3{font-size:22px;margin:10px 0}.expedition-story p{font-size:15px;margin-bottom:14px}.expedition-stops{bottom:55px}.expedition-scroll{bottom:18px}}
 @media(max-width:1000px){
  .expedition-stage{min-height:850px}
  .expedition-heading{padding:34px 6vw 0;width:100%}
  .expedition-heading h2{font-size:35px;line-height:1.35;margin:12px 0}
  .expedition-heading h2 br{display:none}
- .expedition-heading p{font-size:12px}.expedition-heading p br{display:none}
+ .expedition-heading p{font-size:14px}.expedition-heading p br{display:none}
  .expedition-chart{inset:115px -6% auto;height:auto;mask-image:none}
  .expedition-terrain{width:100%}
  .is-enhanced .expedition-stage{min-height:720px}
  .is-enhanced .expedition-stories{top:auto;bottom:138px;left:6vw;width:88%;max-width:none;background:linear-gradient(0deg,#0b1920 75%,#0b192000);padding-top:25px}
  .expedition-story h3{font-size:23px;margin:7px 0}
- .expedition-story p{font-size:13px;max-width:590px;margin-bottom:12px}
+ .expedition-story p{font-size:15px;max-width:590px;margin-bottom:12px}
  .expedition-enter{min-height:44px;width:min(100%,350px)}
- .expedition-stops button{text-align:center;font-size:12px;padding:10px 4px}
- .expedition-stops button span{display:block;margin:0 0 6px;font-size:10px}
+ .expedition-stops button{text-align:center;font-size:14px;padding:10px 4px}
+ .expedition-stops button span{display:block;margin:0 0 6px;font-size:12px}
  .expedition-stops{bottom:45px}.expedition-scroll{bottom:15px}
  .expedition-stories{margin:65vw 6vw 160px;width:88%;max-width:none}
- .location-name{font-size:17px}.map-location{min-width:110px;min-height:54px;padding:4px 6px}.map-location small{font-size:10px}
+ .location-name{font-size:17px}.map-location{min-width:110px;min-height:54px;padding:4px 6px}.map-location small{font-size:12px}
 }
 @media(max-width:600px){
  .expedition-heading{padding-top:24px}.expedition-heading h2{font-size:29px}.expedition-heading p{max-width:285px}
  .expedition-chart{top:160px;left:-15%;right:-15%}
  .is-enhanced .expedition-stage{min-height:730px}
- .location-name{font-size:15px}.map-location{min-width:96px;min-height:48px}.map-location small{font-size:9px;letter-spacing:.02em}.location-number{font-size:9px;left:-6px}
- .expedition-story h3{font-size:21px}.expedition-story p{font-size:12px}.expedition-scroll{font-size:10px}
+ .location-name{font-size:16px}.map-location{min-width:96px;min-height:48px}.map-location small{font-size:11px;letter-spacing:.02em}.location-number{font-size:11px;left:-6px}
+ .expedition-story h3{font-size:21px}.expedition-story p{font-size:14px}.expedition-scroll{font-size:12px}
 }
 @media(prefers-reduced-motion:reduce){.expedition-terrain,.map-route,.site-aura,.site-ring,.map-location{transition:none}.is-enhanced .expedition-story:not([hidden]){animation:none}}
 /* 小型預覽視窗仍保留四個地標、當前介紹與可點選入口。 */
 @media(max-width:1000px) and (max-height:650px){
  .is-enhanced .expedition-stage{min-height:0}
- .expedition-heading{padding-top:12px}.expedition-heading .eyebrow{font-size:8px}
+ .expedition-heading{padding-top:12px}.expedition-heading .eyebrow{font-size:10px}
  .expedition-heading h2{font-size:23px;margin:4px 0}.expedition-heading p{display:none}
  .expedition-chart{top:68px;left:0;right:0;height:46svh;justify-content:center}
  .expedition-terrain{width:min(100%,68svh)}
- .map-location{min-width:78px;min-height:44px;padding:4px}.location-name{font-size:12px}.map-location small{font-size:8px}.location-number{font-size:8px}
+ .map-location{min-width:78px;min-height:44px;padding:4px}.location-name{font-size:14px}.map-location small{font-size:10px}.location-number{font-size:10px}
  .is-enhanced .expedition-stories{bottom:72px;padding-top:8px}
- .expedition-story .eyebrow{font-size:8px}.expedition-story h3{font-size:16px;line-height:1.5;margin:4px 0}
- .expedition-story p{display:none}.expedition-enter{min-height:44px;padding:5px 0;font-size:12px}
- .expedition-stops{bottom:8px}.expedition-stops button{min-height:52px;padding:5px;font-size:11px}
+ .expedition-story .eyebrow{font-size:10px}.expedition-story h3{font-size:16px;line-height:1.5;margin:4px 0}
+ .expedition-story p{display:none}.expedition-enter{min-height:44px;padding:5px 0;font-size:14px}
+ .expedition-stops{bottom:8px}.expedition-stops button{min-height:52px;padding:5px;font-size:13px}
  .expedition-scroll{display:none}
 }
 html.reduced .expedition-terrain,html.reduced .map-route,html.reduced .site-aura,html.reduced .site-ring{transition:none}
@@ -103,46 +103,46 @@ html.reduced .is-enhanced .expedition-story:not([hidden]){animation:none}
 .journal-plate{margin:0;position:relative;min-height:100%;overflow:hidden;background:#142128}
 .journal-plate img{width:100%;height:100%;position:absolute;object-fit:cover;filter:brightness(.78) saturate(.8)}
 .journal-plate:after{content:"";position:absolute;inset:0;box-shadow:inset -18px 0 35px #0007;background:linear-gradient(0deg,#071219df,transparent 30%)}
-.journal-plate figcaption{position:absolute;bottom:28px;left:28px;right:28px;z-index:1;display:flex;flex-direction:column;gap:8px;color:#dbc494;font-size:12px;letter-spacing:.12em}
-.journal-plate figcaption span:last-child{font-size:9px;color:#9faeab}
+.journal-plate figcaption{position:absolute;bottom:28px;left:28px;right:28px;z-index:1;display:flex;flex-direction:column;gap:8px;color:#dbc494;font-size:14px;letter-spacing:.12em}
+.journal-plate figcaption span:last-child{font-size:11px;color:#9faeab}
 .journal-page{position:relative;padding:62px 42px 25px;background:radial-gradient(ellipse at 0 40%,#28404766,transparent 70%),repeating-linear-gradient(0deg,transparent 0 31px,#b5a58105 32px),#101e25;box-shadow:inset 8px 0 16px #0005;border-left:1px solid #c6a36866}
-.journal-kicker{font-size:10px;letter-spacing:.18em;color:#c8a76e}
+.journal-kicker{font-size:12px;letter-spacing:.18em;color:#c8a76e}
 .journal-page h2{font-size:42px;margin:16px 0 20px;letter-spacing:.08em}
 .journal-lead{font:20px/1.8 var(--serif);color:#e0d7c4}
 .journal-rule{width:48px;height:1px;background:#b99356;margin:28px 0}
-.journal-page h3{font-size:12px;font-weight:400;letter-spacing:.08em;color:#c6aa7b}
-.journal-page #journal-detail{font-size:14px;line-height:1.95;color:#b3bdbb}
+.journal-page h3{font-size:14px;font-weight:400;letter-spacing:.08em;color:#c6aa7b}
+.journal-page #journal-detail{font-size:16px;line-height:1.95;color:#b3bdbb}
 .journal-enter{display:flex;justify-content:space-between;align-items:center;min-height:48px;margin-top:26px;padding:10px 0;color:#e6c487;border-top:1px solid #c5a46955;border-bottom:1px solid #c5a46955;text-decoration:none}
-.journal-page-number{font-size:9px;letter-spacing:.16em;color:#87958f;display:block;margin-top:18px}
-.journal-pagination{display:flex;gap:15px;align-items:center;margin-top:20px;color:#bbaa8b;font-size:11px}
+.journal-page-number{font-size:11px;letter-spacing:.16em;color:#87958f;display:block;margin-top:18px}
+.journal-pagination{display:flex;gap:15px;align-items:center;margin-top:20px;color:#bbaa8b;font-size:13px}
 .journal-pagination button{width:44px;height:44px;border:1px solid #bca07155;background:transparent;color:#debf83;font-size:19px;cursor:pointer}
 .journal-pagination button:disabled{opacity:.3;cursor:default}
 @keyframes journal-unfold{from{opacity:0;transform:rotateY(-14deg) translateX(-20px)}to{opacity:1;transform:none}}
-@media(max-width:700px){.expedition-journal{width:92vw;max-height:90svh}.journal-spread{grid-template-columns:1fr;min-height:0}.journal-plate{min-height:210px}.journal-page{padding:28px 24px;border-left:0;border-top:1px solid #b9965a77}.journal-page h2{font-size:30px;margin:12px 0}.journal-lead{font-size:18px}.journal-rule{margin:18px 0}.journal-page #journal-detail{font-size:13px}.journal-plate figcaption{bottom:18px;left:24px}}
+@media(max-width:700px){.expedition-journal{width:92vw;max-height:90svh}.journal-spread{grid-template-columns:1fr;min-height:0}.journal-plate{min-height:210px}.journal-page{padding:28px 24px;border-left:0;border-top:1px solid #b9965a77}.journal-page h2{font-size:30px;margin:12px 0}.journal-lead{font-size:18px}.journal-rule{margin:18px 0}.journal-page #journal-detail{font-size:15px}.journal-plate figcaption{bottom:18px;left:24px}}
 @media(prefers-reduced-motion:reduce){.journal-spread{animation:none}}
 html.reduced .journal-spread{animation:none}
 /* 窄幅敘事與無框立體地形，共用同屏底部導覽。 */
 @media(min-width:1001px){
  .is-enhanced .expedition-stage{min-height:0;height:100svh;display:grid;grid-template-columns:minmax(0,22vw) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) 44px 16px;row-gap:14px;padding:clamp(22px,5svh,48px) 4vw 12px}
  .is-enhanced .expedition-heading{grid-column:1;grid-row:1;width:100%;padding:0}
- .is-enhanced .expedition-heading .eyebrow{font-size:9px;letter-spacing:.18em;margin-bottom:10px}
+ .is-enhanced .expedition-heading .eyebrow{font-size:11px;letter-spacing:.18em;margin-bottom:10px}
  .is-enhanced .expedition-heading h2{font-size:clamp(30px,4.8svh,46px);line-height:1.3;margin:12px 0}
- .is-enhanced .expedition-heading p{font-size:12px;line-height:1.8}
+ .is-enhanced .expedition-heading p{font-size:14px;line-height:1.8}
  .is-enhanced .expedition-stories{position:relative;grid-column:1;grid-row:2;top:auto;left:auto;width:100%;max-width:300px;min-height:0;margin:0;align-self:center}
- .is-enhanced .expedition-story .eyebrow{font-size:9px;margin-bottom:10px}
+ .is-enhanced .expedition-story .eyebrow{font-size:11px;margin-bottom:10px}
  .is-enhanced .expedition-story h3{font-size:clamp(18px,2.6svh,24px);line-height:1.6;margin:10px 0}
- .is-enhanced .expedition-story p{font-size:12px;line-height:1.85;margin-bottom:16px}
- .is-enhanced .expedition-enter{font-size:12px;min-height:44px;padding:8px 0}
+ .is-enhanced .expedition-story p{font-size:14px;line-height:1.85;margin-bottom:16px}
+ .is-enhanced .expedition-enter{font-size:14px;min-height:44px;padding:8px 0}
  .is-enhanced .expedition-stops{position:relative;grid-column:1/-1;grid-row:3;inset:auto;align-self:stretch}
- .is-enhanced .expedition-stops button{font-size:13px;min-height:44px;padding:8px 0}
- .is-enhanced .expedition-scroll{position:relative;grid-column:1/-1;grid-row:4;inset:auto;font-size:10px}
+ .is-enhanced .expedition-stops button{font-size:15px;min-height:44px;padding:8px 0}
+ .is-enhanced .expedition-scroll{position:relative;grid-column:1/-1;grid-row:4;inset:auto;font-size:12px}
  .is-enhanced .expedition-chart{inset:0 -1% 110px 27%;justify-content:center}
  .is-enhanced .expedition-terrain{width:100%;height:100%;aspect-ratio:auto;flex-shrink:0;transform:translate(var(--map-x,0),var(--map-y,0))}
  .is-enhanced .map-view-controls{bottom:96px;right:4vw;background:#09151d99;border-color:#b8986126}
  .is-enhanced .map-view-controls button{width:36px;height:36px;font-size:20px}
  .is-enhanced .map-location{min-width:108px;min-height:50px;padding:5px 10px;background:linear-gradient(110deg,#122b32ed,#0c1c24da)}
  .is-enhanced .location-name{font-size:17px;letter-spacing:.04em}
- .is-enhanced .map-location small{font-size:10px;margin-top:2px}
+ .is-enhanced .map-location small{font-size:12px;margin-top:2px}
 }
 @media(min-width:1001px) and (max-height:650px){
  .is-enhanced .expedition-stage{row-gap:8px;padding-top:20px;padding-bottom:8px}
@@ -207,7 +207,7 @@ html.reduced .route-dashes{animation:none}
 .relief-canvas{pointer-events:auto;touch-action:pan-y;cursor:grab}
 .relief-canvas.is-dragging{cursor:grabbing}
 .map-view-controls{position:absolute;z-index:3;right:5vw;bottom:132px;display:flex;gap:6px;align-items:center;padding:6px;background:#09151dd9;border:1px solid #b8986140;border-radius:3px}
-.map-view-controls span{font-size:11px;color:#b0bab8;margin:0 12px;letter-spacing:.08em}
+.map-view-controls span{font-size:13px;color:#b0bab8;margin:0 12px;letter-spacing:.08em}
 .map-view-controls button{width:42px;height:42px;border:1px solid transparent;background:none;color:#dbc391;font:23px Georgia,serif;cursor:pointer}
 .map-view-controls button:hover,.map-view-controls button:focus-visible{background:#b8986120;border-color:#b8986180}
 .map-location:focus-visible,.journal-next:focus-visible,.journal-close:focus-visible{outline:2px solid #efd4a3;outline-offset:4px}
@@ -224,19 +224,19 @@ html.reduced .route-dashes{animation:none}
 .journal-page h2{font:400 clamp(27px,2.5vw,36px)/1.3 var(--serif);margin:12px 0}
 .journal-lead{font:17px/1.7 var(--serif);margin:10px 0;color:#e5d8bd}
 .journal-rule{margin:17px 0;width:38px}
-.journal-page h3{margin:14px 0 7px;font-size:11px;letter-spacing:.14em;color:#c6aa7b}
-.journal-page #journal-detail{font-size:13px;line-height:1.85;margin:0;color:#aebbbd}
-.journal-discoveries{list-style:none;margin:0;padding:0;color:#cad0cc;font-size:12px;line-height:1.8}
+.journal-page h3{margin:14px 0 7px;font-size:13px;letter-spacing:.14em;color:#c6aa7b}
+.journal-page #journal-detail{font-size:15px;line-height:1.85;margin:0;color:#aebbbd}
+.journal-discoveries{list-style:none;margin:0;padding:0;color:#cad0cc;font-size:14px;line-height:1.8}
 .journal-discoveries li{padding:5px 0 5px 15px;border-bottom:1px solid #b898611b;position:relative}
 .journal-discoveries li:before{content:'·';position:absolute;left:0;color:#ddbe83}
-.journal-enter{margin-top:20px;font-size:13px;min-height:46px}
-.journal-next{width:100%;min-height:46px;margin-top:10px;padding:8px 0;background:none;border:0;color:#b9c6c4;text-align:left;cursor:pointer;font-family:inherit;font-size:12px;line-height:1.6}
+.journal-enter{margin-top:20px;font-size:15px;min-height:46px}
+.journal-next{width:100%;min-height:46px;margin-top:10px;padding:8px 0;background:none;border:0;color:#b9c6c4;text-align:left;cursor:pointer;font-family:inherit;font-size:14px;line-height:1.6}
 .journal-next:hover{color:#f1d39c}.journal-next:disabled{opacity:.4;cursor:wait}
-.journal-page-number{margin-top:8px;font-size:8px;letter-spacing:.17em}
+.journal-page-number{margin-top:8px;font-size:10px;letter-spacing:.17em}
 .journal-page:after{display:none}
 .expedition-journal[aria-busy="true"] .journal-spread{opacity:.25;transition:opacity .2s}
 @keyframes field-note-arrive{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
-@media(min-width:1001px) and (max-height:760px){.journal-plate{min-height:90px;height:90px}.journal-page{padding:12px 22px 18px}.journal-rule{margin:10px 0}.journal-lead{font-size:15px}.journal-page h2{font-size:28px;margin:8px 0}.map-view-controls{bottom:117px}}
+@media(min-width:1001px) and (max-height:760px){.journal-plate{min-height:90px;height:90px}.journal-page{padding:12px 22px 18px}.journal-rule{margin:10px 0}.journal-lead{font-size:16px}.journal-page h2{font-size:28px;margin:8px 0}.map-view-controls{bottom:117px}}
 @media(max-width:1000px){
  .map-view-controls{bottom:98px;right:6vw}.map-view-controls span{display:none}
  .expedition-journal{inset:auto 4vw 14px;margin:0;width:92vw;max-height:51svh;border-radius:8px 8px 0 0}

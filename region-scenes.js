@@ -74,16 +74,16 @@ export async function buildRegionScene(index,scene,owned){
   for(const y of [.12,1.08])box(0,y,-4.04,12,.07,.1,wood);
   box(0,.001,0,7,.012,6,dark);for(const x of [-3.35,3.35])box(x,.013,0,.026,.008,5.7,metal);for(const z of [-2.85,2.85])box(0,.013,z,6.7,.008,.026,metal);
  }
- let views,anchors,overview,entry;
+ let views,anchors,overview,entry,propAt=null,propTex=null;
  if(index===0){
   cyl(0,.65,.6,.9,1.25,wood);cyl(0,1.3,.6,2,.16,wood);cyl(0,1.4,.6,1.92,.045,metal);cyl(0,1.435,.6,1.86,.025,dark);
   for(const r of [.55,1.15,1.65])ring(0,1.458,.6,r,.015).rotation.x=-Math.PI/2;
   for(let i=0;i<12;i++){const a=i*Math.PI/6,o=box(Math.sin(a)*1.75,1.46,.6+Math.cos(a)*1.75,.022,.015,.1,metal);o.rotation.y=a;}
   const globe=createGalleryArtifact(2,metal);globe.position.set(0,1.45,.6);globe.scale.setScalar(.53);root.add(globe);
   for(const x of [-2.8,2.8]){box(x,.75,.9,.85,.13,.85,wood);for(const dx of [-.33,.33])for(const dz of [-.33,.33])box(x+dx,.36,.9+dz,.06,.7,.06,wood);box(x,1.3,.54,.83,1.1,.09,wood);box(x,1.3,.60,.6,.7,.035,dark);}
-  board(-3.1,2.65,-3.65,2.35,2.9,'專長的接力',[['秘書與研究','釐清方向，整理依據'],['內容與投放','把價值說清楚'],['分析與核對','讓判斷可以回查']]);
-  board(3.15,2.65,-3.65,2.35,2.9,'交付前核對',[['目標','是否回答原本的問題'],['依據','來源與待確認事項'],['決定','由你核定下一步']]);
-  shelves(-5,-2.3,Math.PI/2);closedBook(-1.3,1.58,.9,.55,.12);lamp(1.25,2.08,.75);
+  // 名冊架與可翻面的告示板改由 room-props.js 建立（需要個別動畫，不能併入靜態批次）。
+  propTex={review:panel('交付前核對',[['目標','是否回答原本的問題'],['依據','來源與待確認事項'],['決定','由你核定下一步']])};
+  shelves(-5,-2.3,Math.PI/2);lamp(1.25,2.08,.75);propAt={brief:[-1.2,1.462,1.35],roster:[-2.85,0,-3.3],review:[3.15,2.65,-3.65]};
   views=[{position:[2.6,4.2,4.6],target:[0,1.6,.6]},{position:[-2.8,2.8,.8],target:[-3.1,2.65,-3.65]},{position:[2.85,2.8,.8],target:[3.15,2.65,-3.65]}];
   anchors=[[0,1.2,2.1],[-3.1,1.1,-3.4],[3.15,1.1,-3.4]];overview={position:[2.7,3.8,9.6],target:[0,2,-.5]};entry=[[5.5,8,32],[0,2.7,18],[0,2.7,13]];
  }else if(index===2){
@@ -120,5 +120,5 @@ export async function buildRegionScene(index,scene,owned){
  const key=new T.DirectionalLight('#e7d5b8',index===3?1.7:2.5);key.position.set(-3,9,6);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:.1,far:35});key.shadow.normalBias=.025;key.shadow.bias=-.0003;scene.add(key);
  const moon=new T.PointLight('#86bce9',13,15,2);moon.position.set(2,4,-3);scene.add(moon);
  const results=await Promise.allSettled(jobs),failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;
- return {root,views,anchors:anchors.map(a=>new T.Vector3(...a)),overview,entry};
+ return {root,views,anchors:anchors.map(a=>new T.Vector3(...a)),overview,entry,propAt,propTex};
 }
