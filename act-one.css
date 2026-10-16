@@ -94,3 +94,13 @@
 .journey-chapters a:hover span{opacity:1}
 .journey-chapters a:focus-visible{outline:2px solid #dbb578;outline-offset:2px}
 @media(max-width:700px){.journey-chapters{right:8px}.journey-chapters span{display:none}.journey-chapters a{min-height:34px}}
+/* 視窗不夠高時（筆電扣掉瀏覽器工具列常只剩 600–700px）：主標區往上收、字級跟著高度縮，兩個入口排在同一行，
+   確保「整理我的需求」不會撞到底部的「直接看網站內容」。高於 800px 的視窗維持原樣。 */
+@media(min-width:701px) and (max-height:800px){
+ .film-intro{top:max(92px,12svh)}
+ .film-intro h1{font-size:clamp(26px,min(calc(var(--col)/5.5),7.2svh),56px);margin-bottom:12px}
+ .film-intro .eyebrow{margin-bottom:10px}
+ .film-intro p{font-size:15px;line-height:1.65;margin-bottom:0}
+ .film-intro__actions{margin-top:16px;flex-wrap:nowrap;width:max-content}
+ .film-intro__actions a{white-space:nowrap}
+}
